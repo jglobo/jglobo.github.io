@@ -1,163 +1,239 @@
-import { AREAS, CARDS } from "./content.js";
+// HTML layer on top of the canvas: dialog box, choice menus, info panels,
+// the arcade game host and touch controls. Styled like a handheld RPG.
 
-const $ = (sel) => document.querySelector(sel);
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+export { esc };
 
-function escapeHtml(text) {
-    return String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+let active = null; // { kind, onButton(btn), onDir(dir) }
+const stack = [];
+
+function push(widget) { stack.push(widget); active = widget; }
+function pop(widget) {
+    const i = stack.indexOf(widget);
+    if (i >= 0) stack.splice(i, 1);
+    active = stack[stack.length - 1] ?? null;
+}
+export const isBusy = () => active !== null;
+
+/** Routes A/B/START presses to whatever is on screen. Returns true if consumed. */
+export function button(btn) {
+    if (!active) return false;
+    active.onButton?.(btn);
+    return true;
+}
+export function dir(d) {
+    if (!active) return false;
+    active.onDir?.(d);
+    return true;
 }
 
-function cardHtml(card) {
-    const parts = [];
-    if (card.image) parts.push(`<img class="card-image" src="${card.image}" alt="${escapeHtml(card.title)}" loading="lazy">`);
-    parts.push(`<p class="card-tag">${escapeHtml(card.tag)}</p>`);
-    parts.push(`<h2 id="card-title">${escapeHtml(card.title)}</h2>`);
-    for (const p of card.body ?? []) parts.push(`<p>${escapeHtml(p)}</p>`);
-    if (card.stats) {
-        parts.push(`<div class="card-stats">${card.stats
-            .map(([n, label]) => `<div><strong>${escapeHtml(n)}</strong><span>${escapeHtml(label)}</span></div>`)
-            .join("")}</div>`);
-    }
-    if (card.skills) {
-        parts.push(`<div class="card-skills">${card.skills
-            .map(([name, pct]) => `<div class="skill"><span>${escapeHtml(name)}</span><div class="bar"><div style="width:${pct}%"></div></div></div>`)
-            .join("")}</div>`);
-    }
-    if (card.links?.length) {
-        parts.push(`<div class="card-links">${card.links
-            .map((l, i) => {
-                const external = /^https?:/.test(l.href);
-                const attrs = l.download ? " download" : external ? ' target="_blank" rel="noopener"' : "";
-                return `<a class="btn${i === 0 ? " primary" : ""}" href="${l.href}"${attrs}>${escapeHtml(l.label)}</a>`;
-            })
-            .join("")}</div>`);
-    }
-    return parts.join("");
+// ------------------------------------------------------------ Dialog
+
+const dialog = () => $("#dialog");
+let picture = null;
+
+/** Shows one page of text with a typewriter effect; resolves when the player presses A. */
+export function say(text, { pic } = {}) {
+    return new Promise((resolve) => {
+        const box = dialog();
+        const body = box.querySelector(".text");
+        const more = box.querySelector(".more");
+        box.hidden = false;
+        more.hidden = true;
+        setPicture(pic);
+        let shown = 0;
+        let done = false;
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const render = () => { body.textContent = text.slice(0, shown); };
+        const timer = setInterval(() => {
+            shown += 2;
+            if (shown >= text.length || reduced) finishTyping();
+            else render();
+        }, 22);
+        function finishTyping() {
+            clearInterval(timer);
+            shown = text.length;
+            render();
+            done = true;
+            more.hidden = false;
+        }
+        const w = {
+            kind: "say",
+            onButton(btn) {
+                if (btn !== "A" && btn !== "B" && btn !== "ESC") return;
+                if (!done) return finishTyping();
+                pop(w);
+                if (!stack.some((s) => s.kind === "say" || s.kind === "choose")) box.hidden = true;
+                resolve();
+            },
+        };
+        box.onclick = () => w.onButton("A");
+        push(w);
+    });
 }
 
-/**
- * Wires up the HTML overlay: intro screen, interaction prompt, project cards,
- * the directory menu, and touch controls. Callbacks drive the 3D side.
- */
-export function initUI({ onJoystick, onLook, onZoom, onInteract, onTeleport }) {
-    const intro = $("#intro");
-    const prompt = $("#prompt");
-    const promptTitle = $("#prompt-title");
-    const card = $("#card");
-    const cardBody = $("#card-body");
-    const menu = $("#menu");
-    const isTouch = matchMedia("(pointer: coarse)").matches;
-    document.body.classList.toggle("touch", isTouch);
+function setPicture(src) {
+    const el = $("#picture");
+    if (!src) { el.hidden = true; picture = null; return; }
+    if (picture !== src) el.querySelector("img").src = src;
+    picture = src;
+    el.hidden = false;
+}
 
-    let open = null; // the element currently covering the game, if any
-    let lastFocus = null;
-
-    function show(el) {
-        lastFocus = document.activeElement;
-        open = el;
-        el.hidden = false;
-        el.querySelector("[data-autofocus]")?.focus();
-        onJoystick(0, 0);
-    }
-    function hide() {
-        if (!open) return;
-        open.hidden = true;
-        open = null;
-        lastFocus?.focus?.();
-    }
-
-    function openCard(id) {
-        cardBody.innerHTML = cardHtml(CARDS[id]);
-        card.scrollTop = 0;
-        show(card);
-    }
-
-    // Intro.
-    $("#start").addEventListener("click", () => { intro.hidden = true; open = null; $("#scene").focus(); });
-    open = intro;
-
-    // Cards and menu close on the X, the backdrop, or Escape.
-    for (const el of [card, menu]) {
-        el.addEventListener("click", (e) => { if (e.target === el || e.target.closest("[data-close]")) hide(); });
-    }
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") hide();
-        if ((e.key === "m" || e.key === "M") && !open) show(menu);
+/** Keeps the last dialog line on screen and shows a choice list beside it. */
+export function choose(options, { cancel = options.length - 1 } = {}) {
+    return new Promise((resolve) => {
+        const box = $("#choices");
+        let i = 0;
+        box.innerHTML = options.map((o, n) => `<li><button data-i="${n}">${esc(o)}</button></li>`).join("");
+        box.hidden = false;
+        dialog().hidden = false;
+        dialog().querySelector(".more").hidden = true;
+        const btns = [...box.querySelectorAll("button")];
+        const paint = () => btns.forEach((b, n) => b.classList.toggle("sel", n === i));
+        paint();
+        const finish = (n) => {
+            pop(w);
+            box.hidden = true;
+            dialog().hidden = true;
+            setPicture(null);
+            resolve(n);
+        };
+        const w = {
+            kind: "choose",
+            onDir(d) {
+                if (d === "up") i = (i + options.length - 1) % options.length;
+                if (d === "down") i = (i + 1) % options.length;
+                paint();
+            },
+            onButton(btn) {
+                if (btn === "A") finish(i);
+                if (btn === "B" || btn === "ESC") finish(cancel);
+            },
+        };
+        btns.forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); finish(Number(b.dataset.i)); }));
+        push(w);
     });
+}
 
-    // Directory: every project in one list, for visitors in a hurry.
-    $("#menu-list").innerHTML = AREAS.map((a) => `
-        <li>
-            <button class="menu-area" data-area="${a.id}">${escapeHtml(a.label)} <span>Go there</span></button>
-            <ul>${a.cards.map((c) => `<li><button data-card="${c}">${escapeHtml(CARDS[c].title)}</button></li>`).join("")}</ul>
-        </li>`).join("");
-    $("#menu-list").addEventListener("click", (e) => {
-        const cardBtn = e.target.closest("[data-card]");
-        const areaBtn = e.target.closest("[data-area]");
-        if (cardBtn) { hide(); openCard(cardBtn.dataset.card); }
-        else if (areaBtn) { hide(); onTeleport(areaBtn.dataset.area); }
-    });
-    $("#menu-btn").addEventListener("click", () => show(menu));
+export function closeDialog() {
+    dialog().hidden = true;
+    setPicture(null);
+}
 
-    prompt.addEventListener("click", () => onInteract());
+// ------------------------------------------------------------ Panels
 
-    // Look around: drag anywhere on the canvas (or right half on touch).
-    const sceneEl = $("#scene");
-    let lookId = null;
-    let lx = 0;
-    let ly = 0;
-    sceneEl.addEventListener("pointerdown", (e) => {
-        if (lookId !== null) return;
-        lookId = e.pointerId;
-        lx = e.clientX;
-        ly = e.clientY;
-        sceneEl.setPointerCapture(e.pointerId);
+/** Opens a framed info panel; resolves when closed. `setup(el, close)` can wire buttons. */
+export function panel(html, { title = "", wide = false, setup } = {}) {
+    return new Promise((resolve) => {
+        const wrap = $("#panel");
+        wrap.hidden = false;
+        wrap.innerHTML = `
+            <div class="frame${wide ? " wide" : ""}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+                <header><h2>${esc(title)}</h2><button class="close" aria-label="Close">✕</button></header>
+                <div class="content">${html}</div>
+            </div>`;
+        const close = () => {
+            pop(w);
+            wrap.hidden = true;
+            wrap.innerHTML = "";
+            document.getElementById("scene").focus();
+            resolve();
+        };
+        const w = {
+            kind: "panel",
+            onButton(btn) { if (btn === "B" || btn === "ESC") close(); },
+            onDir(d) {
+                const c = wrap.querySelector(".content");
+                if (d === "up") c.scrollBy(0, -60);
+                if (d === "down") c.scrollBy(0, 60);
+            },
+        };
+        wrap.querySelector(".close").addEventListener("click", close);
+        wrap.onclick = (e) => { if (e.target === wrap) close(); };
+        push(w);
+        setup?.(wrap.querySelector(".content"), close);
+        wrap.querySelector(".close").focus();
     });
-    sceneEl.addEventListener("pointermove", (e) => {
-        if (e.pointerId !== lookId) return;
-        onLook(e.clientX - lx, e.clientY - ly);
-        lx = e.clientX;
-        ly = e.clientY;
-    });
-    const endLook = (e) => { if (e.pointerId === lookId) lookId = null; };
-    sceneEl.addEventListener("pointerup", endLook);
-    sceneEl.addEventListener("pointercancel", endLook);
-    sceneEl.addEventListener("wheel", (e) => { e.preventDefault(); onZoom(Math.sign(e.deltaY) * 1.2); }, { passive: false });
+}
 
-    // Virtual joystick for phones.
-    const joy = $("#joystick");
-    const knob = $("#joystick-knob");
-    let joyId = null;
-    const RADIUS = 48;
-    function joyMove(e) {
-        const r = joy.getBoundingClientRect();
-        let dx = e.clientX - (r.left + r.width / 2);
-        let dy = e.clientY - (r.top + r.height / 2);
-        const d = Math.hypot(dx, dy);
-        if (d > RADIUS) { dx *= RADIUS / d; dy *= RADIUS / d; }
-        knob.style.transform = `translate(${dx}px, ${dy}px)`;
-        onJoystick(dx / RADIUS, -dy / RADIUS);
-    }
-    joy.addEventListener("pointerdown", (e) => {
-        joyId = e.pointerId;
-        joy.setPointerCapture(e.pointerId);
-        joyMove(e);
+// ------------------------------------------------------------ Arcade host
+
+export function playGame(game, moduleUrl) {
+    return new Promise(async (resolve) => {
+        const wrap = $("#arcade");
+        wrap.hidden = false;
+        wrap.innerHTML = `
+            <div class="arcade-top"><span>${esc(game.title)}</span><button class="close">EXIT ✕</button></div>
+            <div class="arcade-stage"><p class="loading">Loading…</p></div>`;
+        const stage = wrap.querySelector(".arcade-stage");
+        let cleanup = null;
+        const close = () => {
+            try { cleanup?.(); } catch (e) { console.warn(e); }
+            pop(w);
+            wrap.hidden = true;
+            wrap.innerHTML = "";
+            document.getElementById("scene").focus();
+            resolve();
+        };
+        // The game owns the keyboard while it runs; only Escape reaches us.
+        const w = { kind: "game", onButton(btn) { if (btn === "ESC") close(); } };
+        push(w);
+        wrap.querySelector(".close").addEventListener("click", close);
+        try {
+            const mod = await import(moduleUrl);
+            stage.innerHTML = "";
+            cleanup = mod.default.start(stage);
+        } catch (e) {
+            console.error(e);
+            stage.innerHTML = `<p class="loading">Sorry, this game failed to load.</p>`;
+        }
     });
-    joy.addEventListener("pointermove", (e) => { if (e.pointerId === joyId) joyMove(e); });
-    const endJoy = (e) => {
-        if (e.pointerId !== joyId) return;
-        joyId = null;
-        knob.style.transform = "";
-        onJoystick(0, 0);
+}
+
+// ------------------------------------------------------------ Banner & fade
+
+let bannerTimer;
+export function banner(text) {
+    const el = $("#banner");
+    el.textContent = text;
+    el.classList.remove("show");
+    void el.offsetWidth;
+    el.classList.add("show");
+    clearTimeout(bannerTimer);
+    bannerTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+export function fade(on) {
+    const el = $("#fade");
+    el.classList.toggle("on", on);
+    return new Promise((r) => setTimeout(r, 220));
+}
+
+// ------------------------------------------------------------ Touch controls
+
+export function initTouch(onPress, onDirHeld) {
+    const coarse = matchMedia("(pointer: coarse)").matches;
+    document.body.classList.toggle("touch", coarse);
+    const pad = $("#touch");
+    const held = new Map();
+    pad.addEventListener("pointerdown", (e) => {
+        const b = e.target.closest("[data-btn]");
+        if (!b) return;
+        e.preventDefault();
+        b.setPointerCapture(e.pointerId);
+        b.classList.add("down");
+        const v = b.dataset.btn;
+        if (["up", "down", "left", "right"].includes(v)) { held.set(e.pointerId, v); onDirHeld(v, true); }
+        else onPress(v);
+    });
+    const up = (e) => {
+        const b = e.target.closest("[data-btn]");
+        b?.classList.remove("down");
+        const v = held.get(e.pointerId);
+        if (v) { held.delete(e.pointerId); onDirHeld(v, false); }
     };
-    joy.addEventListener("pointerup", endJoy);
-    joy.addEventListener("pointercancel", endJoy);
-
-    return {
-        openCard,
-        isBusy: () => open !== null,
-        setPrompt(title) {
-            prompt.hidden = !title;
-            if (title) promptTitle.textContent = title;
-        },
-    };
+    pad.addEventListener("pointerup", up);
+    pad.addEventListener("pointercancel", up);
 }

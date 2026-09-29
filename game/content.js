@@ -1,147 +1,82 @@
-// Everything the island shows lives here, so updating the portfolio
-// means editing this file only. Image paths are relative to the site root.
+// Everything the game says or links to lives in this file.
+// To update the portfolio, edit the data here; the maps pick it up automatically.
 
-export const CONTACT_EMAIL = "jgl2j@yahoo.com";
-
-export const CARDS = {
-    about: {
-        tag: "Home",
-        title: "Hi, I'm Jose Lobo",
-        prompt: "About Jose",
-        image: "images/portphoto.jpg",
-        body: [
-            "I'm a self-taught software developer and a Business Intelligence Analyst II at Envision Healthcare, where I use SQL, Python and some R to turn claims data into insight for leadership.",
-            "I love building things that are engaging and fun, especially games. This island is my portfolio: walk around to find my games, apps and data projects.",
-        ],
-        stats: [
-            ["50+", "Projects"],
-            ["6+", "Languages & frameworks"],
-            ["5", "BI tools"],
-            ["8", "Certifications"],
-        ],
-        links: [{ label: "Download resume (PDF)", href: "Jose_Lobo_pdf_Resume.pdf", download: true }],
-    },
-
-    pirate: {
-        tag: "Arcade · Python / Pygame",
-        title: "Pirate Platformer",
-        image: "images/pirategif.gif",
-        body: ["A pirate platformer built in Python with Pygame."],
-        links: [{ label: "Download demo (.zip)", href: "Games/PiratePlatformer.zip", download: true }],
-    },
-    flappy: {
-        tag: "Arcade · Python / Pygame",
-        title: "Flappy Bird Clone",
-        image: "images/flappygif.gif",
-        body: ["My take on Flappy Bird, built in Python with Pygame."],
-        links: [{ label: "Download demo (.zip)", href: "Games/flappybird.zip", download: true }],
-    },
-    spaceduel: {
-        tag: "Arcade · Python / Pygame",
-        title: "Space Duel",
-        image: "images/spaceshipduelgif.gif",
-        body: ["A spaceship duel game built in Python with Pygame."],
-        links: [{ label: "Download demo (.zip)", href: "Games/SpaceshipDuel.zip", download: true }],
-    },
-    rpg: {
-        tag: "Arcade · Python / Pygame",
-        title: "Zelda-style RPG",
-        image: "images/RPGgif.gif",
-        body: ["An RPG inspired by classic Zelda, built in Python with Pygame. The demo is available on request."],
-        links: [{ label: "Ask for a demo", href: `mailto:${CONTACT_EMAIL}?subject=RPG%20demo` }],
-    },
-
-    studyclock: {
-        tag: "Workshop · CodePen",
-        title: "Study Clock",
-        image: "images/studyclock.png",
-        body: ["A study timer app, built on CodePen."],
-        links: [{ label: "Open on CodePen", href: "https://codepen.io/Jglobo/full/eYRgKQJ" }],
-    },
-    calculator: {
-        tag: "Workshop · CodePen",
-        title: "iPhone Calculator Clone",
-        image: "images/calculator.png",
-        body: ["A clone of the iPhone calculator, built on CodePen."],
-        links: [{ label: "Open on CodePen", href: "https://codepen.io/Jglobo/full/mdwrgNx" }],
-    },
-    heatmap: {
-        tag: "Workshop · CodePen",
-        title: "Education Heat Map",
-        image: "images/education.png",
-        body: ["A heat map of education data, built on CodePen."],
-        links: [{ label: "Open on CodePen", href: "https://codepen.io/Jglobo/pen/ExXwjLd" }],
-    },
-
-    covid: {
-        tag: "Gallery · Tableau",
-        title: "Covid-19 Dashboard",
-        image: "images/Covid.png",
-        body: ["A Covid-19 data dashboard built in Tableau."],
-        links: [
-            { label: "View dashboard", href: "https://public.tableau.com/app/profile/jose.lobo6721/viz/CovidDashboard_16450346456260/Dashboard1" },
-            { label: "All Tableau work", href: "https://public.tableau.com/app/profile/jose.lobo6721" },
-        ],
-    },
-    movies: {
-        tag: "Gallery · Python / Jupyter",
-        title: "Movie Data Correlation",
-        image: "images/moviedata.png",
-        body: ["A movie data correlation analysis in a Jupyter notebook."],
-        links: [{ label: "View notebook", href: "https://github.com/jglobo/movie_correlation_project/blob/main/jupytercode/Movie%20Correlation%20Project.ipynb" }],
-    },
-
-    skills: {
-        tag: "Training Yard",
-        title: "Skills & Certifications",
-        body: ["I'm also comfortable with HTML, CSS and several other frameworks."],
-        skills: [
-            ["JavaScript", 75],
-            ["Python", 75],
-            ["SQL", 75],
-            ["C++", 35],
-        ],
-        links: [{ label: "freeCodeCamp certifications", href: "https://www.freecodecamp.org/fccf4c3a239-3f0e-4397-8d3b-77345a7aadea" }],
-    },
-
-    contact: {
-        tag: "Mailbox",
-        title: "Get in touch",
-        body: [
-            "If you think I'd be a good fit for your team, or you'd like to work on a project together, send me a message.",
-            "I learned to program in the summer of 2021, completed medical education at UMHS in 2017 and graduated from MTSU in 2011.",
-        ],
-        links: [
-            { label: "Email me", href: `mailto:${CONTACT_EMAIL}` },
-            { label: "LinkedIn", href: "https://www.linkedin.com/in/jose-lobo-66591b140/" },
-            { label: "GitHub", href: "https://github.com/jglobo" },
-            { label: "CodePen", href: "https://codepen.io/Jglobo" },
-        ],
-    },
+// Shown on the sign by the house and on the mailbox. Placeholder for now.
+export const HOME_ADDRESS = {
+    street: "123 Maple Street",
+    city: "Hometown, TN 00000",
 };
 
-// Where each area sits on the island (x, z) and which cards it holds.
-// Areas face the island centre, so "left to right" is as seen on approach.
-export const AREAS = [
-    { id: "home", label: "Home", pos: [0, -24], cards: ["about"] },
-    { id: "arcade", label: "Arcade", pos: [25, -7], cards: ["pirate", "flappy", "spaceduel", "rpg"] },
-    { id: "workshop", label: "Workshop", pos: [16, 21], cards: ["studyclock", "calculator", "heatmap"] },
-    { id: "gallery", label: "Data Gallery", pos: [-16, 21], cards: ["covid", "movies"] },
-    { id: "yard", label: "Training Yard", pos: [-25, -7], cards: ["skills"] },
-    { id: "mailbox", label: "Contact", pos: [-7, -10], cards: ["contact"] },
+export const PLAYER_NAME = "JOSE";
+
+// The mailbox form posts here through FormSubmit (the same service the old site used).
+export const CONTACT_EMAIL = "jgl2j@yahoo.com";
+export const CONTACT_ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
+
+export const LINKS = {
+    github: "https://github.com/jglobo",
+    linkedin: "https://www.linkedin.com/in/jose-lobo-66591b140/",
+    codepen: "https://codepen.io/Jglobo",
+    tableau: "https://public.tableau.com/app/profile/jose.lobo6721",
+    freecodecamp: "https://www.freecodecamp.org/fccf4c3a239-3f0e-4397-8d3b-77345a7aadea",
+    resumePdf: "Jose_Lobo_pdf_Resume.pdf",
+};
+
+export const RESUME = {
+    summary:
+        "Self-taught software developer and Business Intelligence Analyst II at Envision Healthcare. I use SQL, Python and some R to turn claims data into insight for leadership, and I build games and apps in my spare time.",
+    experience: [
+        { role: "Business Intelligence Analyst II", org: "Envision Healthcare", when: "Current" },
+        { role: "Data Analyst", org: "HCA Healthcare", when: "From April 2022", detail: "Power BI and Tableau dashboards, Teradata SQL, clinical data products, training and QA." },
+        { role: "Process Technician IV", org: "DCIDS", when: "July 2019 to June 2021", detail: "Tissue bank processing in a sterile surgical setting, reporting and data entry." },
+    ],
+    skills: [
+        ["Languages", "Python, SQL, JavaScript (D3.js), C++, HTML, CSS"],
+        ["BI tools", "Power BI, Tableau, QlikSense, QlikView, Jupyter"],
+        ["Databases", "Teradata, SQL Server, MySQL, SQLite, MongoDB"],
+        ["Also", "DAX and LOD functions, Git and GitHub, JIRA, fluent in Spanish and English"],
+    ],
+    education: [
+        "University of Medicine and Health Sciences, St. Kitts: coursework and clerkships",
+        "Middle Tennessee State University: BS in Biology (Physiology), minor in Chemistry, Cum Laude",
+    ],
+};
+
+// Trophies on the shelf at home. Add new ones to the top as they happen.
+export const ACHIEVEMENTS = [
+    { when: "Oct 2021", title: "Machine Learning with Python", from: "freeCodeCamp" },
+    { when: "Oct 2021", title: "Data Analysis with Python", from: "freeCodeCamp" },
+    { when: "Oct 2021", title: "Scientific Computing with Python", from: "freeCodeCamp" },
+    { when: "Sep 2021", title: "Front End Development Libraries", from: "freeCodeCamp" },
+    { when: "Sep 2021", title: "Data Visualization", from: "freeCodeCamp" },
+    { when: "Sep 2021", title: "Back End Development and APIs", from: "freeCodeCamp" },
+    { when: "Aug 2021", title: "JavaScript Algorithms and Data Structures", from: "freeCodeCamp" },
+    { when: "Jul 2021", title: "Responsive Web Design", from: "freeCodeCamp" },
+    { when: "2015", title: "BLS and ACLS certified", from: "American Heart Association" },
+    { when: "2011", title: "BS in Biology, Cum Laude", from: "Middle Tennessee State University" },
 ];
 
-// Screen images for the 3D props; the cards show the animated GIFs instead,
-// loaded only when opened, so the island itself stays light.
-export const PROP_IMAGES = {
-    pirate: "images/pirate.png",
-    flappy: "images/flappy.png",
-    spaceduel: "images/spaceduel.png",
-    rpg: null,
-    studyclock: "images/studyclock.png",
-    calculator: "images/calculator.png",
-    heatmap: "images/education.png",
-    covid: "images/Covid.png",
-    movies: "images/moviedata.png",
-    about: "images/portphoto2.jpg",
-};
+// Arcade cabinets. `module` games are playable in the browser.
+export const GAMES = [
+    { id: "pirate", title: "Pirate Platformer", module: "../arcade/pirate/game.js", image: "images/pirategif.gif", about: "A pirate platformer with an overworld map and several levels. Originally Python and Pygame.", download: "Games/PiratePlatformer.zip" },
+    { id: "flappy", title: "Flappy Bird Clone", module: "../arcade/flappy/game.js", image: "images/flappygif.gif", about: "My take on Flappy Bird. Originally Python and Pygame.", download: "Games/flappybird.zip" },
+    { id: "spaceduel", title: "Space Duel", module: "../arcade/spaceduel/game.js", image: "images/spaceshipduelgif.gif", about: "A two-ship laser duel. Play a friend on one keyboard or the computer. Originally Python and Pygame.", download: "Games/SpaceshipDuel.zip" },
+    { id: "pong", title: "Pong", module: "../arcade/pong/game.js", image: null, about: "The classic. First to 7 wins. Originally Python and Pygame.", download: "Games/pong.zip" },
+    { id: "rpg", title: "Zelda-style RPG", module: null, image: "images/RPGgif.gif", about: "A top-down action RPG inspired by classic Zelda. Not playable here yet; ask me for a demo.", download: null },
+];
+
+// Science lab: data science and analytics projects.
+export const LAB_PROJECTS = [
+    { id: "covid", title: "Covid-19 Dashboard", tool: "Tableau", image: "images/Covid.png", url: "https://public.tableau.com/app/profile/jose.lobo6721/viz/CovidDashboard_16450346456260/Dashboard1" },
+    { id: "movies", title: "Movie Data Correlation", tool: "Python, Jupyter", image: "images/moviedata.png", url: "https://github.com/jglobo/movie_correlation_project/blob/main/jupytercode/Movie%20Correlation%20Project.ipynb" },
+    { id: "heatmap", title: "Education Heat Map", tool: "D3.js", image: "images/education.png", url: "https://codepen.io/Jglobo/pen/ExXwjLd" },
+    { id: "tableau", title: "All my Tableau work", tool: "Tableau Public", image: null, url: "https://public.tableau.com/app/profile/jose.lobo6721" },
+];
+
+// Tech tower: apps.
+export const TOWER_APPS = [
+    { id: "studyclock", title: "Study Clock", tool: "JavaScript", image: "images/studyclock.png", url: "https://codepen.io/Jglobo/full/eYRgKQJ" },
+    { id: "calculator", title: "iPhone Calculator Clone", tool: "JavaScript", image: "images/calculator.png", url: "https://codepen.io/Jglobo/full/mdwrgNx" },
+    { id: "codepen", title: "More on CodePen", tool: "CodePen", image: null, url: "https://codepen.io/Jglobo" },
+    { id: "github", title: "My GitHub", tool: "GitHub", image: null, url: "https://github.com/jglobo" },
+];

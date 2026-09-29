@@ -3,74 +3,54 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <title>Jose Lobo · Portfolio Island</title>
-        <meta name="description" content="Jose Lobo's portfolio as a small 3D game: walk around an island to find his games, apps and data projects." />
+        <title>Jose Lobo · Portfolio Town</title>
+        <meta name="description" content="Jose Lobo's portfolio as a top-down pixel-art adventure: visit his house, then drive downtown to play his games and open his projects." />
+        <link rel="preload" href="./game/fonts/PressStart2P.woff2" as="font" type="font/woff2" crossorigin />
+        <link rel="icon" href="./images/logo.png" />
         <link rel="stylesheet" href="./game/style.css" />
-        <script type="importmap">
-            { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js" } }
-        </script>
     </head>
     <body>
-        <canvas id="scene" tabindex="0" aria-label="3D portfolio island"></canvas>
+        <canvas id="scene" tabindex="0" aria-label="Jose Lobo's portfolio town"></canvas>
 
-        <header class="hud-top">
-            <div class="brand">Jose Lobo<span>Portfolio Island</span></div>
-            <nav>
-                <button id="menu-btn" class="btn small">Projects</button>
-                <a class="btn small ghost" href="./classic/">Classic site</a>
-            </nav>
-        </header>
+        <div id="fade" aria-hidden="true"></div>
+        <div id="banner" aria-live="polite"></div>
 
-        <p class="hint desktop-only">WASD / arrows to move · Shift to run · Space to jump · drag to look · E to interact · M for projects</p>
+        <nav class="hud">
+            <a class="chip" href="./classic/">Classic site</a>
+        </nav>
 
-        <button id="prompt" class="prompt" hidden>
-            <kbd class="desktop-only">E</kbd><span class="touch-only">Tap</span>
-            <strong id="prompt-title"></strong>
-        </button>
+        <figure id="picture" hidden><img alt="" /></figure>
+        <div id="dialog" hidden><p class="text"></p><span class="more" hidden>▼</span></div>
+        <ul id="choices" hidden></ul>
+        <div id="panel" hidden></div>
+        <div id="arcade" hidden></div>
 
-        <div id="joystick" class="touch-only" aria-hidden="true"><div id="joystick-knob"></div></div>
+        <div id="touch" aria-hidden="true">
+            <div class="dpad">
+                <button data-btn="up" class="up">▲</button>
+                <button data-btn="left" class="left">◀</button>
+                <button data-btn="right" class="right">▶</button>
+                <button data-btn="down" class="down">▼</button>
+            </div>
+            <button data-btn="START" class="start">START</button>
+            <div class="ab">
+                <button data-btn="B" class="b">B</button>
+                <button data-btn="A" class="a">A</button>
+            </div>
+        </div>
 
-        <section id="intro" class="overlay" role="dialog" aria-modal="true" aria-labelledby="intro-title">
-            <div class="panel intro">
-                <p class="card-tag">Welcome to</p>
-                <h1 id="intro-title">Jose Lobo's Portfolio Island</h1>
-                <p>I'm a self-taught developer and BI analyst who loves making games. Explore the island to find my projects.</p>
-                <ul class="controls desktop-only">
-                    <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> move</li>
-                    <li><kbd>Shift</kbd> run · <kbd>Space</kbd> jump</li>
-                    <li>Drag to look · scroll to zoom</li>
-                    <li><kbd>E</kbd> interact · <kbd>M</kbd> projects list</li>
-                </ul>
-                <ul class="controls touch-only">
-                    <li>Left stick to move</li>
-                    <li>Drag the screen to look</li>
-                    <li>Tap the button that appears to view a project</li>
-                </ul>
-                <div class="card-links">
-                    <button id="start" class="btn primary" autofocus>Start exploring</button>
-                    <a class="btn" href="./classic/">Skip to the classic site</a>
-                </div>
+        <section id="title">
+            <div class="title-card">
+                <p class="eyebrow">Jose Lobo presents</p>
+                <h1>PORTFOLIO<br /><span>TOWN</span></h1>
+                <p class="blurb">Explore my hometown. My résumé and trophies are at home, and downtown you'll find an arcade of my games, a science lab of data projects and a glass tower of apps.</p>
+                <button id="start" class="btn primary" disabled>▶ PRESS START</button>
+                <a class="btn" href="./classic/">Skip to the classic site</a>
+                <p class="keys">Arrows/WASD move · Z talk · X run · M menu</p>
             </div>
         </section>
 
-        <section id="card" class="overlay" role="dialog" aria-modal="true" aria-labelledby="card-title" hidden>
-            <div class="panel">
-                <button class="close" data-close data-autofocus aria-label="Close">&times;</button>
-                <div id="card-body"></div>
-            </div>
-        </section>
-
-        <section id="menu" class="overlay" role="dialog" aria-modal="true" aria-labelledby="menu-title" hidden>
-            <div class="panel">
-                <button class="close" data-close data-autofocus aria-label="Close">&times;</button>
-                <h2 id="menu-title">All projects</h2>
-                <ul id="menu-list"></ul>
-            </div>
-        </section>
-
-        <noscript>
-            <p class="noscript">This portfolio is a small 3D game and needs JavaScript. <a href="./classic/">Open the classic site</a>.</p>
-        </noscript>
+        <noscript><p class="noscript">This portfolio is a small game and needs JavaScript. <a href="./classic/">Open the classic site</a>.</p></noscript>
 
         <script type="module" src="./game/main.js"></script>
     </body>
