@@ -1,0 +1,6 @@
+[
+  { "question": "Who are you?", "answer": "I'm Jose. I analyze healthcare data for a living and build games and apps for fun.", "category": "about" },
+  { "question": "Why Data Science?", "answer": "Biology and medicine taught me to love evidence. Data science lets me use that curiosity every day.", "category": "career" },
+  { "question": "Why Game Development?", "answer": "Games are where I learned to program. They make every system you build visible and fun to test.", "category": "career" },
+  { "question": "What are you currently learning?", "answer": "Three.js, React Three Fiber and machine learning. This portfolio is the practice project.", "category": "learning" }
+]

@@ -1,0 +1,11 @@
+{
+  "id": "zelda-rpg",
+  "title": "Zelda-style RPG",
+  "category": "games",
+  "shortDescription": "A top-down action RPG inspired by classic Zelda.",
+  "description": "A top-down action RPG with combat, enemies, magic and an upgrade menu, built with Python and Pygame. Ask me for a demo.",
+  "technologies": ["Python", "Pygame"],
+  "screenshots": ["images/RPGgif.gif"],
+  "featured": false,
+  "world": "games"
+}

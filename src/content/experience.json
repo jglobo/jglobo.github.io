@@ -1,0 +1,26 @@
+[
+  {
+    "id": "envision",
+    "role": "Business Intelligence Analyst II",
+    "org": "Envision Healthcare",
+    "when": "Current",
+    "summary": "Analyze claims data with SQL, Python and R so leadership can make informed day-to-day decisions.",
+    "technologies": ["SQL", "Python", "R"]
+  },
+  {
+    "id": "hca",
+    "role": "Data Analyst",
+    "org": "HCA Healthcare",
+    "when": "From April 2022",
+    "summary": "Built Power BI and Tableau dashboards on Teradata SQL for clinical data products, and handled training and QA.",
+    "technologies": ["Power BI", "Tableau", "Teradata SQL"]
+  },
+  {
+    "id": "dcids",
+    "role": "Process Technician IV",
+    "org": "DCIDS",
+    "when": "July 2019 to June 2021",
+    "summary": "Tissue bank processing in a sterile surgical setting, plus reporting and data entry.",
+    "technologies": []
+  }
+]

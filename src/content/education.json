@@ -1,0 +1,5 @@
+[
+  { "id": "fcc", "institution": "freeCodeCamp", "credential": "Eight certifications incl. Machine Learning with Python, Data Analysis with Python, JavaScript Algorithms", "when": "2021" },
+  { "id": "umhs", "institution": "University of Medicine and Health Sciences, St. Kitts", "credential": "Medical education: coursework and clerkships", "when": "Completed 2017" },
+  { "id": "mtsu", "institution": "Middle Tennessee State University", "credential": "BS in Biology (Physiology), minor in Chemistry, Cum Laude", "when": "2011" }
+]

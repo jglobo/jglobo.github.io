@@ -1,0 +1,12 @@
+{
+  "id": "space-duel",
+  "title": "Space Duel",
+  "category": "games",
+  "shortDescription": "A two-ship laser duel on one keyboard.",
+  "description": "Two spaceships, one keyboard, first to lose all health loses. Built with Python and Pygame.",
+  "technologies": ["Python", "Pygame"],
+  "screenshots": ["images/spaceshipduelgif.gif"],
+  "downloadUrl": "Games/SpaceshipDuel.zip",
+  "featured": false,
+  "world": "games"
+}

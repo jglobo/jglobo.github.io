@@ -1,0 +1,12 @@
+{
+  "id": "portal-hub",
+  "title": "This Portfolio: Portal Hub",
+  "category": "software",
+  "shortDescription": "The game you are playing: a React Three Fiber portfolio of portal-linked worlds.",
+  "description": "A portfolio built as a small browser game. A first-person hub with a dimensional launcher opens portals to themed worlds, each lazily loaded as its own code chunk, with a data-driven content system and a Quick Portfolio for visitors in a hurry.",
+  "technologies": ["TypeScript", "React", "Three.js", "React Three Fiber", "GLSL", "Zustand", "Vite"],
+  "screenshots": [],
+  "githubUrl": "https://github.com/jglobo/jglobo.github.io",
+  "featured": true,
+  "world": "software"
+}

@@ -1,0 +1,8 @@
+[
+  { "group": "Languages", "items": ["Python", "SQL", "JavaScript", "TypeScript", "C++", "R", "HTML", "CSS"] },
+  { "group": "Data & BI", "items": ["Power BI", "Tableau", "QlikSense", "QlikView", "Jupyter", "pandas", "scikit-learn", "D3.js", "DAX", "LOD expressions"] },
+  { "group": "Databases", "items": ["Teradata", "SQL Server", "MySQL", "SQLite", "MongoDB"] },
+  { "group": "Games & Graphics", "items": ["Pygame", "Three.js", "React Three Fiber", "WebGL", "Canvas"] },
+  { "group": "Tools", "items": ["Git", "GitHub", "JIRA", "Vite", "React"] },
+  { "group": "Languages spoken", "items": ["English", "Spanish"] }
+]

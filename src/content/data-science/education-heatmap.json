@@ -1,0 +1,22 @@
+{
+  "id": "education-heatmap",
+  "title": "Education Heat Map",
+  "category": "data-science",
+  "shortDescription": "A D3.js choropleth of US educational attainment by county.",
+  "description": "A freeCodeCamp data visualization project: a D3.js choropleth that joins TopoJSON county shapes with education data, with a color legend and hover tooltips.",
+  "technologies": ["JavaScript", "D3.js", "TopoJSON"],
+  "screenshots": ["images/education.png"],
+  "demoUrl": "https://codepen.io/Jglobo/pen/ExXwjLd",
+  "featured": false,
+  "world": "data-science",
+  "location": "satellite",
+  "technicalDetails": {
+    "approach": "Loaded two datasets asynchronously, joined by FIPS code, mapped values to a threshold color scale and rendered SVG paths with tooltips."
+  },
+  "visualization": {
+    "kind": "line",
+    "label": "Share of adults with a bachelor's degree (illustrative shape)",
+    "illustrative": true,
+    "values": [0.2, 0.28, 0.25, 0.36, 0.42, 0.39, 0.5, 0.58, 0.55, 0.66]
+  }
+}
