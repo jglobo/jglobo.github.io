@@ -15,7 +15,8 @@ const REMAPPABLE: { action: Action; label: string }[] = [
   { action: 'left', label: 'Move left' },
   { action: 'right', label: 'Move right' },
   { action: 'sprint', label: 'Sprint / boost' },
-  { action: 'interact', label: 'Interact' },
+  { action: 'interact', label: 'Interact / visit project' },
+  { action: 'inspect', label: 'Project details' },
   { action: 'returnPortal', label: 'Return portal (hold)' },
 ];
 
@@ -89,7 +90,7 @@ export function SettingsPanel() {
             <div className="setting-row" key={r.action}>
               <span>{r.label}</span>
               <button className="btn small" onClick={() => setBinding(r.action)} aria-label={`Rebind ${r.label}`}>
-                {binding === r.action ? 'Press a key…' : s.bindings[r.action].map(keyName).join(' / ')}
+                {binding === r.action ? 'Press a key…' : (s.bindings[r.action] ?? DEFAULT_BINDINGS[r.action]).map(keyName).join(' / ')}
               </button>
             </div>
           ))}

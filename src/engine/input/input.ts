@@ -1,6 +1,9 @@
 // Central input manager. Tracks held keys and mouse-look deltas; controllers read it
 // every frame. One set of window listeners for the whole app, installed once.
-import { useSettings, type Action } from '../../stores/settingsStore';
+import { DEFAULT_BINDINGS, useSettings, type Action } from '../../stores/settingsStore';
+
+// Saved settings from an older version may not list every action yet.
+const codes = (action: Action) => useSettings.getState().bindings[action] ?? DEFAULT_BINDINGS[action];
 
 const held = new Set<string>();
 // code -> time of the key press, consumed by wasPressed().
@@ -69,13 +72,13 @@ export function onFire(handler: ClickHandler) {
 }
 
 export function isDown(action: Action) {
-  return useSettings.getState().bindings[action].some((code) => held.has(code));
+  return codes(action).some((code) => held.has(code));
 }
 
 /** True once per key press; presses older than 1 s are ignored. */
 export function wasPressed(action: Action) {
   const now = performance.now();
-  for (const code of useSettings.getState().bindings[action]) {
+  for (const code of codes(action)) {
     const t = pressed.get(code);
     if (t !== undefined) {
       pressed.delete(code);

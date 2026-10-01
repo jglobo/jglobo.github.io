@@ -24,8 +24,12 @@ export function ExtLink({ href, event, children, className = 'btn', download }: 
 export function ProjectLinks({ project }: { project: PortfolioProject }) {
   return (
     <div className="project-links">
-      {project.demoUrl && <ExtLink href={project.demoUrl} event="demo_clicked" className="btn primary">Live demo ↗</ExtLink>}
-      {project.githubUrl && <ExtLink href={project.githubUrl} event="github_clicked">Source code ↗</ExtLink>}
+      {project.demoUrl && <ExtLink href={project.demoUrl} event="demo_clicked" className="btn primary">Open live project ↗</ExtLink>}
+      {project.githubUrl && (
+        <ExtLink href={project.githubUrl} event="github_clicked" className={project.demoUrl ? 'btn' : 'btn primary'}>
+          {project.demoUrl ? 'Source code ↗' : 'Open project on GitHub ↗'}
+        </ExtLink>
+      )}
       {project.videoUrl && <ExtLink href={project.videoUrl} event="demo_clicked">Video ↗</ExtLink>}
       {project.downloadUrl && <ExtLink href={project.downloadUrl} event="game_played" download>Download build</ExtLink>}
     </div>

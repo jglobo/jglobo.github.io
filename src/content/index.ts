@@ -29,6 +29,9 @@ export const projects: PortfolioProject[] = Object.values(modules).sort(
 );
 
 export const projectsByCategory = (category: ProjectCategory) => projects.filter((p) => p.category === category);
+/** The page where a project is published (live demo first, then source). */
+export const publishedUrl = (p: PortfolioProject) => p.demoUrl ?? p.githubUrl ?? p.videoUrl;
+
 export const projectById = (id: string) => projects.find((p) => p.id === id);
 export const projectAtLocation = (world: string, location: string) =>
   projects.find((p) => p.world === world && p.location === location);

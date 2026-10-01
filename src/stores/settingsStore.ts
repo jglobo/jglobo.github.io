@@ -20,7 +20,7 @@ export const QUALITY_PROFILES: Record<Quality, QualityProfile> = {
 };
 
 export type Action =
-  | 'forward' | 'back' | 'left' | 'right' | 'sprint' | 'interact' | 'returnPortal'
+  | 'forward' | 'back' | 'left' | 'right' | 'sprint' | 'interact' | 'inspect' | 'returnPortal'
   | 'dest1' | 'dest2' | 'dest3' | 'dest4';
 
 export const DEFAULT_BINDINGS: Record<Action, string[]> = {
@@ -30,6 +30,7 @@ export const DEFAULT_BINDINGS: Record<Action, string[]> = {
   right: ['KeyD', 'ArrowRight'],
   sprint: ['ShiftLeft', 'ShiftRight'],
   interact: ['KeyE', 'Enter'],
+  inspect: ['KeyI'],
   returnPortal: ['KeyR'],
   dest1: ['Digit1'],
   dest2: ['Digit2'],

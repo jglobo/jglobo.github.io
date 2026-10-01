@@ -4,11 +4,13 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { AdditiveBlending, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
-import { projectAtLocation, type PortfolioProject } from '../../content';
-import { useInteractable } from '../../engine/interaction/interactions';
+import { projectAtLocation, publishedUrl, type PortfolioProject } from '../../content';
+import { activeInteractable, useInteractable } from '../../engine/interaction/interactions';
+import { wasPressed } from '../../engine/input/input';
+import { openProjectSite } from '../../portfolio/openProjectSite';
 import { releaseLock } from '../../engine/input/pointerLock';
 import { track } from '../../analytics/track';
-import { useGame } from '../../stores/gameStore';
+import { gameplayBlocked, useGame } from '../../stores/gameStore';
 import { useSettings } from '../../stores/settingsStore';
 import { makeTextTexture } from '../../utils/textTexture';
 import { rockGeometry } from './SpaceEnvironment';
@@ -55,19 +57,23 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
   const beacon = useRef<Mesh>(null);
   const discovered = useGame((s) => s.discoveredProjects.includes(project.id));
 
+  const hasSite = !!publishedUrl(project);
+  const showDetails = () => {
+    track('project_viewed', { project: project.id, from: 'data-science-world' });
+    releaseLock();
+    useGame.getState().openProject(project.id);
+  };
+  // E goes straight to the published project; I opens the in-world details panel.
   const item = useMemo(
     () => ({
       id: `site-${site.id}`,
-      label: `[E] Access research data: ${project.title}`,
+      label: hasSite ? `[E] Visit ${project.title} ↗   [I] Details` : `[E] Access research data: ${project.title}`,
       position: () => pos,
       radius: site.reach,
-      onInteract: () => {
-        track('project_viewed', { project: project.id, from: 'data-science-world' });
-        releaseLock();
-        useGame.getState().openProject(project.id);
-      },
+      onInteract: () => (hasSite ? openProjectSite(project, 'data-science-world') : showDetails()),
     }),
-    [site, project, pos],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [site, project, pos, hasSite],
   );
   useInteractable(item);
 
@@ -85,6 +91,7 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
   useEffect(() => () => label.dispose(), [label]);
 
   useFrame((state, dt) => {
+    if (activeInteractable() === item.id && !gameplayBlocked() && wasPressed('inspect')) showDetails();
     const r = runtime.current;
     const d = r ? Math.hypot(r.x - site.x, r.y - site.y) : 99;
     const target = d < site.reach + 3 ? 1 : 0;
@@ -95,8 +102,22 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
     }
   });
 
+  const clickable = hasSite
+    ? {
+        onClick: (e: { stopPropagation: () => void }) => {
+          e.stopPropagation();
+          openProjectSite(project, 'data-science-click');
+        },
+        onPointerOver: () => (document.body.style.cursor = 'pointer'),
+        onPointerOut: () => (document.body.style.cursor = ''),
+      }
+    : {};
+  useEffect(() => () => void (document.body.style.cursor = ''), []);
+
   return (
     <group position={pos}>
+      {/* Clicking the site itself also opens the published project */}
+      <group {...clickable}>
       {site.id === 'asteroid-lab' && <AsteroidLab />}
       {site.id === 'station' && <OrbitalStation />}
       {site.id === 'satellite' && <ResearchSatellite />}
@@ -105,6 +126,7 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
         <planeGeometry args={[6, 1]} />
         <meshBasicMaterial map={label} transparent depthWrite={false} toneMapped={false} />
       </mesh>
+      </group>
       {/* Beacon ring: dims once the project has been viewed */}
       <mesh ref={beacon} rotation-x={0} position-z={-0.5}>
         <ringGeometry args={[site.reach - 0.15, site.reach, 96]} />

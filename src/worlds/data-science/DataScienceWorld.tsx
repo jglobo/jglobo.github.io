@@ -2,6 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 import { Portal } from '../../engine/portals/Portal';
+import { publishedUrl } from '../../content';
 import { HUB_THEME } from '../../engine/portals/destinations';
 import { isDown } from '../../engine/input/input';
 import { updateInteractions } from '../../engine/interaction/interactions';
@@ -178,6 +179,8 @@ function SpaceAstronautController({
           distance: Math.hypot(site.x - s.x, site.y - s.y),
           onScreen,
           discovered: discovered.includes(project.id),
+          url: publishedUrl(project),
+          projectTitle: project.title,
         };
       });
       useHud.setState({ markers, returnCharge: hold.current / RETURN_HOLD });

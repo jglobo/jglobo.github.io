@@ -2,6 +2,7 @@
 // the interaction prompt (bottom-centre), world-specific extras.
 import { useEffect, useRef, useState } from 'react';
 import { useGame } from '../stores/gameStore';
+import { track } from '../analytics/track';
 import { hubAim } from '../worlds/hub/hubAim';
 import { useHud } from '../stores/hudStore';
 import { DESTINATIONS, worldTheme } from '../engine/portals/destinations';
@@ -116,6 +117,11 @@ function SpaceHud() {
             {m.symbol} {m.label}
             {!m.onScreen && <span className="nav-dist"> · {Math.round(m.distance)} m</span>}
           </span>
+          {m.url && (
+            <a className="nav-link" href={m.url} target="_blank" rel="noopener noreferrer" onClick={() => track('demo_clicked', { project: m.id, from: 'nav-marker' })}>
+              Open {m.projectTitle} ↗
+            </a>
+          )}
         </div>
       ))}
       {charge > 0.02 && (
