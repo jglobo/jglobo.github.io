@@ -50,11 +50,12 @@ export interface Profile {
   tagline: string;
   summary: string;
   email: string;
+  location?: string;
   links: Record<'github' | 'linkedin' | 'codepen' | 'tableau' | 'freecodecamp' | 'resumePdf' | 'resumeDocx' | 'classicSite', string>;
 }
 
 export interface SkillGroup { group: string; items: string[] }
-export interface Experience { id: string; role: string; org: string; when: string; summary: string; technologies: string[] }
+export interface Experience { id: string; role: string; org: string; when: string; summary: string; highlights?: string[]; technologies: string[] }
 export interface Education { id: string; institution: string; credential: string; when: string }
 export interface Achievement { when: string; title: string; from: string }
 export interface DialogueLine { question: string; answer: string; category: string }

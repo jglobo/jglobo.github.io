@@ -1,11 +1,52 @@
 [
-  { "when": "Oct 2021", "title": "Machine Learning with Python", "from": "freeCodeCamp" },
-  { "when": "Oct 2021", "title": "Data Analysis with Python", "from": "freeCodeCamp" },
-  { "when": "Oct 2021", "title": "Scientific Computing with Python", "from": "freeCodeCamp" },
-  { "when": "Sep 2021", "title": "Front End Development Libraries", "from": "freeCodeCamp" },
-  { "when": "Sep 2021", "title": "Data Visualization", "from": "freeCodeCamp" },
-  { "when": "Sep 2021", "title": "Back End Development and APIs", "from": "freeCodeCamp" },
-  { "when": "Aug 2021", "title": "JavaScript Algorithms and Data Structures", "from": "freeCodeCamp" },
-  { "when": "Jul 2021", "title": "Responsive Web Design", "from": "freeCodeCamp" },
-  { "when": "2015", "title": "BLS and ACLS certified", "from": "American Heart Association" }
+  {
+    "when": "Oct 2021",
+    "title": "Machine Learning with Python",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Oct 2021",
+    "title": "Data Analysis with Python",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Oct 2021",
+    "title": "Scientific Computing with Python",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Sep 2021",
+    "title": "Front End Development Libraries",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Sep 2021",
+    "title": "Data Visualization",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Sep 2021",
+    "title": "Back End Development and APIs",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Aug 2021",
+    "title": "JavaScript Algorithms and Data Structures",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Jul 2021",
+    "title": "Responsive Web Design",
+    "from": "freeCodeCamp"
+  },
+  {
+    "when": "Jan 2015",
+    "title": "Basic Life Support (BLS) and Advanced Cardiovascular Life Support (ACLS)",
+    "from": "American Heart Association"
+  },
+  {
+    "when": "May 2014",
+    "title": "HIPAA, Infection Control and Bloodborne Pathogens training (OSHA)",
+    "from": "Clinical training"
+  }
 ]

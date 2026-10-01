@@ -1,26 +1,101 @@
 [
   {
-    "id": "envision",
-    "role": "Business Intelligence Analyst II",
+    "id": "envision-ds",
+    "role": "Data Scientist",
     "org": "Envision Healthcare",
-    "when": "Current",
-    "summary": "Analyze claims data with SQL, Python and R so leadership can make informed day-to-day decisions.",
-    "technologies": ["SQL", "Python", "R"]
+    "when": "November 2025 – Present",
+    "summary": "Lead end-to-end data science workflows and machine learning models that support revenue recovery.",
+    "highlights": [
+      "Lead data ingestion, cleaning, EDA, feature engineering, model development and evaluation.",
+      "Develop and evaluate classification and regression models in Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
+      "Design and maintain executive-ready dashboards and recurring reports in Tableau, Power BI, R Shiny and Streamlit.",
+      "Translate complex findings into actionable insights for technical and non-technical stakeholders.",
+      "Document data definitions, modeling assumptions and methods for reproducibility and audit readiness."
+    ],
+    "technologies": [
+      "Python",
+      "R",
+      "SQL",
+      "scikit-learn",
+      "XGBoost",
+      "Tableau",
+      "Power BI",
+      "R Shiny",
+      "Streamlit"
+    ]
+  },
+  {
+    "id": "envision-ba",
+    "role": "Business Analyst II (data scientist responsibilities)",
+    "org": "Envision Healthcare",
+    "when": "December 2022 – November 2025",
+    "summary": "Performed core data science work before the formal Data Scientist title existed, including models that predict and reverse denied medical claims.",
+    "highlights": [
+      "Collected, cleaned and prepared large structured and semi-structured healthcare data from Amazon Redshift (AWS) and Oracle.",
+      "Performed EDA to find trends, anomalies and data quality issues affecting financial and clinical outcomes.",
+      "Designed, trained and evaluated machine learning models to predict and reverse denied medical claims.",
+      "Built ETL pipelines, analytical datasets and feature tables for modeling and downstream analytics.",
+      "Delivered dashboards and analytical applications in Tableau, Power BI, R Shiny and Streamlit; served as a Tableau Server administrator.",
+      "Optimized complex SQL queries and refactored data sources to improve performance and reliability."
+    ],
+    "technologies": [
+      "SQL",
+      "Python",
+      "R",
+      "Amazon Redshift",
+      "Oracle",
+      "Tableau",
+      "Power BI",
+      "R Shiny",
+      "Streamlit",
+      "JIRA"
+    ]
   },
   {
     "id": "hca",
     "role": "Data Analyst",
     "org": "HCA Healthcare",
-    "when": "From April 2022",
-    "summary": "Built Power BI and Tableau dashboards on Teradata SQL for clinical data products, and handled training and QA.",
-    "technologies": ["Power BI", "Tableau", "Teradata SQL"]
+    "when": "April 2022 – December 2022",
+    "summary": "Built clinical and operational dashboards and supported clinicians using enterprise analytics products.",
+    "highlights": [
+      "Developed clinical and operational dashboards in Power BI and Tableau on Teradata.",
+      "Served as subject matter expert and first-line support for clinicians using enterprise analytics products.",
+      "Resolved production data issues through debugging, root-cause analysis and QA testing.",
+      "Trained facility-level users and led tool demonstrations."
+    ],
+    "technologies": [
+      "Power BI",
+      "Tableau",
+      "Teradata",
+      "SQL",
+      "SharePoint"
+    ]
   },
   {
     "id": "dcids",
     "role": "Process Technician IV",
     "org": "DCIDS",
-    "when": "July 2019 to June 2021",
-    "summary": "Tissue bank processing in a sterile surgical setting, plus reporting and data entry.",
+    "when": "July 2019 – June 2021",
+    "summary": "Processed and packaged human tissue for a tissue bank in a sterile surgical setting, with reporting, data entry and training of new hires.",
+    "highlights": [],
+    "technologies": []
+  },
+  {
+    "id": "amazon",
+    "role": "Picker, Packer, Inventory Control Quality Assurance",
+    "org": "Amazon",
+    "when": "October 2017 – September 2018",
+    "summary": "Order fulfillment with inventory and quality control.",
+    "highlights": [],
+    "technologies": []
+  },
+  {
+    "id": "kroger",
+    "role": "Produce Overnight Associate",
+    "org": "Kroger",
+    "when": "October 2017 – February 2018",
+    "summary": "Stocked and rotated produce, managed markdowns and waste, and helped customers.",
+    "highlights": [],
     "technologies": []
   }
 ]

@@ -138,6 +138,13 @@ function ExperienceSection() {
           <li key={e.id}>
             <strong>{e.role}</strong> · {e.org} <span className="muted">({e.when})</span>
             <p>{e.summary}</p>
+            {e.highlights && e.highlights.length > 0 && (
+              <ul className="highlights">
+                {e.highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+            )}
           </li>
         ))}
       </ol>

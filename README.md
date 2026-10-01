@@ -55,3 +55,14 @@ every push to `main`. In the repository settings, **Pages → Source** must be s
 
 Architecture and roadmap: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Asset
 sources and licences: [`docs/ASSETS.md`](docs/ASSETS.md).
+
+## Updating the resume
+
+The downloadable resume files are generated from `scripts/resume/resume.json`. Edit that file, then run:
+
+```sh
+npm install --no-save playwright-core && node scripts/resume/build-pdf.mjs   # Jose_Lobo_pdf_Resume.pdf
+python3 -m pip install python-docx && python3 scripts/resume/build-docx.py   # JoseLoboPortfolioResume.docx
+```
+
+The site's own text (Quick Portfolio, SEO block) comes from `src/content/*.json`, so update both when your experience changes.
