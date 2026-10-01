@@ -1,0 +1,105 @@
+{
+  "name": "Jose Lobo",
+  "contact": ["Mount Juliet, TN", "jgl2j@yahoo.com", "jglobo.github.io"],
+  "summary": "Data Scientist with 3+ years of experience delivering end-to-end analytics and machine learning solutions in healthcare. Proven ability to perform data preparation, exploratory data analysis (EDA), predictive modeling, and dashboard development to support business and clinical decision-making. Strong communicator with deep expertise in SQL, Python, R, and cloud data platforms, plus a background in biology and four years of medical school.",
+  "experience": [
+    {
+      "org": "Envision Healthcare", "role": "Data Scientist", "dates": "November 2025 – Present",
+      "bullets": [
+        "Lead end-to-end data science workflows including data ingestion, cleaning, EDA, feature engineering, model development, and evaluation.",
+        "Develop and evaluate machine learning models (classification and regression) using Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
+        "Design and maintain executive-ready dashboards and recurring reports using Tableau, Power BI, R Shiny, and Streamlit.",
+        "Translate complex analytical findings into actionable insights for technical and non-technical stakeholders.",
+        "Document data definitions, modeling assumptions, and methodologies to ensure reproducibility and audit readiness."
+      ]
+    },
+    {
+      "org": "Envision Healthcare", "role": "Business Analyst II (Data Scientist Responsibilities)", "dates": "December 2022 – November 2025",
+      "note": "Although the formal Data Scientist title did not exist until November 2025, this role performed core data science functions aligned to that title.",
+      "bullets": [
+        "Collected, cleaned, and prepared large-scale structured and semi-structured healthcare data from Amazon Redshift (AWS) and Oracle.",
+        "Performed exploratory data analysis to identify trends, anomalies, and data quality issues impacting financial and clinical outcomes.",
+        "Designed, trained, and evaluated machine learning models to predict and reverse denied medical claims.",
+        "Built ETL pipelines, analytical datasets, and feature tables to support modeling and downstream analytics.",
+        "Delivered dashboards and analytical applications using Tableau, Power BI, R Shiny, and Streamlit, including reporting for leadership and litigation.",
+        "Optimized complex SQL queries and refactored data sources to improve performance and reliability and reduce duplication.",
+        "Served as a Tableau Server administrator, helping users with access and troubleshooting of reports and dashboards.",
+        "Validated and troubleshot data discrepancies with SQL in DBeaver; managed work and reported status to leadership through JIRA."
+      ]
+    },
+    {
+      "org": "HCA Healthcare", "role": "Data Analyst", "dates": "April 2022 – December 2022",
+      "bullets": [
+        "Developed clinical and operational dashboards using Power BI and Tableau alongside Excel, Teradata, and SharePoint.",
+        "Served as subject matter expert and first-line support for clinicians using enterprise analytics products.",
+        "Resolved production data issues through debugging, root-cause analysis, and quality assurance testing.",
+        "Validated data discrepancies with SQL in Teradata and helped implement and manage report security.",
+        "Created product documentation, including requirements and data guides.",
+        "Trained and supported facility-level users by planning and leading tool demonstrations, interpreting dashboard data, and assisting in opportunity discovery."
+      ]
+    },
+    {
+      "org": "DCIDS", "role": "Process Technician IV", "dates": "July 2019 – June 2021",
+      "bullets": [
+        "Processed and packaged human tissue for a tissue bank in a sterile surgical setting, handling surgical instruments, power and laboratory equipment, chemical reagents, and biohazardous waste.",
+        "Prepared processing and packaging records, including graft and anatomical identification, measurements, and data entry.",
+        "Performed clean room sterilization, testing, and environmental monitoring; assisted with inventory, research manipulations, and training new hires.",
+        "Collaborated across departments to ensure allograft orders were met on time."
+      ]
+    },
+    {
+      "org": "Amazon", "role": "Picker, Packer, Inventory Control Quality Assurance", "dates": "October 2017 – September 2018",
+      "bullets": ["Retrieved and quality-checked items for order fulfillment and supported inventory and quality control as part of a nightly-goal team."]
+    },
+    {
+      "org": "Kroger", "role": "Produce Overnight Associate", "dates": "October 2017 – February 2018",
+      "bullets": ["Reconciled piece counts against invoices, rotated and stocked produce, managed markdowns and waste, and served customers. Trained in Powered Industrial Trucks (PIT)."]
+    }
+  ],
+  "skills": [
+    ["Programming & Analytics", "Python, SQL, R, JavaScript (incl. D3.js), C++, HTML, CSS, JSON; Machine Learning, Predictive Modeling, EDA, Feature Engineering"],
+    ["Data Platforms", "Amazon Redshift (AWS), Oracle, Teradata, Microsoft SQL Server, MySQL, SQLite, MongoDB, DBeaver"],
+    ["BI & Visualization", "Tableau (incl. Server administration), Power BI (DAX), R Shiny, Streamlit, Qlik Sense, QlikView, Excel"],
+    ["Data Engineering", "ETL pipelines, analytical datasets and feature tables"],
+    ["Tools", "GitHub, JIRA, Agile, Jupyter, VS Code, RStudio, SharePoint, ServiceNow (Service Central), command line, Windows, macOS"],
+    ["Other", "EMR software, laboratory skills (QC, light microscopy, gel electrophoresis, equipment calibration), fluent in Spanish and English"]
+  ],
+  "education": [
+    ["Bachelor of Science in Biology (Cum Laude)", "Middle Tennessee State University, Murfreesboro, TN · Concentration: Physiology · Minor: Chemistry"],
+    ["Medical school coursework and clerkships (four years)", "University of Medicine and Health Sciences, St. Kitts"],
+    ["Computer science (self-directed)", "freeCodeCamp.org and Udemy"]
+  ],
+  "certifications": [
+    "Machine Learning with Python (freeCodeCamp), October 2021",
+    "Data Analysis with Python (freeCodeCamp), October 2021",
+    "Scientific Computing with Python (freeCodeCamp), October 2021",
+    "Data Visualization (freeCodeCamp), September 2021",
+    "Front End Development Libraries (freeCodeCamp), September 2021",
+    "Back End Development and APIs (freeCodeCamp), September 2021",
+    "JavaScript Algorithms and Data Structures (freeCodeCamp), August 2021",
+    "Responsive Web Design (freeCodeCamp), July 2021",
+    "Basic Life Support (BLS) and Advanced Cardiovascular Life Support (ACLS), January 2015",
+    "HIPAA, Infection Control, Needlestick Prevention and Bloodborne Pathogens training (OSHA standards), May 2014"
+  ],
+  "clinical": [
+    "2016–2017: Medical student clerkships in psychiatry, general surgery, emergency medicine, pain management and orthopedic surgery, DeKalb Medical, Atlanta, GA.",
+    "2015: Medical student clerkship in internal medicine, Weiss Memorial Hospital, Chicago, IL.",
+    "2014–2015: Medical student clerkships in OB/GYN, pediatrics, family medicine, emergency medicine and orthopedic surgery, DeKalb Medical Center, Atlanta, GA.",
+    "2013–2014: Medical student clerkship in cardiology, St. Mary's Regional Medical Center, Lewiston, ME.",
+    "Summer 2010: Premed Internship Program, Jackson-Madison County General Hospital, Jackson, TN (254 hours shadowing surgeons, physicians and nurses)."
+  ],
+  "volunteer": [
+    "2015: Stop Hunger Now, gathering food for people around the world.",
+    "2010: Food server, Regional Inter-Faith Association (RIFA) Soup Kitchen, Jackson, TN.",
+    "2008–2009: Push America, building and fundraising for accessible environments for people with special needs (Murfreesboro, TN and Hattiesburg, MS).",
+    "Fall 2008: Rivalry Run 5K fundraiser for people with special needs."
+  ],
+  "presentations": [
+    "January 2017: Pathology, clinical diagnosis and treatment of Parsonage-Turner syndrome.",
+    "March 2016: Embryology, anatomy and pathology of the thyroid gland.",
+    "January 2016: Differential diagnoses for myositis in HIV patients; diagnosing infectious endocarditis with the Duke criteria.",
+    "December 2015: Sick sinus syndrome in a clinical setting; infectious causes of adrenal insufficiency.",
+    "October 2015: Platelet-rich plasma and its treatment applications for sports injury.",
+    "May 2015: Differential diagnoses of hypertension during pregnancy; pathology of leiomyomas."
+  ]
+}

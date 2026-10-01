@@ -1,0 +1,85 @@
+[
+  {
+    "group": "Programming & Analytics",
+    "items": [
+      "Python",
+      "SQL",
+      "R",
+      "Machine Learning",
+      "Predictive Modeling",
+      "EDA",
+      "Feature Engineering",
+      "scikit-learn",
+      "XGBoost",
+      "pandas"
+    ]
+  },
+  {
+    "group": "Data Platforms",
+    "items": [
+      "Amazon Redshift (AWS)",
+      "Oracle",
+      "Teradata",
+      "SQL Server",
+      "MySQL",
+      "SQLite",
+      "MongoDB"
+    ]
+  },
+  {
+    "group": "BI & Visualization",
+    "items": [
+      "Tableau",
+      "Power BI",
+      "R Shiny",
+      "Streamlit",
+      "QlikSense",
+      "QlikView",
+      "D3.js",
+      "DAX",
+      "LOD expressions"
+    ]
+  },
+  {
+    "group": "Data Engineering",
+    "items": [
+      "ETL pipelines",
+      "Feature tables",
+      "SQL query optimization"
+    ]
+  },
+  {
+    "group": "Games & Web",
+    "items": [
+      "Pygame",
+      "Three.js",
+      "React Three Fiber",
+      "WebGL",
+      "JavaScript",
+      "TypeScript",
+      "React",
+      "HTML",
+      "CSS",
+      "C++"
+    ]
+  },
+  {
+    "group": "Tools & Practices",
+    "items": [
+      "GitHub",
+      "JIRA",
+      "Agile",
+      "Jupyter",
+      "VS Code",
+      "RStudio",
+      "dBeaver"
+    ]
+  },
+  {
+    "group": "Languages spoken",
+    "items": [
+      "English",
+      "Spanish"
+    ]
+  }
+]

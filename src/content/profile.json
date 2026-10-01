@@ -1,0 +1,18 @@
+{
+  "name": "Jose Lobo",
+  "title": "Data Scientist · Game Developer · Software Engineer",
+  "tagline": "Healthcare data scientist who also builds games and apps.",
+  "summary": "Data Scientist at Envision Healthcare with 3+ years of experience delivering end-to-end analytics and machine learning in healthcare: data preparation, EDA, predictive modeling and dashboards that support business and clinical decisions. I work in SQL, Python, R and cloud data platforms, and I build games and apps in my spare time. Before tech I trained in biology and medicine, which is where my love of data started.",
+  "email": "jgl2j@yahoo.com",
+  "links": {
+    "github": "https://github.com/jglobo",
+    "linkedin": "https://www.linkedin.com/in/jose-lobo-66591b140/",
+    "codepen": "https://codepen.io/Jglobo",
+    "tableau": "https://public.tableau.com/app/profile/jose.lobo6721",
+    "freecodecamp": "https://www.freecodecamp.org/fccf4c3a239-3f0e-4397-8d3b-77345a7aadea",
+    "resumePdf": "Jose_Lobo_pdf_Resume.pdf",
+    "resumeDocx": "JoseLoboPortfolioResume.docx",
+    "classicSite": "classic/"
+  },
+  "location": "Mount Juliet, TN"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "calculator",
+  "title": "iPhone Calculator Clone",
+  "category": "software",
+  "shortDescription": "A pixel-faithful calculator in the browser.",
+  "description": "A calculator modeled on the iOS layout, with chained operations and formula logic, built in JavaScript.",
+  "technologies": ["JavaScript", "HTML", "CSS"],
+  "screenshots": ["images/calculator.png"],
+  "demoUrl": "https://codepen.io/Jglobo/full/mdwrgNx",
+  "featured": false,
+  "world": "software"
+}

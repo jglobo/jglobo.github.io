@@ -1,0 +1,18 @@
+{
+  "id": "pirate-platformer",
+  "title": "Pirate Platformer",
+  "category": "games",
+  "shortDescription": "A pirate platformer with an overworld map and several levels.",
+  "description": "A side-scrolling platformer built with Python and Pygame: an overworld level select, tile-based levels, enemies, coins and health.",
+  "technologies": [
+    "Python",
+    "Pygame"
+  ],
+  "screenshots": [
+    "images/pirategif.gif"
+  ],
+  "downloadUrl": "Games/PiratePlatformer.zip",
+  "featured": true,
+  "world": "games",
+  "boxColor": "#0f6f8f"
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "mtsu",
+    "institution": "Middle Tennessee State University",
+    "credential": "Bachelor of Science in Biology (Cum Laude), concentration in Physiology, minor in Chemistry",
+    "when": "2011"
+  },
+  {
+    "id": "umhs",
+    "institution": "University of Medicine and Health Sciences, St. Kitts",
+    "credential": "Four years of medical school: coursework and clinical clerkships in cardiology, internal medicine, surgery, emergency medicine, pediatrics, OB/GYN, psychiatry and more",
+    "when": "2013 – 2017"
+  },
+  {
+    "id": "selftaught",
+    "institution": "freeCodeCamp and Udemy",
+    "credential": "Self-taught computer science and programming; eight freeCodeCamp certifications",
+    "when": "2021 – present"
+  }
+]

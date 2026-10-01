@@ -1,6 +1,80 @@
-# Portfolio Website created using HTML, CSS, and Javascript
- - Included the projects I wanted to showcase but will update them as I improve them.
- - Will upload better projects once I finish them.
- - My games are created with python using pygame, except for Snake(I used html with JavaScripted into the html file)
- - My contact form uses a thirdparty site to directly connect to my personal email.
- - I used personal images, and some googled images to enhance my site. I plan on learning on how to make my own pixel and texture art so that one day I can improve my website to a more desired theme of my choice.
+# Jose Lobo · Playable Portfolio
+
+A portfolio that plays like a small indie game. Visitors start in a first-person
+**Portal Hub**, pick a destination on a dimensional launcher, fire a portal at a wall
+and walk into a world built around one part of my work. A **Quick Portfolio** (button
+or `Tab`) shows everything instantly for visitors in a hurry, and the page ships
+indexable HTML for search engines and no-JavaScript visitors.
+
+| World | Status |
+| --- | --- |
+| Portal Hub (first person) | Playable |
+| Data Science: Orbital Data World (2.5D jetpack astronaut) | Playable |
+| Game Development: Retro Bedroom (first person, playable TV games) | Playable |
+| Software Engineering: Vehicle Playground (elevated third person, sports car + bicycle) | Playable |
+| My Journey: HD-2D Life Town | Planned |
+
+The original 2021 site lives on at [`/classic/`](classic/).
+
+## Run it locally
+
+Requires Node 20+.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173 (debug overlay on; press ` to toggle)
+npm test           # unit tests (jetpack physics)
+npm run build      # production build into dist/
+npm run preview    # serve the production build at http://localhost:4173
+```
+
+Add `?debug` to a production URL to see FPS, draw calls, memory and world teleports.
+
+## Controls
+
+* **Hub**: WASD move, mouse look (click to capture, or drag), `1`–`4` or scroll to pick a
+  destination, click to fire a portal, `E` interact, `Shift` sprint.
+* **Orbital world**: WASD / arrows fly the jetpack, `Shift` boost, `E` inspect a site,
+  hold `R` to summon a return portal.
+* **Retro Bedroom**: WASD walk, mouse look, look at a game box on the shelf and press `E`
+  (or click) to pick it up, drag or WASD to turn it, `E` to play it on the TV, `I` for the
+  manual, `Q`/`Esc` to put it down. At the TV: arrows/`W`/`S` and `Enter` in the menu,
+  `Esc` to back out or stand up. Walk back into the portal to return to the Hub.
+* **Vehicle Playground**: WASD walk, `E` next to the car or bike to ride. Car: `W`/`S`
+  gas and brake, `A`/`D` steer, `Space` handbrake to drift. Bicycle: `Space` hops, `A`/`D`
+  in the air spins. Drive onto a billboard's glowing pad and press `E` to inspect the
+  app; `E` elsewhere gets you off. Hold `R` for a return portal.
+* Everywhere: `Tab` Quick Portfolio, `Esc` menu (worlds map, settings, resume, contact).
+
+## Adding a project
+
+1. Add a JSON file to `src/content/data-science/`, `games/` or `software/`
+   (see `src/content/schema.ts` for the fields).
+2. Put screenshots in `images/` and list them in `screenshots`.
+3. To place it in a world, set `location` to a site id (Data Science sites:
+   `asteroid-lab`, `station`, `satellite`). Without a location it still appears in the
+   menus and Quick Portfolio.
+4. Games appear on the bedroom shelf automatically (featured first). `boxColor` sets the
+   box colour, and `crtGame` (`space-duel` or `flappy`) links a built-in TV version.
+5. Software projects get a billboard automatically (featured first, up to four spots in
+   `src/worlds/software/layout.ts`).
+
+## Deploying
+
+`.github/workflows/deploy.yml` builds the site and deploys `dist/` to GitHub Pages on
+every push to `main`. In the repository settings, **Pages → Source** must be set to
+**GitHub Actions**.
+
+Architecture and roadmap: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Asset
+sources and licences: [`docs/ASSETS.md`](docs/ASSETS.md).
+
+## Updating the resume
+
+The downloadable resume files are generated from `scripts/resume/resume.json`. Edit that file, then run:
+
+```sh
+npm install --no-save playwright-core && node scripts/resume/build-pdf.mjs   # Jose_Lobo_pdf_Resume.pdf
+python3 -m pip install python-docx && python3 scripts/resume/build-docx.py   # JoseLoboPortfolioResume.docx
+```
+
+The site's own text (Quick Portfolio, SEO block) comes from `src/content/*.json`, so update both when your experience changes.
