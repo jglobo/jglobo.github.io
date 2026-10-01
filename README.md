@@ -11,7 +11,7 @@ indexable HTML for search engines and no-JavaScript visitors.
 | Portal Hub (first person) | Playable |
 | Data Science: Orbital Data World (2.5D jetpack astronaut) | Playable |
 | Game Development: Retro Bedroom (first person, playable TV games) | Playable |
-| Software Engineering: Vehicle Playground | Planned |
+| Software Engineering: Vehicle Playground (elevated third person, sports car + bicycle) | Playable |
 | My Journey: HD-2D Life Town | Planned |
 
 The original 2021 site lives on at [`/classic/`](classic/).
@@ -40,6 +40,10 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
   (or click) to pick it up, drag or WASD to turn it, `E` to play it on the TV, `I` for the
   manual, `Q`/`Esc` to put it down. At the TV: arrows/`W`/`S` and `Enter` in the menu,
   `Esc` to back out or stand up. Walk back into the portal to return to the Hub.
+* **Vehicle Playground**: WASD walk, `E` next to the car or bike to ride. Car: `W`/`S`
+  gas and brake, `A`/`D` steer, `Space` handbrake to drift. Bicycle: `Space` hops, `A`/`D`
+  in the air spins. Drive onto a billboard's glowing pad and press `E` to inspect the
+  app; `E` elsewhere gets you off. Hold `R` for a return portal.
 * Everywhere: `Tab` Quick Portfolio, `Esc` menu (worlds map, settings, resume, contact).
 
 ## Adding a project
@@ -52,6 +56,8 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
    menus and Quick Portfolio.
 4. Games appear on the bedroom shelf automatically (featured first). `boxColor` sets the
    box colour, and `crtGame` (`space-duel` or `flappy`) links a built-in TV version.
+5. Software projects get a billboard automatically (featured first, up to four spots in
+   `src/worlds/software/layout.ts`).
 
 ## Deploying
 

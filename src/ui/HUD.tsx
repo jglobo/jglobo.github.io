@@ -42,7 +42,7 @@ export function HUD() {
       {hint && transition === 'idle' && <div className="hud-hint">{hint}</div>}
       {prompt && overlay === 'none' && <div className="hud-prompt">{prompt}</div>}
       {world === 'hub' && <HubHud />}
-      {world === 'data-science' && <SpaceHud />}
+      {(world === 'data-science' || world === 'software') && <SpaceHud />}
       {world === 'games' && <RoomHud />}
       <ControlsLegend />
     </div>

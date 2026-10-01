@@ -197,8 +197,12 @@ binary assets to download for the Hub or the Space world.
   tested): thrust acceleration, soft speed cap, linear damping for inertia, boost with
   cooldown, bounds on a 2D plane, and soft sphere collision with asteroids.
 * **Bedroom**: kinematic again, with raycast pickup.
-* **Software world**: Rapier (lazy loaded with that world only) for vehicles and
-  terrain, created when the world mounts and destroyed when it unmounts.
+* **Software world**: a small arcade vehicle model in `vehicles/vehiclePhysics.ts`
+  (pure, unit tested): world-space velocity split into forward and sideways parts,
+  grip bleeds off the sideways part (handbrake lowers grip, so the car drifts), ramps
+  and hops use a vertical integrator. This replaced the planned Rapier dependency for
+  the MVP: it keeps the world chunk around 12 KB gzip and is easy to tune per
+  vehicle. Rapier stays an option if the off-road vehicles need real suspension.
 * **Journey**: kinematic tile/nav-mesh movement.
 
 ## 11. Content schema
@@ -234,7 +238,7 @@ without a location still appears in the menus and Quick Portfolio.
 | 1 Portal Hub MVP | First-person lab, launcher, selector, aim + fire + portal, interaction system, transition, Quick Portfolio, pause menu, resume terminal | In this PR |
 | 2 Data Science MVP | Space, Earth, astronaut, jetpack, 2.5D movement, nav arrows, asteroid lab, station, real project, inspector, return portal | In this PR |
 | 3 Game Room | Bedroom, pickup/inspect, CRT, console menu, Space Duel and Flappy rebuilt for the TV with original vector art (the old ports' sprites were not reused because their licences are unclear) | Done (draft PR #2) |
-| 4 Software world | Garage, compact test map, sports car + bicycle, billboard, Rapier | Later |
+| 4 Software world | Garage, compact test town, sports car (drift) + bicycle (hops, spin tricks), ramps, app billboards with animated previews, nav arrows, return portal. The other six vehicles wait under covers in the garage | Done (draft PR #2) |
 | 5 Journey world | HD-2D style, home, NPCs, dialogue, timeline town | Later |
 | 6–9 | Content, polish, optimization, cross-browser testing | Ongoing |
 

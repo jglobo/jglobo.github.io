@@ -7,7 +7,8 @@ import { useSettings } from '../../stores/settingsStore';
 type Bus = 'music' | 'sfx' | 'ambience';
 export type SfxName =
   | 'ui' | 'select' | 'fire' | 'portalOpen' | 'travel' | 'interact' | 'deny' | 'summon'
-  | 'pickup' | 'putdown' | 'insert' | 'boot' | 'blip' | 'zap' | 'boom' | 'flap' | 'point' | 'click';
+  | 'pickup' | 'putdown' | 'insert' | 'boot' | 'blip' | 'zap' | 'boom' | 'flap' | 'point' | 'click'
+  | 'door' | 'trick' | 'thud';
 
 class AudioManager {
   private ctx: AudioContext | null = null;
@@ -16,6 +17,7 @@ class AudioManager {
   private ambience: { stop: () => void } | null = null;
   private ambienceWorld: WorldId | null = null;
   private noise: AudioBuffer | null = null;
+  private engine: { o: OscillatorNode; o2: OscillatorNode; gain: GainNode; filter: BiquadFilterNode } | null = null;
   private thrust: { gain: GainNode; filter: BiquadFilterNode } | null = null;
 
   /** Call from a click/keypress handler. Safe to call repeatedly. */
@@ -125,6 +127,26 @@ class AudioManager {
         const d = drone(freq, 'triangle', g, 1200);
         lfo(d.g.gain, 0.08 + freq / 5000, g * 0.6);
       }
+    } else if (world === 'software') {
+      // Energetic exploration loop: a pulsing bass line and a bright arpeggio.
+      const bass = drone(55, 'sawtooth', 0, 420);
+      const lead = drone(440, 'square', 0, 2400);
+      const bassLine = [55, 55, 65.4, 73.4, 55, 55, 82.4, 73.4];
+      const arp = [440, 554.4, 659.3, 880, 659.3, 554.4, 493.9, 587.3];
+      let step = 0;
+      const beat = 0.22;
+      const tick = () => {
+        const t = ctx.currentTime;
+        bass.o.frequency.setValueAtTime(bassLine[step % 8], t);
+        bass.g.gain.setValueAtTime(0.11, t);
+        bass.g.gain.setTargetAtTime(0.03, t + 0.02, 0.08);
+        lead.o.frequency.setValueAtTime(arp[(step * 3) % 8] * (step % 16 < 8 ? 1 : 1.122), t);
+        lead.g.gain.setValueAtTime(0.022, t);
+        lead.g.gain.setTargetAtTime(0, t + 0.01, 0.06);
+        step++;
+      };
+      const id = setInterval(tick, beat * 1000);
+      nodes.push({ stop: () => clearInterval(id) } as unknown as AudioScheduledSourceNode);
     } else if (world === 'games') {
       // Bedroom at night: soft room tone and a slow, warm lo-fi chord loop.
       noiseBed(380, 0.035);
@@ -230,7 +252,41 @@ class AudioManager {
       case 'flap': return this.tone('triangle', 500, 900, 0.09, 0.1);
       case 'point': return this.tone('square', 1320, 1760, 0.12, 0.06);
       case 'click': return this.tone('square', 1800, 1200, 0.03, 0.05);
+      case 'door': return this.tone('triangle', 220, 160, 0.15, 0.2);
+      case 'trick':
+        [523.3, 659.3, 784, 1046.5].forEach((f, i) => setTimeout(() => this.tone('square', f, f, 0.1, 0.06), i * 70));
+        return;
+      case 'thud': return this.whoosh(0.2, 400, 90, 0.25);
     }
+  }
+
+  /** Engine note for vehicles: level 0..1 (0 = silent), pitch rises with rpm 0..1. */
+  setEngine(level: number, rpm: number, kind: 'car' | 'bike' = 'car') {
+    if (!this.ctx) return;
+    if (!this.engine) {
+      const o = this.ctx.createOscillator();
+      o.type = 'sawtooth';
+      const o2 = this.ctx.createOscillator();
+      o2.type = 'square';
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 500;
+      const gain = this.ctx.createGain();
+      gain.gain.value = 0;
+      o.connect(filter);
+      o2.connect(filter);
+      filter.connect(gain).connect(this.buses.sfx);
+      o.start();
+      o2.start();
+      this.engine = { o, o2, gain, filter };
+    }
+    const t = this.ctx.currentTime;
+    const e = this.engine;
+    const base = kind === 'car' ? 48 + rpm * 110 : 0;
+    e.o.frequency.setTargetAtTime(Math.max(20, base), t, 0.05);
+    e.o2.frequency.setTargetAtTime(Math.max(20, base * 0.5), t, 0.05);
+    e.filter.frequency.setTargetAtTime(300 + rpm * 1400, t, 0.08);
+    e.gain.gain.setTargetAtTime(kind === 'car' ? level * 0.06 : 0, t, 0.1);
   }
 
   /** Continuous jetpack hiss driven every frame (0..1). */

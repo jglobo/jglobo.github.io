@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, Group, Quaternion, ShaderMaterial, Vector3 } from 'three';
 import { useSettings, qualityProfile } from '../../stores/settingsStore';
 
-export type PortalPreview = 'space' | 'hub' | 'room' | 'generic';
+export type PortalPreview = 'space' | 'hub' | 'room' | 'road' | 'generic';
 
-const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2, room: 3 };
+const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2, room: 3, road: 4 };
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -101,6 +101,29 @@ const fragment = /* glsl */ `
     return col;
   }
 
+  // Daytime town: sky, hills, a road running to the horizon and a cyan billboard.
+  vec3 roadPreview(vec2 q) {
+    q += uParallax;
+    float horizon = -0.05;
+    vec3 col = mix(vec3(0.75, 0.88, 1.0), vec3(0.35, 0.6, 0.95), smoothstep(horizon, 1.0, q.y));
+    float hills = horizon + 0.08 * sin(q.x * 3.0 + 1.0) + 0.05 * sin(q.x * 7.0);
+    col = mix(col, vec3(0.25, 0.5, 0.25), step(q.y, hills));
+    if (q.y < horizon) {
+      float depth = (horizon - q.y);
+      col = vec3(0.3, 0.55, 0.25) + 0.04 * noise(q * 40.0);
+      float hw = depth * 0.9 + 0.01;
+      float road = step(abs(q.x - 0.1), hw);
+      col = mix(col, vec3(0.22, 0.23, 0.26), road);
+      float dash = step(0.5, fract(1.0 / (depth + 0.02) * 0.6 - uTime * 1.5));
+      col = mix(col, vec3(1.0, 0.85, 0.2), road * dash * step(abs(q.x - 0.1), depth * 0.04));
+    }
+    vec2 b = q - vec2(-0.5, 0.25);
+    float board = step(abs(b.x), 0.28) * step(abs(b.y), 0.15);
+    col = mix(col, mix(vec3(0.05, 0.6, 0.75), vec3(0.6, 1.0, 1.0), 0.5 + 0.5 * sin(uTime * 2.0 + b.x * 10.0)), board);
+    col = mix(col, vec3(0.3), step(abs(b.x), 0.012) * step(b.y, -0.15) * step(horizon - 0.02, q.y));
+    return col;
+  }
+
   void main() {
     vec2 p = (vUv * 2.0 - 1.0) * 1.25;
     float r = length(p);
@@ -112,7 +135,7 @@ const fragment = /* glsl */ `
     vec2 swirl = p * mat2(cos(r * 2.0 - uTime), -sin(r * 2.0 - uTime), sin(r * 2.0 - uTime), cos(r * 2.0 - uTime));
     vec2 q = mix(p, swirl, smoothstep(edge * 0.55, edge, rr) * 0.6) * 0.9;
 
-    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : uPreview == 3 ? roomPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
+    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : uPreview == 3 ? roomPreview(q) : uPreview == 4 ? roadPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
 
     float rimBand = smoothstep(edge - 0.28, edge, rr);
     float flow = fbm(vec2(ang * 3.0 - uTime * 3.0, rr * 7.0 - uTime));
