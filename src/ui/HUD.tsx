@@ -43,6 +43,7 @@ export function HUD() {
       {prompt && overlay === 'none' && <div className="hud-prompt">{prompt}</div>}
       {world === 'hub' && <HubHud />}
       {world === 'data-science' && <SpaceHud />}
+      {world === 'games' && <RoomHud />}
       <ControlsLegend />
     </div>
   );
@@ -95,6 +96,11 @@ function HubHud() {
       </div>
     </>
   );
+}
+
+function RoomHud() {
+  const free = useGame((s) => s.freeCursor);
+  return free ? null : <div className="room-dot" aria-hidden="true" />;
 }
 
 function SpaceHud() {

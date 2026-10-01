@@ -153,7 +153,7 @@ function ActivePortal() {
         normal={portal.normal}
         color={d.color}
         color2={d.color2}
-        preview={d.id === 'data-science' ? 'space' : 'generic'}
+        preview={d.id === 'data-science' ? 'space' : d.id === 'games' ? 'room' : 'generic'}
         open={portal.state === 'projectile' ? 0 : 1}
       />
     </>

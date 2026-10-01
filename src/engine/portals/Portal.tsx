@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, Group, Quaternion, ShaderMaterial, Vector3 } from 'three';
 import { useSettings, qualityProfile } from '../../stores/settingsStore';
 
-export type PortalPreview = 'space' | 'hub' | 'generic';
+export type PortalPreview = 'space' | 'hub' | 'room' | 'generic';
 
-const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2 };
+const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2, room: 3 };
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -74,6 +74,33 @@ const fragment = /* glsl */ `
     return col;
   }
 
+  // A dark bedroom at night: wallpaper stripes, a moonlit window and a glowing CRT.
+  vec3 roomPreview(vec2 q) {
+    q += uParallax * 0.8;
+    vec3 col = mix(vec3(0.05, 0.02, 0.07), vec3(0.12, 0.05, 0.14), smoothstep(-1.0, 0.6, q.y));
+    col += vec3(0.04, 0.01, 0.05) * step(0.5, fract(q.x * 6.0));
+    // floor
+    col = mix(col, vec3(0.06, 0.03, 0.04) + 0.02 * noise(q * 30.0), smoothstep(-0.42, -0.45, q.y));
+    // window with moon and stars
+    vec2 w = q - vec2(-0.55, 0.38);
+    float win = step(abs(w.x), 0.26) * step(abs(w.y), 0.2);
+    vec3 night = vec3(0.04, 0.06, 0.18) + stars(q * 0.8, 30.0, 0.1) + vec3(0.9, 0.9, 0.75) * smoothstep(0.07, 0.06, length(w - vec2(0.1, 0.06)));
+    col = mix(col, night, win);
+    col = mix(col, vec3(0.2, 0.1, 0.12), win * (step(abs(w.x), 0.012) + step(abs(w.y), 0.012)));
+    // CRT on a stand
+    vec2 t = q - vec2(0.3, -0.18);
+    float body = step(abs(t.x), 0.3) * step(abs(t.y), 0.24);
+    col = mix(col, vec3(0.13, 0.12, 0.13), body);
+    vec2 s = t / vec2(0.24, 0.18);
+    float screen = smoothstep(1.0, 0.96, max(abs(s.x), abs(s.y)));
+    vec3 glow = mix(vec3(0.2, 0.35, 1.0), vec3(1.0, 0.25, 0.7), 0.5 + 0.5 * sin(uTime * 0.7 + t.x * 4.0));
+    glow *= 0.55 + 0.25 * sin(t.y * 220.0);
+    col = mix(col, glow, screen);
+    col += vec3(1.0, 0.3, 0.75) * exp(-length(t) * 3.0) * 0.25;
+    col = mix(col, vec3(0.08, 0.07, 0.08), step(abs(t.x), 0.36) * step(-0.6, t.y) * step(t.y, -0.26));
+    return col;
+  }
+
   void main() {
     vec2 p = (vUv * 2.0 - 1.0) * 1.25;
     float r = length(p);
@@ -85,7 +112,7 @@ const fragment = /* glsl */ `
     vec2 swirl = p * mat2(cos(r * 2.0 - uTime), -sin(r * 2.0 - uTime), sin(r * 2.0 - uTime), cos(r * 2.0 - uTime));
     vec2 q = mix(p, swirl, smoothstep(edge * 0.55, edge, rr) * 0.6) * 0.9;
 
-    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
+    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : uPreview == 3 ? roomPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
 
     float rimBand = smoothstep(edge - 0.28, edge, rr);
     float flow = fbm(vec2(ang * 3.0 - uTime * 3.0, rr * 7.0 - uTime));

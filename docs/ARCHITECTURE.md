@@ -233,7 +233,7 @@ without a location still appears in the menus and Quick Portfolio.
 | 0 Architecture | This document, Vite/TS/R3F app, stores, content, input, audio, settings, world registry, debug overlay, CI deploy | In this PR |
 | 1 Portal Hub MVP | First-person lab, launcher, selector, aim + fire + portal, interaction system, transition, Quick Portfolio, pause menu, resume terminal | In this PR |
 | 2 Data Science MVP | Space, Earth, astronaut, jetpack, 2.5D movement, nav arrows, asteroid lab, station, real project, inspector, return portal | In this PR |
-| 3 Game Room | Bedroom, pickup/inspect, CRT, bring over the browser game ports | Next |
+| 3 Game Room | Bedroom, pickup/inspect, CRT, console menu, Space Duel and Flappy rebuilt for the TV with original vector art (the old ports' sprites were not reused because their licences are unclear) | Done (draft PR #2) |
 | 4 Software world | Garage, compact test map, sports car + bicycle, billboard, Rapier | Later |
 | 5 Journey world | HD-2D style, home, NPCs, dialogue, timeline town | Later |
 | 6–9 | Content, polish, optimization, cross-browser testing | Ongoing |
@@ -281,7 +281,7 @@ For the slice: none (procedural). Later, all original or CC0:
 * Hub: lab kit (panels, pipes, consoles), launcher model, portal sound set.
 * Space: astronaut GLB with idle/thrust clips, satellite, station, asteroid set,
   Earth albedo/night/cloud textures (NASA Blue Marble is public domain).
-* Game Room: bedroom furniture, CRT, fictional console, box art for Jose's games.
+* Game Room: bedroom furniture, CRT, fictional console, box art for Jose's games. All drawn procedurally in `src/worlds/games/textures.ts`; sounds are synthesized.
 * Software: eight vehicles, road/terrain kit, billboards.
 * Journey: pixel-art character sheets (Jose, spouse, toddler, dog), town buildings.
 * Audio: per-world ambience loops (currently synthesized), UI SFX.

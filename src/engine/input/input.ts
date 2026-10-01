@@ -103,6 +103,15 @@ export function consumeWheel() {
   return w;
 }
 
+let escapeHandler: (() => boolean) | null = null;
+
+/** A world can claim Esc (e.g. to put an object down) before it opens the pause menu. */
+export function setEscapeHandler(handler: (() => boolean) | null) {
+  escapeHandler = handler;
+}
+
+export const runEscapeHandler = () => !!escapeHandler?.();
+
 export function clearInput() {
   held.clear();
   pressed.clear();

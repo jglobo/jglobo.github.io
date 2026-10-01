@@ -3,7 +3,7 @@
 // self-hosted, cookieless counter later if wanted.
 export type AnalyticsEvent =
   | 'portfolio_entered' | 'quick_portfolio_opened' | 'world_entered' | 'project_viewed'
-  | 'game_played' | 'github_clicked' | 'demo_clicked' | 'resume_opened' | 'contact_clicked';
+  | 'game_played' | 'github_clicked' | 'demo_clicked' | 'resume_opened' | 'contact_clicked' | 'easter_egg';
 
 let sink: ((event: AnalyticsEvent, data?: Record<string, string>) => void) | null = null;
 

@@ -42,6 +42,10 @@ export interface PortfolioProject {
     results?: string[];
   };
   visualization?: ProjectVisualization;
+  /** Games world: id of the built-in TV version of this game, if there is one. */
+  crtGame?: 'space-duel' | 'flappy';
+  /** Games world: box art colours. */
+  boxColor?: string;
 }
 
 export interface Profile {

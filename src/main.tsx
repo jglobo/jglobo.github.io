@@ -1,7 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app/App';
-import { installInput, clearInput } from './engine/input/input';
+import { installInput, clearInput, runEscapeHandler } from './engine/input/input';
 import { installPointerLockWatcher, lastAutoPause, releaseLock } from './engine/input/pointerLock';
 import { useGame } from './stores/gameStore';
 import { audio } from './engine/audio/AudioManager';
@@ -26,7 +26,7 @@ window.addEventListener('keydown', (e) => {
     if (game.overlay !== 'none') {
       game.closeOverlay();
       clearInput();
-    } else if (game.started) {
+    } else if (game.started && !runEscapeHandler()) {
       releaseLock();
       game.openOverlay('pause');
     }

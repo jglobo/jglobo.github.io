@@ -10,7 +10,7 @@ indexable HTML for search engines and no-JavaScript visitors.
 | --- | --- |
 | Portal Hub (first person) | Playable |
 | Data Science: Orbital Data World (2.5D jetpack astronaut) | Playable |
-| Game Development: Retro Bedroom | Planned |
+| Game Development: Retro Bedroom (first person, playable TV games) | Playable |
 | Software Engineering: Vehicle Playground | Planned |
 | My Journey: HD-2D Life Town | Planned |
 
@@ -36,6 +36,10 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
   destination, click to fire a portal, `E` interact, `Shift` sprint.
 * **Orbital world**: WASD / arrows fly the jetpack, `Shift` boost, `E` inspect a site,
   hold `R` to summon a return portal.
+* **Retro Bedroom**: WASD walk, mouse look, look at a game box on the shelf and press `E`
+  (or click) to pick it up, drag or WASD to turn it, `E` to play it on the TV, `I` for the
+  manual, `Q`/`Esc` to put it down. At the TV: arrows/`W`/`S` and `Enter` in the menu,
+  `Esc` to back out or stand up. Walk back into the portal to return to the Hub.
 * Everywhere: `Tab` Quick Portfolio, `Esc` menu (worlds map, settings, resume, contact).
 
 ## Adding a project
@@ -46,6 +50,8 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
 3. To place it in a world, set `location` to a site id (Data Science sites:
    `asteroid-lab`, `station`, `satellite`). Without a location it still appears in the
    menus and Quick Portfolio.
+4. Games appear on the bedroom shelf automatically (featured first). `boxColor` sets the
+   box colour, and `crtGame` (`space-duel` or `flappy`) links a built-in TV version.
 
 ## Deploying
 

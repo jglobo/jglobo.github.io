@@ -46,6 +46,8 @@ export interface GameState extends Progress {
   /** One-off message shown at the top of the Quick Portfolio. */
   notice: string | null;
   pointerLocked: boolean;
+  /** A first-person world wants the mouse free (inspecting an object, using a screen). */
+  freeCursor: boolean;
   debug: boolean;
   // Reserved for later worlds.
   vehicleSelection: string | null;
@@ -85,6 +87,7 @@ export const useGame = create<GameState>((set) => ({
   hint: null,
   notice: null,
   pointerLocked: false,
+  freeCursor: false,
   debug: import.meta.env.DEV || new URLSearchParams(location.search).has('debug'),
   vehicleSelection: null,
   currentVehicle: null,
@@ -100,6 +103,7 @@ export const useGame = create<GameState>((set) => ({
       currentWorld: id,
       portal: null,
       prompt: null,
+      freeCursor: false,
       visitedWorlds: addUnique(s.visitedWorlds, id),
     })),
   openProject: (id) =>

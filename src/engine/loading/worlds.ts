@@ -7,8 +7,8 @@ type Loader = () => Promise<{ default: ComponentType }>;
 const loaders: Record<WorldId, Loader> = {
   hub: () => import('../../worlds/hub/HubWorld'),
   'data-science': () => import('../../worlds/data-science/DataScienceWorld'),
+  games: () => import('../../worlds/games/GameRoomWorld'),
   // Not built yet: crossing their portals opens the Quick Portfolio section instead.
-  games: () => import('../../worlds/hub/HubWorld'),
   software: () => import('../../worlds/hub/HubWorld'),
   journey: () => import('../../worlds/hub/HubWorld'),
 };

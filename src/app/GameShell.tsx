@@ -11,6 +11,8 @@ import { useGame } from '../stores/gameStore';
 import { QUALITY_PROFILES, useSettings, type Quality } from '../stores/settingsStore';
 
 const ORDER: Quality[] = ['low', 'medium', 'high', 'ultra'];
+const FIRST_PERSON = new Set(['hub', 'games']);
+const FOV: Record<string, number> = { hub: 75, games: 70 };
 
 export default function GameShell() {
   const quality = useSettings((s) => s.quality);
@@ -38,7 +40,7 @@ export default function GameShell() {
         onPointerDown={(e) => {
           const g = useGame.getState();
           // First-person worlds capture the mouse; the 2.5D space world does not need it.
-          if (world === 'hub' && g.overlay === 'none' && !document.pointerLockElement) requestLock(e.currentTarget);
+          if (FIRST_PERSON.has(world) && g.overlay === 'none' && !g.freeCursor && !document.pointerLockElement) requestLock(e.currentTarget);
           canvasPointerDown(e.nativeEvent);
         }}
         onPointerUp={(e) => canvasPointerUp(e.nativeEvent)}
@@ -49,7 +51,7 @@ export default function GameShell() {
           key={quality}
           dpr={[1, profile.maxDpr]}
           shadows={profile.shadows}
-          camera={{ fov: world === 'hub' ? 75 : 50, near: 0.05, far: 1200, position: [0, 1.7, 9] }}
+          camera={{ fov: FOV[world] ?? 50, near: 0.05, far: 1200, position: [0, 1.7, 9] }}
           gl={{ antialias: quality !== 'low', powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping, outputColorSpace: SRGBColorSpace }}
           onCreated={({ gl }) => {
             gl.domElement.addEventListener('webglcontextlost', (e) => {
@@ -72,7 +74,7 @@ export default function GameShell() {
 function FovSync({ world }: { world: string }) {
   const camera = useThree((s) => s.camera) as PerspectiveCamera;
   useEffect(() => {
-    camera.fov = world === 'hub' ? 75 : 50;
+    camera.fov = FOV[world] ?? 50;
     camera.updateProjectionMatrix();
   }, [camera, world]);
   return null;

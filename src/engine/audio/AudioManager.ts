@@ -5,6 +5,9 @@ import type { WorldId } from '../../content';
 import { useSettings } from '../../stores/settingsStore';
 
 type Bus = 'music' | 'sfx' | 'ambience';
+export type SfxName =
+  | 'ui' | 'select' | 'fire' | 'portalOpen' | 'travel' | 'interact' | 'deny' | 'summon'
+  | 'pickup' | 'putdown' | 'insert' | 'boot' | 'blip' | 'zap' | 'boom' | 'flap' | 'point' | 'click';
 
 class AudioManager {
   private ctx: AudioContext | null = null;
@@ -122,6 +125,21 @@ class AudioManager {
         const d = drone(freq, 'triangle', g, 1200);
         lfo(d.g.gain, 0.08 + freq / 5000, g * 0.6);
       }
+    } else if (world === 'games') {
+      // Bedroom at night: soft room tone and a slow, warm lo-fi chord loop.
+      noiseBed(380, 0.035);
+      const chords = [[196, 246.9, 293.7], [174.6, 220, 261.6], [164.8, 207.7, 246.9], [174.6, 220, 277.2]];
+      const voices = [0, 1, 2].map(() => drone(196, 'triangle', 0.028, 900));
+      let step = 0;
+      const tick = () => {
+        const t = ctx.currentTime;
+        chords[step % chords.length].forEach((f, i) => voices[i].o.frequency.setTargetAtTime(f, t, 0.25));
+        step++;
+      };
+      tick();
+      const id = setInterval(tick, 3200);
+      nodes.push({ stop: () => clearInterval(id) } as unknown as AudioScheduledSourceNode);
+      voices.forEach((v, i) => lfo(v.g.gain, 0.11 + i * 0.03, 0.012));
     } else {
       drone(98, 'triangle', 0.06, 900);
       drone(147, 'sine', 0.04, 900);
@@ -178,7 +196,7 @@ class AudioManager {
     n.stop(t + duration + 0.05);
   }
 
-  play(name: 'ui' | 'select' | 'fire' | 'portalOpen' | 'travel' | 'interact' | 'deny' | 'summon') {
+  play(name: SfxName) {
     if (!this.ctx) return;
     switch (name) {
       case 'ui': return this.tone('sine', 880, 1320, 0.08, 0.15);
@@ -197,6 +215,21 @@ class AudioManager {
       case 'deny': return this.tone('square', 180, 120, 0.2, 0.08);
       case 'summon':
         return this.whoosh(0.8, 300, 2200, 0.25);
+      case 'pickup': return this.whoosh(0.18, 600, 1800, 0.18);
+      case 'putdown': return this.tone('triangle', 260, 180, 0.12, 0.18);
+      case 'insert':
+        this.tone('square', 120, 90, 0.08, 0.12);
+        return setTimeout(() => this.tone('square', 90, 70, 0.08, 0.14), 140);
+      case 'boot':
+        // Console power-on chime: a quick rising arpeggio.
+        [392, 523.3, 659.3, 1046.5].forEach((f, i) => setTimeout(() => this.tone('square', f, f, i === 3 ? 0.6 : 0.12, 0.07), i * 110));
+        return;
+      case 'blip': return this.tone('square', 990, 990, 0.05, 0.06);
+      case 'zap': return this.tone('square', 1400, 300, 0.12, 0.05);
+      case 'boom': return this.whoosh(0.35, 900, 120, 0.3);
+      case 'flap': return this.tone('triangle', 500, 900, 0.09, 0.1);
+      case 'point': return this.tone('square', 1320, 1760, 0.12, 0.06);
+      case 'click': return this.tone('square', 1800, 1200, 0.03, 0.05);
     }
   }
 
