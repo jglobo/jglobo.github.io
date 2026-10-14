@@ -208,9 +208,10 @@ export function JourneyController({
       for (const s of layout.stops) {
         const d = Math.hypot(s.door.x - p.x, s.door.z - p.z);
         const stop = journey.stops.find((j) => j.id === s.id)!;
-        if (s === next || d < 22) targets.push({ id: s.id, label: `${stop.label} · ${stop.year}`, x: s.door.x, z: s.door.z - 2, seen: done.includes(`journey:${s.id}`) });
+        // Close enough to read the building's own sign: no marker needed.
+        if (d > 7 && (s === next || d < 22)) targets.push({ id: s.id, label: `${stop.label} · ${stop.year}`, x: s.door.x, z: s.door.z - 2, seen: done.includes(`journey:${s.id}`) });
       }
-      if (!done.includes('journey:talk-jose')) targets.push({ id: 'jose', label: 'Jose', x: JOSE_SPOT.x, z: JOSE_SPOT.z, seen: false });
+      if (!done.includes('journey:talk-jose') && Math.hypot(JOSE_SPOT.x - p.x, JOSE_SPOT.z - p.z) < 40) targets.push({ id: 'jose', label: 'Jose', x: JOSE_SPOT.x, z: JOSE_SPOT.z, seen: false });
       if (!next) targets.push({ id: 'today', label: 'Today', x: layout.plaza.x, z: layout.plaza.z, seen: false });
       const markers: NavMarker[] = targets.map((t) => {
         projected.set(t.x, 3.2, t.z).project(camera);

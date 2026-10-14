@@ -55,6 +55,9 @@ export default function GameShell() {
           gl={{ antialias: quality !== 'low', powerPreference: 'high-performance', toneMapping: ACESFilmicToneMapping, outputColorSpace: SRGBColorSpace }}
           onCreated={({ gl }) => {
             gl.domElement.addEventListener('webglcontextlost', (e) => {
+              // Changing quality remounts the canvas, and the old one releases its
+              // context on purpose; only a loss on the live canvas is a crash.
+              if (useSettings.getState().quality !== quality) return;
               e.preventDefault();
               setLost(true);
             });
