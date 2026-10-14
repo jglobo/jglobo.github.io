@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import type { WorldId } from '../content';
 import { load, save } from './persist';
 
-export type Overlay = 'none' | 'pause' | 'quick' | 'inspector' | 'settings' | 'map';
+export type Overlay = 'none' | 'pause' | 'quick' | 'inspector' | 'settings' | 'map' | 'dialogue' | 'journal';
 export type QuickSection = 'about' | 'data-science' | 'games' | 'software' | 'experience' | 'resume' | 'contact';
 export type Vec3 = [number, number, number];
 

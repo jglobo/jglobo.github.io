@@ -12,7 +12,7 @@ indexable HTML for search engines and no-JavaScript visitors.
 | Data Science: Orbital Data World (2.5D jetpack astronaut) | Playable |
 | Game Development: Retro Bedroom (first person, playable TV games) | Playable |
 | Software Engineering: Vehicle Playground (elevated third person, sports car + bicycle) | Playable |
-| My Journey: HD-2D Life Town | Planned |
+| My Journey: HD-2D Life Town (pixel-art characters in a 3D town, dialogue, career timeline) | Playable |
 
 The original 2021 site lives on at [`/classic/`](classic/).
 
@@ -23,7 +23,7 @@ Requires Node 20+.
 ```bash
 npm install
 npm run dev        # http://localhost:5173 (debug overlay on; press ` to toggle)
-npm test           # unit tests (jetpack physics)
+npm test           # unit tests (physics, layouts, sprites, dialogue)
 npm run build      # production build into dist/
 npm run preview    # serve the production build at http://localhost:4173
 ```
@@ -44,6 +44,11 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
   gas and brake, `A`/`D` steer, `Space` handbrake to drift. Bicycle: `Space` hops, `A`/`D`
   in the air spins. Drive onto a billboard's glowing pad and press `E` to inspect the
   app; `E` elsewhere gets you off. Hold `R` for a return portal.
+* **HD-2D Life Town**: WASD walk, `Shift` run, `E` to talk to Jose, pet the dog, check
+  the mailbox or read a building's memory. In a conversation: arrows/`W`/`S` or `1`–`9`
+  to pick a question, `E`/`Enter` to ask, `Esc` to leave. In a memory: `←`/`→` for the
+  earlier or later chapter. Hold `R` for a return portal, or use the portal at the end
+  of the road.
 * Everywhere: `Tab` Quick Portfolio, `Esc` menu (worlds map, settings, resume, contact).
 
 ## Adding a project
@@ -58,6 +63,17 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
    box colour, and `crtGame` (`space-duel` or `flappy`) links a built-in TV version.
 5. Software projects get a billboard automatically (featured first, up to four spots in
    `src/worlds/software/layout.ts`).
+
+## Editing the Journey world
+
+* `src/content/journey.json` lists the timeline chapters in order (oldest first). Each
+  one picks a building style, a district and the `education` / `experience` ids it
+  shows, plus a short `story` in Jose's voice. Adding a chapter adds a building further
+  up the path automatically.
+* `src/content/dialogue.json` holds Jose's questions and answers (`question`, `answer`,
+  `category`). Every entry appears in the ASK A QUESTION menu.
+* The character looks are palettes in `src/worlds/journey/sprites/pixelArt.ts`
+  (`LOOKS`), drawn in code at runtime.
 
 ## Deploying
 

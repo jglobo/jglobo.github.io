@@ -5,6 +5,11 @@
     "category": "about"
   },
   {
+    "question": "What do you do?",
+    "answer": "I'm a Data Scientist at Envision Healthcare. I build machine learning models and dashboards for revenue recovery, like models that predict and help reverse denied medical claims.",
+    "category": "work"
+  },
+  {
     "question": "Why Data Science?",
     "answer": "Biology and medicine taught me to love evidence. Data science lets me use that curiosity every day.",
     "category": "career"
@@ -13,6 +18,21 @@
     "question": "Why Game Development?",
     "answer": "Games are where I learned to program. They make every system you build visible and fun to test.",
     "category": "career"
+  },
+  {
+    "question": "Why Software Engineering?",
+    "answer": "I like building things people can actually use: dashboards at work, and small web apps like my calculator and study clock at home. This portfolio is the biggest one so far.",
+    "category": "career"
+  },
+  {
+    "question": "What technologies do you use?",
+    "answer": "Python, SQL and R for data work. Tableau, Power BI, R Shiny and Streamlit for dashboards. TypeScript, React and Three.js for this portfolio, and Pygame for my games.",
+    "category": "skills"
+  },
+  {
+    "question": "What kind of projects do you build?",
+    "answer": "Healthcare models and dashboards at work, and games and web apps at home. The other portals in the Hub lead to all of them.",
+    "category": "projects"
   },
   {
     "question": "What are you currently learning?",

@@ -63,3 +63,28 @@ export interface Experience { id: string; role: string; org: string; when: strin
 export interface Education { id: string; institution: string; credential: string; when: string }
 export interface Achievement { when: string; title: string; from: string }
 export interface DialogueLine { question: string; answer: string; category: string }
+
+/** Journey world: a building on the timeline path. Order in journey.json = chronology. */
+export interface JourneyStop {
+  id: string;
+  label: string;
+  year: string;
+  district: 'old-town' | 'island' | 'market' | 'healthcare' | 'data' | 'tech';
+  building: 'campus' | 'clinic' | 'market' | 'lab' | 'library' | 'office' | 'tower';
+  /** ids from education.json / experience.json shown in this stop's memory. */
+  education?: string[];
+  experience?: string[];
+  /** Also list the certifications (achievements.json) from this issuer. */
+  certificationsFrom?: string;
+  story: string;
+}
+
+export interface JourneyNpc {
+  id: string;
+  name: string;
+  kind: 'person' | 'dog';
+  greeting?: string;
+  lines?: string[];
+}
+
+export interface JourneyContent { npcs: JourneyNpc[]; stops: JourneyStop[] }

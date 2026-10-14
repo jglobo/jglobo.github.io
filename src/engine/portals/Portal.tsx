@@ -6,9 +6,9 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DoubleSide, Group, Quaternion, ShaderMaterial, Vector3 } from 'three';
 import { useSettings, qualityProfile } from '../../stores/settingsStore';
 
-export type PortalPreview = 'space' | 'hub' | 'room' | 'road' | 'generic';
+export type PortalPreview = 'space' | 'hub' | 'room' | 'road' | 'town' | 'generic';
 
-const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2, room: 3, road: 4 };
+const PREVIEW_ID: Record<PortalPreview, number> = { generic: 0, space: 1, hub: 2, room: 3, road: 4, town: 5 };
 
 const vertex = /* glsl */ `
   varying vec2 vUv;
@@ -124,6 +124,39 @@ const fragment = /* glsl */ `
     return col;
   }
 
+  // Golden-hour town: sunset sky, hills, a cobbled path and cottages with lit windows.
+  vec3 townPreview(vec2 q) {
+    q += uParallax;
+    float horizon = -0.02;
+    vec3 col = mix(vec3(1.0, 0.8, 0.55), vec3(0.95, 0.55, 0.42), smoothstep(horizon, 0.45, q.y));
+    col = mix(col, vec3(0.35, 0.42, 0.72), smoothstep(0.4, 1.1, q.y));
+    col += vec3(1.0, 0.85, 0.5) * smoothstep(0.16, 0.13, length(q - vec2(0.35, 0.12))) * 0.9;
+    float hills = horizon + 0.07 * sin(q.x * 4.0 + 0.6) + 0.04 * sin(q.x * 9.0);
+    col = mix(col, vec3(0.42, 0.55, 0.3), step(q.y, hills));
+    if (q.y < horizon) {
+      float depth = horizon - q.y;
+      col = vec3(0.5, 0.66, 0.32) + 0.05 * noise(floor(q * 60.0));
+      float path = step(abs(q.x + 0.05 * sin(depth * 8.0)), depth * 0.55 + 0.01);
+      col = mix(col, vec3(0.8, 0.68, 0.5), path);
+    }
+    for (int i = 0; i < 3; i++) {
+      float fi = float(i);
+      vec2 h = q - vec2(-0.55 + fi * 0.42 - step(1.5, fi) * 0.05, horizon + 0.07 - fi * 0.02);
+      float s = 0.11 - fi * 0.015;
+      float body = step(abs(h.x), s) * step(0.0, h.y) * step(h.y, s * 1.1);
+      float roof = step(s * 1.1, h.y) * step(abs(h.x), s * 1.25 - (h.y - s * 1.1) * 1.3) * step(h.y, s * 2.2);
+      col = mix(col, vec3(0.95, 0.86, 0.68), body);
+      col = mix(col, vec3(0.62, 0.25, 0.18), roof);
+      vec2 w = h - vec2(0.0, s * 0.5);
+      col = mix(col, vec3(1.0, 0.78, 0.35), body * step(abs(w.x), s * 0.3) * step(abs(w.y), s * 0.22));
+    }
+    // Floating pixel motes.
+    vec2 cell = floor(q * 26.0 + vec2(0.0, -uTime * 0.6));
+    float mote = step(0.97, hash(cell)) * step(0.5, fract(sin(uTime + hash(cell) * 40.0)));
+    col += vec3(1.0, 0.8, 0.35) * mote * 0.7;
+    return col;
+  }
+
   void main() {
     vec2 p = (vUv * 2.0 - 1.0) * 1.25;
     float r = length(p);
@@ -135,7 +168,7 @@ const fragment = /* glsl */ `
     vec2 swirl = p * mat2(cos(r * 2.0 - uTime), -sin(r * 2.0 - uTime), sin(r * 2.0 - uTime), cos(r * 2.0 - uTime));
     vec2 q = mix(p, swirl, smoothstep(edge * 0.55, edge, rr) * 0.6) * 0.9;
 
-    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : uPreview == 3 ? roomPreview(q) : uPreview == 4 ? roadPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
+    vec3 inside = uPreview == 1 ? spacePreview(q) : uPreview == 2 ? hubPreview(q) : uPreview == 3 ? roomPreview(q) : uPreview == 4 ? roadPreview(q) : uPreview == 5 ? townPreview(q) : mix(uColor * 0.2, uColor2 * 0.4, fbm(q * 3.0 + uTime * 0.2));
 
     float rimBand = smoothstep(edge - 0.28, edge, rr);
     float flow = fbm(vec2(ang * 3.0 - uTime * 3.0, rr * 7.0 - uTime));

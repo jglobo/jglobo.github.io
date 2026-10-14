@@ -15,7 +15,7 @@ export const DESTINATIONS: Destination[] = [
   { id: 'data-science', key: '1', label: 'Data Science', world: 'Orbital Data World', symbol: '✦', color: '#3d7bff', color2: '#9fd0ff', status: 'playable' },
   { id: 'games', key: '2', label: 'Game Development', world: 'Retro Bedroom', symbol: '▶', color: '#ff3fb4', color2: '#ffb3e6', status: 'playable' },
   { id: 'software', key: '3', label: 'Software Engineering', world: 'Vehicle Playground', symbol: '⬢', color: '#19e6ff', color2: '#b8fbff', status: 'playable' },
-  { id: 'journey', key: '4', label: 'My Journey', world: 'HD-2D Life Town', symbol: '❖', color: '#ffb52e', color2: '#ffe9b0', status: 'coming-soon' },
+  { id: 'journey', key: '4', label: 'My Journey', world: 'HD-2D Life Town', symbol: '❖', color: '#ffb52e', color2: '#ffe9b0', status: 'playable' },
 ];
 
 export const HUB_THEME = { label: 'Portal Hub', symbol: '◎', color: '#b48cff', color2: '#e6d9ff' };

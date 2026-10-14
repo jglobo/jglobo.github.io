@@ -9,8 +9,7 @@ const loaders: Record<WorldId, Loader> = {
   'data-science': () => import('../../worlds/data-science/DataScienceWorld'),
   games: () => import('../../worlds/games/GameRoomWorld'),
   software: () => import('../../worlds/software/SoftwareWorld'),
-  // Not built yet: crossing its portal opens the Quick Portfolio section instead.
-  journey: () => import('../../worlds/hub/HubWorld'),
+  journey: () => import('../../worlds/journey/JourneyWorld'),
 };
 
 const cache = new Map<WorldId, Promise<{ default: ComponentType }>>();

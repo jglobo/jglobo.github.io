@@ -12,7 +12,7 @@ import { QUALITY_PROFILES, useSettings, type Quality } from '../stores/settingsS
 
 const ORDER: Quality[] = ['low', 'medium', 'high', 'ultra'];
 const FIRST_PERSON = new Set(['hub', 'games']);
-const FOV: Record<string, number> = { hub: 75, games: 70 };
+const FOV: Record<string, number> = { hub: 75, games: 70, journey: 32 };
 
 export default function GameShell() {
   const quality = useSettings((s) => s.quality);

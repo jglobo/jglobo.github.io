@@ -296,3 +296,43 @@ kbd {
 /* Game room: a small dot so you can see what you are looking at */
 .room-dot { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%;
   background: rgba(255, 255, 255, 0.85); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35); pointer-events: none; }
+
+/* Journey world: HD-2D dialogue box and memory journal. */
+.dlg-wrap { position: fixed; inset: auto 0 0 0; z-index: 30; display: flex; justify-content: center; padding: 16px; pointer-events: none; }
+.dlg { pointer-events: auto; width: min(780px, 100%); display: flex; gap: 16px; align-items: flex-start; padding: 16px 18px; border-radius: 10px;
+  background: linear-gradient(180deg, rgba(28, 20, 38, 0.95), rgba(16, 12, 24, 0.96)); color: #fff6e4;
+  border: 2px solid #e8b04a; box-shadow: 0 0 0 4px rgba(20, 12, 8, 0.7), 0 10px 40px rgba(0, 0, 0, 0.45); }
+.dlg-portrait { width: 80px; height: 120px; image-rendering: pixelated; flex: none; border-radius: 6px; background: radial-gradient(circle at 50% 40%, #ffd58a55, #0000 70%), #2a1f33; border: 1px solid #e8b04a66; }
+.dlg-main { flex: 1; min-width: 0; }
+.dlg-name { display: inline-block; font: 700 0.8rem var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: #1b1208; background: #e8b04a; padding: 2px 10px; border-radius: 4px; }
+.dlg-question { margin-top: 8px; color: #ffd27a; font-style: italic; }
+.dlg-text { margin: 8px 0 6px; font-size: 1.05rem; line-height: 1.55; min-height: 3.1em; }
+.dlg-caret { animation: dlg-blink 0.8s steps(2) infinite; color: #e8b04a; }
+@keyframes dlg-blink { 50% { opacity: 0; } }
+.reduced-motion .dlg-caret { animation: none; }
+.dlg-kicker { font: 700 0.72rem var(--mono); letter-spacing: 0.2em; color: #e8b04a; margin-top: 8px; }
+.dlg-choices { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 4px 12px; max-height: 34vh; overflow: auto; }
+.dlg-choice { width: 100%; text-align: left; display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; border: 0; background: transparent; color: inherit; font: inherit; font-size: 0.95rem; cursor: pointer; }
+.dlg-choice.sel { background: rgba(232, 176, 74, 0.18); color: #fff; }
+.dlg-choice.asked { color: #cbbfa8; }
+.dlg-choice kbd { font-size: 0.7rem; opacity: 0.7; }
+.dlg-cursor { width: 12px; color: #e8b04a; flex: none; }
+.dlg-check { color: #8fd18f; }
+.dlg-help { margin-top: 8px; font: 0.75rem var(--mono); color: #bfae90; }
+@media (max-width: 560px) { .dlg-portrait { width: 48px; height: 72px; } .dlg { gap: 10px; padding: 12px; } }
+
+.inspector.journal.memory { --accent: #9a5b00; border-color: #b98a3e; box-shadow: 0 0 0 4px rgba(60, 36, 12, 0.35), 0 12px 40px rgba(0, 0, 0, 0.45);
+  background: repeating-linear-gradient(0deg, rgba(120, 90, 40, 0.06) 0 1px, transparent 1px 28px), #f4ecd8; }
+.inspector.journal .icon-btn { color: #2b2418; border-color: #b98a3e; }
+.inspector.journal .btn { color: #2b2418; border-color: #b98a3e; background: #efe2c2; }
+.inspector.journal .btn:disabled { opacity: 0.45; cursor: default; }
+.inspector.journal header, .inspector.journal footer { border-color: #d8c6a0; }
+.inspector.journal .chip { border-color: #c9b48a; background: #efe2c2; color: #3a2e1c; }
+.memory-story { font: italic 1.08rem/1.6 Georgia, 'Times New Roman', serif; color: #4a3a22; margin: 4px 0 14px; }
+.memory-entry { padding: 10px 0; border-top: 1px dashed #d1bd94; }
+.memory-entry h3 { margin: 0; font-size: 1.1rem; }
+.memory-org { font-weight: 500; color: #6b5532; }
+.memory-when { font: 0.8rem var(--mono); color: #8a6a3a; margin: 2px 0 6px; }
+.memory-entry ul { margin: 6px 0; padding-left: 20px; }
+.memory-footer { gap: 8px; flex-wrap: wrap; }
+.memory-spacer { flex: 1; }

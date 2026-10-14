@@ -8,7 +8,7 @@ type Bus = 'music' | 'sfx' | 'ambience';
 export type SfxName =
   | 'ui' | 'select' | 'fire' | 'portalOpen' | 'travel' | 'interact' | 'deny' | 'summon'
   | 'pickup' | 'putdown' | 'insert' | 'boot' | 'blip' | 'zap' | 'boom' | 'flap' | 'point' | 'click'
-  | 'door' | 'trick' | 'thud';
+  | 'door' | 'trick' | 'thud' | 'talk' | 'woof' | 'page';
 
 class AudioManager {
   private ctx: AudioContext | null = null;
@@ -162,6 +162,35 @@ class AudioManager {
       const id = setInterval(tick, 3200);
       nodes.push({ stop: () => clearInterval(id) } as unknown as AudioScheduledSourceNode);
       voices.forEach((v, i) => lfo(v.g.gain, 0.11 + i * 0.03, 0.012));
+    } else if (world === 'journey') {
+      // Warm, gentle chiptune: a soft pad, a walking bass and a pentatonic melody.
+      noiseBed(700, 0.012);
+      const pad = [0, 1, 2].map(() => drone(261.6, 'triangle', 0.018, 1100));
+      const bass = drone(130.8, 'triangle', 0, 600);
+      const lead = drone(523.3, 'square', 0, 1700);
+      const chords = [[261.6, 329.6, 392], [220, 261.6, 329.6], [174.6, 220, 261.6], [196, 246.9, 293.7]];
+      const roots = [130.8, 110, 87.3, 98];
+      const melody = [659.3, 0, 587.3, 523.3, 0, 440, 523.3, 0, 587.3, 0, 659.3, 784, 0, 659.3, 587.3, 0];
+      let step = 0;
+      const tick = () => {
+        const t = ctx.currentTime;
+        const bar = Math.floor(step / 8) % 4;
+        if (step % 8 === 0) chords[bar].forEach((f, i) => pad[i].o.frequency.setTargetAtTime(f, t, 0.3));
+        if (step % 2 === 0) {
+          bass.o.frequency.setValueAtTime(roots[bar] * (step % 4 === 2 ? 1.5 : 1), t);
+          bass.g.gain.setValueAtTime(0.07, t);
+          bass.g.gain.setTargetAtTime(0.0, t + 0.05, 0.15);
+        }
+        const note = melody[step % melody.length];
+        if (note && step % 32 < 24) {
+          lead.o.frequency.setValueAtTime(note, t);
+          lead.g.gain.setValueAtTime(0.016, t);
+          lead.g.gain.setTargetAtTime(0, t + 0.04, 0.12);
+        }
+        step++;
+      };
+      const id = setInterval(tick, 300);
+      nodes.push({ stop: () => clearInterval(id) } as unknown as AudioScheduledSourceNode);
     } else {
       drone(98, 'triangle', 0.06, 900);
       drone(147, 'sine', 0.04, 900);
@@ -257,6 +286,12 @@ class AudioManager {
         [523.3, 659.3, 784, 1046.5].forEach((f, i) => setTimeout(() => this.tone('square', f, f, 0.1, 0.06), i * 70));
         return;
       case 'thud': return this.whoosh(0.2, 400, 90, 0.25);
+      case 'talk': return this.tone('square', 620 + Math.random() * 120, 560, 0.035, 0.025);
+      case 'woof':
+        this.tone('sawtooth', 320, 180, 0.09, 0.08);
+        setTimeout(() => this.tone('sawtooth', 300, 160, 0.1, 0.07), 140);
+        return;
+      case 'page': return this.whoosh(0.22, 2400, 900, 0.12);
     }
   }
 

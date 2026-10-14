@@ -12,10 +12,13 @@ import { DebugOverlay } from '../engine/debug/DebugOverlay';
 import { preloadWorld } from '../engine/loading/worlds';
 
 const loadShell = () => import('./GameShell');
+// The Journey world's dialogue box and memory journal (DOM), part of its own chunk.
+const JourneyOverlay = lazy(() => import('../worlds/journey/ui/JourneyOverlay'));
 const GameShell = lazy(loadShell);
 
 export function App() {
   const started = useGame((s) => s.started);
+  const world = useGame((s) => s.currentWorld);
   const highContrast = useSettings((s) => s.highContrast);
   const reducedMotion = useSettings((s) => s.reducedMotion);
   const caps = useMemo(detectCapabilities, []);
@@ -44,6 +47,11 @@ export function App() {
         <Suspense fallback={<Loader />}>
           <GameShell />
           <HUD />
+        </Suspense>
+      )}
+      {started && world === 'journey' && (
+        <Suspense fallback={null}>
+          <JourneyOverlay />
         </Suspense>
       )}
       <TransitionOverlay />

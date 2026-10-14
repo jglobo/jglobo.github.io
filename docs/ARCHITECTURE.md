@@ -84,7 +84,13 @@ src/
     data-science/ DataScienceWorld, SpaceEnvironment, Earth, Astronaut,
                   JetpackController (pure physics), SpacePlatformCamera, ProjectSite,
                   DataHologram, NavigationArrows, ReturnPortal
-    placeholder/  Shared "coming soon" behaviour for worlds not built yet
+    games/        GameRoomWorld, RoomController, GameShelf, CrtTv, crt/ (TV games)
+    software/     SoftwareWorld, PlayerController, VehicleGarage, Billboards,
+                  vehicles/ (pure arcade physics), terrain/
+    journey/      JourneyWorld, JourneyController (HD2DCharacterController),
+                  HD2DCamera, TiltShift, Town, Buildings, Home, NPCs, Atmosphere,
+                  layout.ts + dialogue.ts (pure), sprites/ (pixel art drawn in code),
+                  ui/JourneyOverlay (dialogue box + memory journal, DOM)
   portfolio/      ProjectInspector, QuickPortfolio, content helpers
   content/        JSON content + schema.ts + index.ts (loader)
   stores/         gameStore, settingsStore, persistence
@@ -203,7 +209,16 @@ binary assets to download for the Hub or the Space world.
   and hops use a vertical integrator. This replaced the planned Rapier dependency for
   the MVP: it keeps the world chunk around 12 KB gzip and is easy to tune per
   vehicle. Rapier stays an option if the off-road vehicles need real suspension.
-* **Journey**: kinematic tile/nav-mesh movement.
+* **Journey**: kinematic movement with circle-vs-box and circle-vs-circle push-out
+  against buildings, trees, fences and the town edge (`journey/layout.ts`, unit tested).
+  The town is generated from `content/journey.json`, so chapters place themselves.
+
+The HD-2D look comes from three cheap pieces rather than heavy post-processing:
+pixel-art sprite cards (16 x 24 px, outlined and shaded by code, nearest filtering,
+alpha-tested so they cast real shadows), a narrow 32° lens looking down at the town,
+and a two-pass tilt-shift blur (`TiltShift.tsx`, medium quality and up) that keeps a
+band around the visitor sharp. The sun's shadow box follows the visitor, so a
+1024 shadow map stays crisp over the whole 140 m path.
 
 ## 11. Content schema
 
@@ -239,7 +254,7 @@ without a location still appears in the menus and Quick Portfolio.
 | 2 Data Science MVP | Space, Earth, astronaut, jetpack, 2.5D movement, nav arrows, asteroid lab, station, real project, inspector, return portal | In this PR |
 | 3 Game Room | Bedroom, pickup/inspect, CRT, console menu, Space Duel and Flappy rebuilt for the TV with original vector art (the old ports' sprites were not reused because their licences are unclear) | Done (draft PR #2) |
 | 4 Software world | Garage, compact test town, sports car (drift) + bicycle (hops, spin tricks), ramps, app billboards with animated previews, nav arrows, return portal. The other six vehicles wait under covers in the garage | Done (draft PR #2) |
-| 5 Journey world | HD-2D style, home, NPCs, dialogue, timeline town | Later |
+| 5 Journey world | HD-2D look (pixel sprites, tilt-shift, golden hour), home with Jose and the family dog, ASK A QUESTION dialogue from `dialogue.json`, seven-chapter timeline town from `journey.json` with memory journals, plaza with the current chapter, return portals | Done (draft PR #2) |
 | 6–9 | Content, polish, optimization, cross-browser testing | Ongoing |
 
 ## 13. MVP definition (first milestone)
@@ -273,7 +288,10 @@ or click-and-drag look, keyboard-only menus, and survives repeated round trips.
   whether any have metrics or datasets to visualize for real.
 * Final art direction (stylized low-poly vs. more realistic) and whether commissioned
   or CC0 models will be used.
-* Whether Jose wants the family NPCs at all, and how they should look.
+* Whether Jose wants the spouse and toddler NPCs (only the family dog is in for now), and
+  how his own character should look.
+* Answers in his own words for "What are your career goals?" and "What do you enjoy
+  outside work?" (left out rather than guessed).
 * LinkedIn/email preferences for the contact panel (email currently shown, since it
   was public on the old site).
 * Whether Pirate Platformer etc. should run inside the CRT (iframe) or full screen.
@@ -287,7 +305,8 @@ For the slice: none (procedural). Later, all original or CC0:
   Earth albedo/night/cloud textures (NASA Blue Marble is public domain).
 * Game Room: bedroom furniture, CRT, fictional console, box art for Jose's games. All drawn procedurally in `src/worlds/games/textures.ts`; sounds are synthesized.
 * Software: eight vehicles, road/terrain kit, billboards.
-* Journey: pixel-art character sheets (Jose, spouse, toddler, dog), town buildings.
+* Journey: pixel-art characters (visitor, Jose, dog) and all town buildings are drawn in
+  code (`src/worlds/journey/sprites/pixelArt.ts`, `textures.ts`); music is synthesized.
 * Audio: per-world ambience loops (currently synthesized), UI SFX.
 
 Every third-party asset is recorded in `docs/ASSETS.md` with source and licence.

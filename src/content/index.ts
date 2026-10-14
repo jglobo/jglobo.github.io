@@ -6,8 +6,9 @@ import experienceJson from './experience.json';
 import educationJson from './education.json';
 import achievementsJson from './achievements.json';
 import dialogueJson from './dialogue.json';
+import journeyJson from './journey.json';
 import type {
-  Achievement, DialogueLine, Education, Experience, PortfolioProject, Profile, ProjectCategory, SkillGroup,
+  Achievement, DialogueLine, Education, Experience, JourneyContent, PortfolioProject, Profile, ProjectCategory, SkillGroup,
 } from './schema';
 
 export * from './schema';
@@ -18,6 +19,7 @@ export const experience = experienceJson as Experience[];
 export const education = educationJson as Education[];
 export const achievements = achievementsJson as Achievement[];
 export const dialogue = dialogueJson as DialogueLine[];
+export const journey = journeyJson as JourneyContent;
 
 const modules = import.meta.glob<PortfolioProject>('./{data-science,games,software,journey}/*.json', {
   eager: true,
