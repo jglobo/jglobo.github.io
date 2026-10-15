@@ -39,7 +39,12 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
 * **Retro Bedroom**: WASD walk, mouse look, look at a game box on the shelf and press `E`
   (or click) to pick it up, drag or WASD to turn it, `E` to play it on the TV, `I` for the
   manual, `Q`/`Esc` to put it down. At the TV: arrows/`W`/`S` and `Enter` in the menu,
-  `Esc` to back out or stand up. Walk back into the portal to return to the Hub.
+  `Esc` to back out or stand up. Neon Blocks takes over the TV when you choose PLAY. Look at
+  the desk computer and press `E` to play Hoops or Ant Farm on it; the bar at the bottom goes
+  back, opens the source or stands you up. Walk back into the portal to return to the Hub.
+* **Browser games** (Neon Blocks, Hoops, Ant Farm) are copies of Jose's repos in `play/`.
+  To refresh them, clone the repos into one folder and run `node scripts/sync-play.mjs <folder>`.
+  A game with `playUrl` and `playOn` (`tv` or `pc`) in its JSON runs on that screen.
 * **Vehicle Playground**: WASD walk, `E` next to the car or bike to ride. Car: `W`/`S`
   gas and brake, `A`/`D` steer, `Space` handbrake to drift. Bicycle: `Space` hops, `A`/`D`
   in the air spins. Drive onto a billboard's glowing pad and press `E` to inspect the

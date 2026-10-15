@@ -1,9 +1,13 @@
-// Small astronaut built from primitives: suit, helmet with visor, jetpack with two
-// nozzles, idle float, tilt toward thrust, and pooled exhaust particles.
+// Jose's astronaut (assets/astronaut.glb, his own model and flight animations), played
+// through his controller: the player's thrust picks Hover, Fly_Up/Down/Left/Right or
+// Boost, and pooled exhaust particles stream from the jetpack's exhaust bones.
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { AdditiveBlending, BufferAttribute, BufferGeometry, Group, ShaderMaterial, Vector3 } from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Group, ShaderMaterial, Vector3, type Object3D } from 'three';
 import { qualityProfile, useSettings } from '../../stores/settingsStore';
+import astronautUrl from './assets/astronaut.glb?url';
+import { loadAstronaut, type FlightCharacter } from './astronautController';
+import { flightStateFor } from './JetpackController';
 
 export interface AstronautRuntime {
   x: number;
@@ -15,155 +19,61 @@ export interface AstronautRuntime {
   boosting: boolean;
 }
 
+/** The model is about 3.8 units tall with its feet near y = 0.18; this makes it ~2.6 tall,
+ *  centred on the runtime position like the old primitive astronaut. */
+const SCALE = 0.68;
+const CENTER_Y = 2.09;
+
 export function Astronaut({ runtime }: { runtime: React.RefObject<AstronautRuntime> }) {
   const root = useRef<Group>(null);
-  const body = useRef<Group>(null);
-  const armL = useRef<Group>(null);
-  const armR = useRef<Group>(null);
-  const legL = useRef<Group>(null);
-  const legR = useRef<Group>(null);
-  const nozzleL = useRef<Group>(null);
-  const nozzleR = useRef<Group>(null);
-  const flameL = useRef<Group>(null);
-  const flameR = useRef<Group>(null);
+  const character = useRef<FlightCharacter | null>(null);
+  const nozzles = useRef<Object3D[]>([]);
   const reducedMotion = useSettings((s) => s.reducedMotion);
-
   const exhaust = useExhaust();
 
-  useFrame((state, dt) => {
+  useEffect(() => {
+    let alive = true;
+    let loaded: FlightCharacter | null = null;
+    loadAstronaut(astronautUrl).then((c) => {
+      if (!alive) return c.dispose();
+      loaded = c;
+      c.object.scale.setScalar(SCALE);
+      c.object.position.y = -CENTER_Y * SCALE;
+      c.object.traverse((o) => {
+        // Skinned meshes move away from their bind-pose bounds; never cull them.
+        o.frustumCulled = false;
+      });
+      nozzles.current = ['exhaust.L', 'exhaust.R'].map((n) => c.object.getObjectByName(n)).filter((o): o is Object3D => !!o);
+      root.current?.add(c.object);
+      character.current = c;
+    }, (err) => console.error('Astronaut model failed to load', err));
+    return () => {
+      alive = false;
+      character.current = null;
+      loaded?.dispose();
+    };
+  }, []);
+
+  useFrame((_, dt) => {
     const r = runtime.current;
-    if (!r || !root.current || !body.current) return;
-    const t = state.clock.elapsedTime;
-    const motion = reducedMotion ? 0.3 : 1;
-    root.current.position.set(r.x, r.y + Math.sin(t * 1.6) * 0.12 * motion, 0);
-
-    // Face mostly toward the viewer, turning a little toward travel direction.
-    const targetYaw = Math.max(-0.7, Math.min(0.7, r.vx * 0.09));
-    body.current.rotation.y += (targetYaw - body.current.rotation.y) * Math.min(1, dt * 4);
-    const targetRoll = -r.vx * 0.035;
-    const targetPitch = r.vy * 0.02 + Math.sin(t * 0.9) * 0.04 * motion;
-    body.current.rotation.z += (targetRoll - body.current.rotation.z) * Math.min(1, dt * 3);
-    body.current.rotation.x += (-targetPitch - body.current.rotation.x) * Math.min(1, dt * 3);
-
-    const swim = Math.sin(t * 2.2) * 0.25 * motion;
-    const thrusting = Math.hypot(r.thrustX, r.thrustY) > 0;
-    if (armL.current) armL.current.rotation.z = 0.5 + swim * 0.4 + (thrusting ? 0.3 : 0);
-    if (armR.current) armR.current.rotation.z = -0.5 - swim * 0.4 - (thrusting ? 0.3 : 0);
-    if (legL.current) legL.current.rotation.x = 0.15 + swim * 0.3 + r.vy * -0.02;
-    if (legR.current) legR.current.rotation.x = 0.15 - swim * 0.3 + r.vy * -0.02;
-
-    // Flames scale with thrust; boost makes them long and bright.
-    const power = thrusting ? (r.boosting ? 1.8 : 1) : 0.15;
-    for (const f of [flameL.current, flameR.current]) {
-      if (!f) continue;
-      const s = power * (0.85 + Math.random() * 0.3);
-      f.scale.set(1, s, 1);
+    if (!r || !root.current) return;
+    // The clips carry their own bob and lean; reduced motion only keeps the position.
+    root.current.position.set(r.x, r.y, 0);
+    const c = character.current;
+    if (c) {
+      c.setFlightState(flightStateFor(r));
+      c.update(reducedMotion ? dt * 0.4 : dt);
     }
-
-    if (thrusting && nozzleL.current && nozzleR.current) {
+    if ((r.thrustX || r.thrustY) && nozzles.current.length) {
       const rate = r.boosting ? 3 : 1.5;
-      exhaust.emit(nozzleL.current, r, rate);
-      exhaust.emit(nozzleR.current, r, rate);
+      for (const n of nozzles.current) exhaust.emit(n, r, rate);
     }
     exhaust.update(dt);
   });
 
-  const suit = <meshStandardMaterial color="#f2f2f5" roughness={0.6} metalness={0.05} />;
-  const trim = <meshStandardMaterial color="#ff7a2e" roughness={0.5} />;
-  const dark = <meshStandardMaterial color="#3a3d4a" roughness={0.5} metalness={0.4} />;
-
   return (
     <>
       <group ref={root}>
-        <group ref={body}>
-          {/* Torso */}
-          <mesh position-y={0.05}>
-            <capsuleGeometry args={[0.42, 0.45, 6, 16]} />
-            {suit}
-          </mesh>
-          <mesh position={[0, 0.2, 0.36]}>
-            <boxGeometry args={[0.36, 0.22, 0.1]} />
-            {dark}
-          </mesh>
-          <mesh position={[0.1, 0.22, 0.415]}>
-            <sphereGeometry args={[0.035, 8, 8]} />
-            <meshBasicMaterial color="#4dff9a" toneMapped={false} />
-          </mesh>
-          <mesh position={[0, -0.3, 0]} rotation-x={Math.PI / 2}>
-            <torusGeometry args={[0.4, 0.05, 8, 24]} />
-            {trim}
-          </mesh>
-          {/* Helmet */}
-          <group position-y={0.78}>
-            <mesh>
-              <sphereGeometry args={[0.42, 24, 24]} />
-              {suit}
-            </mesh>
-            <mesh position-z={0.12} scale={[0.85, 0.7, 0.8]}>
-              <sphereGeometry args={[0.4, 24, 24, 0, Math.PI * 2, 0, Math.PI / 1.7]} />
-              <meshStandardMaterial color="#10214a" roughness={0.05} metalness={0.9} emissive="#1a3a8a" emissiveIntensity={0.35} />
-            </mesh>
-            <mesh position={[-0.12, 0.14, 0.4]}>
-              <sphereGeometry args={[0.06, 8, 8]} />
-              <meshBasicMaterial color="#cfe4ff" transparent opacity={0.7} />
-            </mesh>
-            <mesh position={[0.36, 0.05, 0]} rotation-z={Math.PI / 2}>
-              <cylinderGeometry args={[0.08, 0.08, 0.1, 12]} />
-              {trim}
-            </mesh>
-          </group>
-          {/* Jetpack */}
-          <group position={[0, 0.15, -0.42]}>
-            <mesh>
-              <boxGeometry args={[0.7, 0.8, 0.32]} />
-              <meshStandardMaterial color="#d8dae3" roughness={0.4} metalness={0.3} />
-            </mesh>
-            <mesh position={[0, 0.2, -0.17]}>
-              <boxGeometry args={[0.5, 0.12, 0.04]} />
-              <meshBasicMaterial color="#3d7bff" toneMapped={false} />
-            </mesh>
-            {[-0.2, 0.2].map((x, i) => (
-              <group key={x} ref={i === 0 ? nozzleL : nozzleR} position={[x, -0.5, -0.02]}>
-                <mesh>
-                  <cylinderGeometry args={[0.08, 0.12, 0.2, 12]} />
-                  {dark}
-                </mesh>
-                <group ref={i === 0 ? flameL : flameR} position-y={-0.1}>
-                  <mesh position-y={-0.25}>
-                    <coneGeometry args={[0.1, 0.5, 12, 1, true]} />
-                    <meshBasicMaterial color="#7fc4ff" transparent opacity={0.75} blending={AdditiveBlending} depthWrite={false} />
-                  </mesh>
-                </group>
-              </group>
-            ))}
-          </group>
-          {/* Arms */}
-          {[-1, 1].map((side) => (
-            <group key={side} ref={side < 0 ? armL : armR} position={[side * 0.45, 0.35, 0]}>
-              <mesh position={[side * 0.12, -0.28, 0]}>
-                <capsuleGeometry args={[0.13, 0.35, 4, 12]} />
-                {suit}
-              </mesh>
-              <mesh position={[side * 0.16, -0.58, 0]}>
-                <sphereGeometry args={[0.13, 12, 12]} />
-                {trim}
-              </mesh>
-            </group>
-          ))}
-          {/* Legs */}
-          {[-1, 1].map((side) => (
-            <group key={side} ref={side < 0 ? legL : legR} position={[side * 0.2, -0.45, 0]}>
-              <mesh position-y={-0.3}>
-                <capsuleGeometry args={[0.15, 0.35, 4, 12]} />
-                {suit}
-              </mesh>
-              <mesh position={[0, -0.62, 0.05]}>
-                <boxGeometry args={[0.28, 0.16, 0.36]} />
-                {dark}
-              </mesh>
-            </group>
-          ))}
-        </group>
         <pointLight color="#9fd0ff" intensity={1.2} distance={4} position={[0, 0.8, 1.2]} />
       </group>
       <points geometry={exhaust.geometry} material={exhaust.material} frustumCulled={false} />
@@ -211,7 +121,7 @@ function useExhaust() {
   return {
     geometry: pool.geometry,
     material: pool.material,
-    emit(nozzle: Group, r: AstronautRuntime, rate: number) {
+    emit(nozzle: Object3D, r: AstronautRuntime, rate: number) {
       pool.carry += rate;
       nozzle.getWorldPosition(tmp);
       while (pool.carry >= 1) {

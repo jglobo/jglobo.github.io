@@ -299,7 +299,7 @@ or click-and-drag look, keyboard-only menus, and survives repeated round trips.
 For the slice: none (procedural). Later, all original or CC0:
 
 * Hub: lab kit (panels, pipes, consoles), launcher model, portal sound set.
-* Space: astronaut GLB with idle/thrust clips, satellite, station, asteroid set,
+* Space: satellite, station, asteroid set,
   Earth albedo/night/cloud textures (NASA Blue Marble is public domain).
 * Game Room: bedroom furniture, CRT, fictional console, box art for Jose's games. All drawn procedurally in `src/worlds/games/textures.ts`; sounds are synthesized.
 * Software: eight vehicles, road/terrain kit, billboards.

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { collideCircle, DEFAULT_JETPACK, initialJetpack, stepJetpack } from '../src/worlds/data-science/JetpackController.ts';
+import { collideCircle, DEFAULT_JETPACK, flightStateFor, initialJetpack, stepJetpack } from '../src/worlds/data-science/JetpackController.ts';
+import { readFileSync } from 'node:fs';
 
 const run = (input: { x: number; y: number; boost: boolean }, seconds: number, s = initialJetpack()) => {
   for (let t = 0; t < seconds; t += 1 / 60) s = stepJetpack(s, input, 1 / 60);
@@ -46,4 +47,20 @@ test('circle collision pushes out and cancels inward velocity', () => {
   const s = collideCircle({ ...initialJetpack(1, 0), vx: -5 }, 0, 0, 3);
   assert.equal(s.x, 3);
   assert.ok(s.vx >= 0);
+});
+
+test('flight input picks the astronaut clip, and the model has every clip', () => {
+  assert.equal(flightStateFor({ thrustX: 0, thrustY: 0, boosting: false }), 'hover');
+  assert.equal(flightStateFor({ thrustX: 1, thrustY: 0, boosting: false }), 'right');
+  assert.equal(flightStateFor({ thrustX: -1, thrustY: 0, boosting: false }), 'left');
+  assert.equal(flightStateFor({ thrustX: 0, thrustY: 1, boosting: false }), 'up');
+  assert.equal(flightStateFor({ thrustX: 0, thrustY: -1, boosting: false }), 'down');
+  assert.equal(flightStateFor({ thrustX: 1, thrustY: 1, boosting: false }), 'right');
+  assert.equal(flightStateFor({ thrustX: 1, thrustY: 0, boosting: true }), 'boost');
+  assert.equal(flightStateFor({ thrustX: 0, thrustY: 0, boosting: true }), 'hover');
+  // The GLB's JSON chunk lists its animations.
+  const glb = readFileSync(new URL('../src/worlds/data-science/assets/astronaut.glb', import.meta.url));
+  const json = JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString('utf8'));
+  const clips = json.animations.map((a: { name: string }) => a.name);
+  for (const c of ['Hover', 'Fly_Up', 'Fly_Down', 'Fly_Left', 'Fly_Right', 'Boost']) assert.ok(clips.includes(c), c);
 });

@@ -106,3 +106,11 @@ export function collideCircle(s: JetpackState, cx: number, cy: number, r: number
     vy: inward < 0 ? s.vy - inward * ny * 1.3 : s.vy,
   };
 }
+
+/** Which of the astronaut's flight clips the current input calls for. */
+export function flightStateFor(r: { thrustX: number; thrustY: number; boosting: boolean }): 'hover' | 'up' | 'down' | 'left' | 'right' | 'boost' {
+  if (!r.thrustX && !r.thrustY) return 'hover';
+  if (r.boosting) return 'boost';
+  if (Math.abs(r.thrustY) > Math.abs(r.thrustX)) return r.thrustY > 0 ? 'up' : 'down';
+  return r.thrustX > 0 ? 'right' : 'left';
+}
