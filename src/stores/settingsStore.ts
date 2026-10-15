@@ -48,6 +48,8 @@ export interface Settings {
   reducedParticles: boolean;
   highContrast: boolean;
   subtitles: boolean;
+  /** Light or dark paper for the title screen and Quick Portfolio. */
+  pageTheme: 'light' | 'dark';
   bindings: Record<Action, string[]>;
 }
 
@@ -66,6 +68,7 @@ const defaults: Settings = {
   reducedParticles: false,
   highContrast: false,
   subtitles: true,
+  pageTheme: 'light',
   bindings: DEFAULT_BINDINGS,
 };
 

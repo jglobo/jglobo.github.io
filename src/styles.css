@@ -358,3 +358,92 @@ kbd {
   max-width: calc(100% - 32px); padding: 8px 12px; border-radius: 12px; background: var(--panel); border: 1px solid var(--line); pointer-events: auto; color: var(--text); }
 .screen-bar span { font-weight: 600; padding: 0 6px; }
 .screen-bar kbd { margin-left: 6px; }
+
+/* Studio Paper: warm paper, navy ink and gold for the title screen and Quick Portfolio,
+   with a dark variant (ink-blue paper) behind the theme toggle. */
+.paper {
+  --bg: #fbf8f2;
+  --panel: #fbf8f2;
+  --panel-solid: #fbf8f2;
+  --side: #f3ece0;
+  --line: #e3d7c3;
+  --text: #1f2a37;
+  --muted: #55606c;
+  --ink: #1f2a37;
+  --on-ink: #fbf8f2;
+  --accent: #96600f;
+  --accent2: #2f6f73;
+  --gold: #d29a3a;
+  --link: #2f6f73;
+  --good: #2f7d4f;
+  --focus: #2f6f73;
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  color-scheme: light;
+}
+.paper.paper-dark {
+  --bg: #161b22;
+  --panel: #161b22;
+  --panel-solid: #161b22;
+  --side: #1c232c;
+  --line: #313b48;
+  --text: #efe8db;
+  --muted: #aab1ba;
+  --ink: #efe8db;
+  --on-ink: #161b22;
+  --accent: #e0b25c;
+  --accent2: #85c7c2;
+  --gold: #e0b25c;
+  --link: #8fd0cb;
+  --good: #8fd6a8;
+  --focus: #e0b25c;
+  color-scheme: dark;
+}
+.high-contrast .paper { --line: var(--text); --muted: var(--text); }
+.paper a { color: var(--link); }
+.paper kbd { border-color: color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 10%, transparent); }
+.paper .btn { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); border-radius: 8px; }
+.paper .btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); border-color: var(--ink); }
+.paper .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.paper .btn.primary:hover { filter: none; background: color-mix(in srgb, var(--ink) 86%, var(--gold)); }
+.paper .btn.ghost { border-color: var(--line); }
+
+.theme-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--side, transparent); color: var(--text); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+.theme-toggle:hover { border-color: var(--gold, var(--accent)); }
+.theme-toggle-track { position: relative; width: 44px; height: 24px; border-radius: 999px; background: color-mix(in srgb, var(--ink, var(--text)) 14%, transparent); }
+.theme-toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--gold, var(--accent)); color: var(--on-ink, #000); transition: transform 0.2s ease; }
+.theme-toggle[aria-pressed='true'] .theme-toggle-knob { transform: translateX(20px); }
+.reduced-motion .theme-toggle-knob { transition: none; }
+
+.landing.paper .landing-theme { position: absolute; top: max(16px, env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); z-index: 2; }
+.landing.paper .landing-bg .ring { border-width: 3px; opacity: 0.5; }
+.landing.paper .landing-bg .r1 { width: 640px; height: 640px; border-color: var(--gold) transparent transparent transparent; }
+.landing.paper .landing-bg .r2 { width: 780px; height: 780px; border-color: transparent transparent var(--accent2) transparent; opacity: 0.35; }
+.landing.paper .landing-bg .r3 { width: 920px; height: 920px; border-color: transparent var(--line) transparent transparent; opacity: 0.8; }
+.landing.paper .landing-kicker { color: var(--accent); }
+.landing.paper h1 { font-family: var(--serif); font-weight: 700; letter-spacing: -0.01em; background: none; color: var(--ink); -webkit-text-fill-color: currentColor; }
+.landing.paper .landing-title { color: var(--accent2); }
+.landing.paper .landing-tagline { color: var(--muted); }
+.landing.paper .landing-note { color: var(--muted); }
+
+.quick.paper .quick-nav { background: var(--side); border-color: var(--line); }
+.quick.paper .quick-brand { display: grid; gap: 10px; justify-items: start; }
+.quick.paper .quick-brand p { margin: 0; }
+.quick.paper .quick-brand h2, .quick.paper .quick-main h3 { font-family: var(--serif); font-weight: 700; }
+.quick.paper .quick-main h4 { font-family: var(--serif); font-weight: 700; font-size: 1.3rem; }
+.quick.paper .quick-nav nav button { border-radius: 4px; }
+.quick.paper .quick-nav nav button:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.quick.paper .quick-nav nav button.active { background: var(--bg); border-color: transparent; box-shadow: inset 3px 0 0 var(--gold); color: var(--text); }
+.quick.paper .quick-hint { background: color-mix(in srgb, var(--gold) 14%, transparent); border-color: color-mix(in srgb, var(--gold) 55%, transparent); }
+.quick.paper .portrait { border-radius: 14px; border: 1px solid var(--line); }
+.quick.paper .chip { background: transparent; border-color: var(--line); border-radius: 6px; }
+.quick.paper .project-card, .quick.paper .contact-card { background: color-mix(in srgb, var(--side) 70%, transparent); border-color: var(--line); }
+.quick.paper .project-card.open, .quick.paper .contact-card:hover { border-color: var(--gold); }
+.quick.paper .badge.found { color: var(--good); border-color: color-mix(in srgb, var(--good) 50%, transparent); }
+.quick.paper .shot { background: var(--side); }
+.quick.paper .mini-chart polyline { stroke: var(--gold); }
+.quick.paper .mini-chart .axis { stroke: var(--line); }
+.quick.paper .contact-kind { color: var(--accent); }

@@ -6,6 +6,7 @@ import { useGame, type QuickSection } from '../stores/gameStore';
 import { assets } from '../assets/manifest';
 import { track } from '../analytics/track';
 import { ExtLink, ProjectDetails } from './ProjectDetails';
+import { ThemeToggle, usePaperClass } from '../ui/ThemeToggle';
 
 const SECTIONS: { id: QuickSection; label: string }[] = [
   { id: 'about', label: 'About' },
@@ -23,6 +24,7 @@ export function QuickPortfolio() {
   const started = useGame((s) => s.started);
   const notice = useGame((s) => s.notice);
   const firstButton = useRef<HTMLButtonElement>(null);
+  const paper = usePaperClass();
 
   useEffect(() => {
     if (open) {
@@ -37,11 +39,12 @@ export function QuickPortfolio() {
   const close = () => useGame.getState().closeOverlay();
 
   return (
-    <div className="quick" role="dialog" aria-modal="true" aria-labelledby="quick-title">
+    <div className={`quick ${paper}`} role="dialog" aria-modal="true" aria-labelledby="quick-title">
       <aside className="quick-nav">
         <div className="quick-brand">
           <h2 id="quick-title">{profile.name}</h2>
           <p>{profile.title}</p>
+          <ThemeToggle />
         </div>
         <nav aria-label="Portfolio sections">
           {SECTIONS.map((s, i) => (

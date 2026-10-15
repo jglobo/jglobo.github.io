@@ -4,16 +4,19 @@ import { useSettings } from '../stores/settingsStore';
 import { audio } from '../engine/audio/AudioManager';
 import { track } from '../analytics/track';
 import type { Capabilities } from '../app/capabilities';
+import { ThemeToggle, usePaperClass } from './ThemeToggle';
 
 export function Landing({ caps, onEnter }: { caps: Capabilities; onEnter: () => void }) {
   const quality = useSettings((s) => s.quality);
   const canPlay = caps.webgl;
+  const paper = usePaperClass();
   const openQuick = () => {
     audio.unlock();
     useGame.getState().openOverlay('quick', 'about');
   };
   return (
-    <div className="landing">
+    <div className={`landing ${paper}`}>
+      <ThemeToggle className="landing-theme" />
       <div className="landing-bg" aria-hidden="true">
         <div className="ring r1" />
         <div className="ring r2" />
