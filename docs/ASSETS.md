@@ -9,6 +9,7 @@ Every asset used by the game is listed here with its source and licence.
 | All sound (ambience, portal, jetpack, UI) | Synthesized at runtime (`src/engine/audio/AudioManager.ts`) | Original | Same as the repository |
 | Project screenshots and GIFs (`images/`) | Quick Portfolio, inspector | Jose's own project captures | Jose Lobo |
 | Portrait (`images/portphoto.jpg`) | Quick Portfolio "About" | Jose's own photo | Jose Lobo |
+| New project screenshots (`images/neonblocks.jpg`, `hoops.jpg`, `breathingapp.jpg`, `digitalclock.jpg`, `antfarm.png`) | Quick Portfolio, inspector, billboards | Captured from Jose's own repos (Ant Farm image is from its `shots/` folder) | Jose Lobo |
 | Fonts | System font stack, no downloads | n/a | n/a |
 
 When adding third-party models, textures or audio, prefer CC0 (e.g. Kenney, Poly Haven, NASA public-domain imagery), add them to

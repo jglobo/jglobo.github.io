@@ -1,0 +1,15 @@
+{
+  "id": "triplex",
+  "title": "TripleX",
+  "category": "games",
+  "shortDescription": "A terminal code-breaking game: crack the server's three-number code.",
+  "description": "A C++ console game from a Udemy course. You are a secret agent breaking into a secure server room: for each level you get the sum and product of a three-number code and have to type the right numbers. The codes get harder over five levels.",
+  "technologies": [
+    "C++"
+  ],
+  "screenshots": [],
+  "githubUrl": "https://github.com/jglobo/triplex",
+  "featured": false,
+  "world": "games",
+  "boxColor": "#0d2a18"
+}

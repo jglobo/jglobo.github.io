@@ -4,6 +4,7 @@
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three';
 import type { PortfolioProject } from '../../content';
 import { rng as mulberry32 } from '../../utils/random';
+import { gamePlatform } from './platform';
 
 const FONT = 'system-ui, "Segoe UI", Roboto, sans-serif';
 const MONO = '"Courier New", ui-monospace, monospace';
@@ -222,7 +223,7 @@ export function boxCoverTexture(p: PortfolioProject) {
   g.fillRect(0, 408, 320, 32);
   g.fillStyle = '#fff';
   g.font = `800 16px ${FONT}`;
-  g.fillText(p.crtGame ? 'LOBO STATION · PLAYS ON TV' : 'LOBO STATION · PC / PYGAME', 160, 430);
+  g.fillText(`LOBO STATION · ${p.crtGame ? 'PLAYS ON TV' : gamePlatform(p).strip}`, 160, 430);
   g.strokeStyle = 'rgba(255,255,255,0.35)';
   g.lineWidth = 6;
   g.strokeRect(3, 3, 314, 434);
@@ -397,6 +398,112 @@ function art(g: CanvasRenderingContext2D, id: string, base: string) {
       g.fillStyle = '#6b3d1e';
       g.fillRect(-7, 42, 14, 44);
       g.restore();
+      break;
+    }
+    case 'neon-blocks': {
+      g.fillStyle = '#070a1c';
+      g.fillRect(0, 86, 320, 322);
+      // A neon well with a stack and a falling T piece
+      const cell = 26;
+      const ox = 30;
+      const oy = 408 - cell * 11;
+      g.strokeStyle = 'rgba(120,150,255,0.25)';
+      g.lineWidth = 1;
+      for (let x = 0; x <= 10; x++) g.strokeRect(ox + x * cell, oy, 0, cell * 11);
+      const cols = ['#4fe3ff', '#b58cff', '#ffd23f', '#66e39a', '#ff5d7a', '#ff9b3d', '#5b7bff'];
+      const stack = ['xxxx.xxxxx', 'xxxxx.xxxx', '.xxxxxxx.x', '..xx..xx..'];
+      stack.forEach((row, r) =>
+        [...row].forEach((ch, c) => {
+          if (ch !== 'x') return;
+          g.fillStyle = cols[(r * 3 + c) % cols.length];
+          g.fillRect(ox + c * cell + 2, 408 - (r + 1) * cell + 2, cell - 4, cell - 4);
+        }),
+      );
+      g.fillStyle = '#b58cff';
+      g.shadowColor = '#b58cff';
+      g.shadowBlur = 18;
+      [[4, 2], [5, 2], [6, 2], [5, 3]].forEach(([c, r]) => g.fillRect(ox + c * cell + 2, oy + r * cell + 2, cell - 4, cell - 4));
+      g.shadowBlur = 0;
+      break;
+    }
+    case 'hoops': {
+      g.fillStyle = '#f2ece4';
+      g.fillRect(0, 86, 320, 322);
+      g.fillStyle = '#d9c4a5';
+      g.fillRect(0, 352, 320, 56);
+      // Backboard, rim and net
+      g.fillStyle = '#ffffff';
+      g.fillRect(250, 120, 14, 120);
+      g.fillStyle = '#e8701f';
+      g.fillRect(186, 200, 66, 7);
+      g.strokeStyle = '#9aa3ad';
+      g.lineWidth = 2;
+      for (let i = 0; i < 6; i++) {
+        g.beginPath();
+        g.moveTo(190 + i * 11, 207);
+        g.lineTo(200 + i * 7, 250);
+        g.stroke();
+      }
+      // Dotted shot arc and the ball
+      g.fillStyle = 'rgba(232,112,31,0.5)';
+      for (let i = 0; i < 10; i++) {
+        const t = i / 10;
+        g.beginPath();
+        g.arc(60 + t * 150, 330 - Math.sin(t * Math.PI) * 190 + t * 60, 4, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.fillStyle = '#d2691e';
+      g.beginPath();
+      g.arc(70, 318, 30, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = '#5a2a08';
+      g.lineWidth = 3;
+      g.beginPath();
+      g.moveTo(40, 318);
+      g.lineTo(100, 318);
+      g.moveTo(70, 288);
+      g.lineTo(70, 348);
+      g.stroke();
+      break;
+    }
+    case 'ant-farm': {
+      g.fillStyle = '#8fd0ff';
+      g.fillRect(0, 86, 320, 70);
+      g.fillStyle = '#4caf50';
+      g.fillRect(0, 150, 320, 12);
+      g.fillStyle = '#6b4426';
+      g.fillRect(0, 162, 320, 246);
+      // Tunnels and chambers
+      g.fillStyle = '#2a1a0e';
+      g.fillRect(150, 162, 16, 70);
+      g.fillRect(70, 226, 170, 14);
+      g.fillRect(60, 216, 46, 36);
+      g.fillRect(210, 240, 14, 80);
+      g.fillRect(170, 310, 100, 40);
+      // Ants
+      const ant = (x: number, y: number) => {
+        g.fillStyle = '#111';
+        g.fillRect(x, y, 6, 5);
+        g.fillRect(x + 7, y + 1, 5, 4);
+        g.fillRect(x + 13, y, 6, 5);
+      };
+      [[80, 230], [130, 229], [180, 229], [195, 320], [225, 330], [150, 200]].forEach(([x, y]) => ant(x, y));
+      // Queen
+      g.fillStyle = '#3a1608';
+      g.fillRect(200, 322, 34, 14);
+      g.fillStyle = '#ffd23f';
+      g.fillRect(205, 316, 10, 5);
+      break;
+    }
+    case 'triplex': {
+      g.fillStyle = '#04140a';
+      g.fillRect(0, 86, 320, 322);
+      g.font = `15px ${MONO}`;
+      g.fillStyle = '#5dff9a';
+      g.textAlign = 'left';
+      const lines = ['> LEVEL 3 SERVER ROOM', '', '+ 3 numbers in the code', '+ They add up to: 12', '+ They multiply to: 60', '', '> 3 4 5_', '', '*** Well done agent! ***'];
+      lines.forEach((l, i) => g.fillText(l, 22, 130 + i * 28));
+      g.textAlign = 'center';
       break;
     }
     default: {

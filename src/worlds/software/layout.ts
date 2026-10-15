@@ -51,6 +51,8 @@ export const BILLBOARD_SPOTS = [
   { x: 44, z: -10, label: 'East billboard' },
   { x: -44, z: -24, label: 'Campus billboard' },
   { x: -44, z: 32, label: 'South billboard' },
+  { x: 16, z: 44, label: 'Park billboard' },
+  { x: -18, z: 46, label: 'Meadow billboard' },
 ];
 export const BILLBOARD_POST_HALF = 6;
 

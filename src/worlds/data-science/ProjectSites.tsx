@@ -33,6 +33,7 @@ export const SITES: SiteDef[] = [
   { id: 'asteroid-lab', name: 'Asteroid Research Base', x: 24, y: 3, collide: 3.9, reach: 8, symbol: '◆' },
   { id: 'station', name: 'Orbital Station', x: -26, y: 13, collide: 3.2, reach: 9, symbol: '◎' },
   { id: 'satellite', name: 'Research Satellite', x: 5, y: 27, collide: 2.2, reach: 7, symbol: '✧' },
+  { id: 'probe', name: 'Autopilot Test Range', x: -15, y: -12, collide: 2.8, reach: 7.5, symbol: '✦' },
 ];
 
 export const activeSites = () =>
@@ -121,6 +122,7 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
       {site.id === 'asteroid-lab' && <AsteroidLab />}
       {site.id === 'station' && <OrbitalStation />}
       {site.id === 'satellite' && <ResearchSatellite />}
+      {site.id === 'probe' && <AutopilotRange />}
       {/* Name plate above the site */}
       <mesh position={[0, site.collide + 2.4, 0]}>
         <planeGeometry args={[6, 1]} />
@@ -262,6 +264,74 @@ function ResearchSatellite() {
         </mesh>
       </group>
       <pointLight color="#ffd27f" intensity={3} distance={7} position={[0, 0, 2]} />
+    </group>
+  );
+}
+
+/** Floating pipe gates with a little bird-shaped probe that flies itself through them. */
+function AutopilotRange() {
+  const bird = useRef<Group>(null);
+  const wing = useRef<Mesh>(null);
+  const reducedMotion = useSettings((s) => s.reducedMotion);
+  const pipe = useMemo(() => new MeshStandardMaterial({ color: '#3cb043', roughness: 0.45, metalness: 0.2 }), []);
+  const lip = useMemo(() => new MeshStandardMaterial({ color: '#2a8a31', roughness: 0.45, metalness: 0.2 }), []);
+  const body = useMemo(() => new MeshStandardMaterial({ color: '#ffcc33', roughness: 0.35, metalness: 0.3, emissive: '#5a3a00', emissiveIntensity: 0.4 }), []);
+  useEffect(() => () => { pipe.dispose(); lip.dispose(); body.dispose(); }, [pipe, lip, body]);
+  // Two gates with their openings at different heights.
+  const gates = [
+    { x: -1.6, gap: 0.5 },
+    { x: 1.6, gap: -0.6 },
+  ];
+  useFrame((state) => {
+    const t = reducedMotion ? 0 : state.clock.elapsedTime;
+    if (bird.current) {
+      // Loop left to right, easing toward each gate's opening.
+      const u = (t * 0.25) % 1;
+      const x = -3 + u * 6;
+      const y = x < 0 ? gates[0].gap : gates[1].gap;
+      bird.current.position.x = x;
+      bird.current.position.y += (y + Math.sin(t * 6) * 0.08 - bird.current.position.y) * 0.08;
+      bird.current.rotation.z = Math.sin(t * 6) * 0.15;
+    }
+    if (wing.current) wing.current.rotation.x = Math.sin(t * 18) * 0.7;
+  });
+  return (
+    <group>
+      {gates.map((g) => (
+        <group key={g.x} position-x={g.x}>
+          {[1, -1].map((s) => {
+            const len = 2.6 - s * g.gap;
+            const y = g.gap + s * (0.85 + len / 2);
+            return (
+              <group key={s}>
+                <mesh material={pipe} position-y={y}>
+                  <cylinderGeometry args={[0.45, 0.45, len, 16]} />
+                </mesh>
+                <mesh material={lip} position-y={g.gap + s * 0.95}>
+                  <cylinderGeometry args={[0.56, 0.56, 0.22, 16]} />
+                </mesh>
+              </group>
+            );
+          })}
+        </group>
+      ))}
+      <group ref={bird} position={[-3, gates[0].gap, 0.2]}>
+        <mesh material={body} scale={[1.25, 1, 1]}>
+          <sphereGeometry args={[0.32, 16, 12]} />
+        </mesh>
+        <mesh position={[0.36, -0.04, 0]} rotation-z={-Math.PI / 2}>
+          <coneGeometry args={[0.1, 0.24, 8]} />
+          <meshStandardMaterial color="#ff7a29" />
+        </mesh>
+        <mesh position={[0.2, 0.1, 0.24]}>
+          <sphereGeometry args={[0.08, 8, 8]} />
+          <meshBasicMaterial color="#62f2ff" toneMapped={false} />
+        </mesh>
+        <mesh ref={wing} material={body} position={[-0.06, 0.05, 0]}>
+          <boxGeometry args={[0.3, 0.04, 0.7]} />
+        </mesh>
+        <pointLight color="#ffd27f" intensity={2.5} distance={5} />
+      </group>
     </group>
   );
 }

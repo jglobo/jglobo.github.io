@@ -1,0 +1,21 @@
+{
+  "id": "laya-flappy-bird",
+  "title": "Laya Flappy Bird",
+  "category": "data-science",
+  "shortDescription": "A Flappy Bird game where a Laya model decides when the bird flaps.",
+  "description": "A Pygame Flappy Bird where the player is a model. Every frame the game describes the bird's height and speed and the next pipe's opening as text, sends it to a Laya Router, and the model answers flap or wait with a confidence score shown on screen. A few safety rules can override the model to keep the bird near the gap.",
+  "technologies": [
+    "Python",
+    "Pygame",
+    "Laya"
+  ],
+  "screenshots": [],
+  "githubUrl": "https://github.com/jglobo/Laya-Flappy-Bird",
+  "featured": false,
+  "world": "data-science",
+  "location": "probe",
+  "technicalDetails": {
+    "problem": "Can a language model act as the decision maker in a real-time game?",
+    "approach": "Turn the game state into a short text prompt each frame, read the model's flap or wait choice and its confidence, and apply simple override rules near the edges."
+  }
+}

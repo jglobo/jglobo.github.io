@@ -4,6 +4,7 @@
 import { CanvasTexture, SRGBColorSpace } from 'three';
 import { assetUrl, type PortfolioProject } from '../../../content';
 import type { SfxName } from '../../../engine/audio/AudioManager';
+import { gamePlatform } from '../platform';
 import { loadBest, saveBest } from '../roomStore';
 import { createFlappy } from './flappy';
 import { createSpaceDuel } from './spaceDuel';
@@ -166,7 +167,8 @@ export class CrtSystem {
     switch (MENU[this.selected]) {
       case 'PLAY': {
         if (!p.crtGame) {
-          this.message = ['THIS CARTRIDGE RUNS ON', 'DESKTOP (PYTHON + PYGAME).', '', p.downloadUrl ? 'CHOOSE SOURCE TO DOWNLOAD IT,' : 'ASK JOSE FOR A DEMO,', 'OR PICK A GAME MARKED', '"PLAYS ON TV" FROM THE SHELF.'];
+          const how = p.downloadUrl ? 'CHOOSE SOURCE TO DOWNLOAD IT,' : p.githubUrl ? 'CHOOSE SOURCE FOR THE CODE,' : 'ASK JOSE FOR A DEMO,';
+          this.message = ['THIS CARTRIDGE RUNS ON', gamePlatform(p).tv, '', how, 'OR PICK A GAME MARKED', '"PLAYS ON TV" FROM THE SHELF.'];
           this.go('message');
           return;
         }
@@ -183,7 +185,9 @@ export class CrtSystem {
         const url = sourceUrl(p);
         if (url) {
           this.cb.openUrl(url, p);
-          this.message = ['OPENING IN A NEW TAB...', '', p.githubUrl ? 'SOURCE CODE ON GITHUB' : 'DOWNLOADING THE GAME (.ZIP)', 'WITH ITS PYTHON SOURCE.'];
+          this.message = p.githubUrl
+            ? ['OPENING IN A NEW TAB...', '', 'SOURCE CODE ON GITHUB.']
+            : ['OPENING IN A NEW TAB...', '', 'DOWNLOADING THE GAME (.ZIP)', 'WITH ITS PYTHON SOURCE.'];
         } else {
           this.message = ['SOURCE AVAILABLE', 'ON REQUEST.', '', 'CONTACT DETAILS ARE IN', 'THE QUICK PORTFOLIO (TAB).'];
         }

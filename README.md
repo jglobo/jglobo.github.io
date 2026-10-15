@@ -57,12 +57,15 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
    (see `src/content/schema.ts` for the fields).
 2. Put screenshots in `images/` and list them in `screenshots`.
 3. To place it in a world, set `location` to a site id (Data Science sites:
-   `asteroid-lab`, `station`, `satellite`). Without a location it still appears in the
+   `asteroid-lab`, `station`, `satellite`, `probe`; add more in `SITES` in
+   `src/worlds/data-science/ProjectSites.tsx`). Without a location it still appears in the
    menus and Quick Portfolio.
-4. Games appear on the bedroom shelf automatically (featured first). `boxColor` sets the
-   box colour, and `crtGame` (`space-duel` or `flappy`) links a built-in TV version.
-5. Software projects get a billboard automatically (featured first, up to four spots in
-   `src/worlds/software/layout.ts`).
+4. Games appear on the bedroom shelf automatically (featured first, four per board on two
+   boards). `boxColor` sets the box colour, and `crtGame` (`space-duel` or `flappy`) links a
+   built-in TV version. Custom cover art lives in `art()` in `src/worlds/games/textures.ts`.
+5. Software projects get a billboard automatically (featured first, one per spot in
+   `BILLBOARD_SPOTS` in `src/worlds/software/layout.ts`, six today).
+6. `npm test` checks every project has a link, its screenshots exist, and its world has room.
 
 ## Editing the Journey world
 

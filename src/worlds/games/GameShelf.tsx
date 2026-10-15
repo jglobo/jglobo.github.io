@@ -20,13 +20,15 @@ const SHELF_DEPTH = FURNITURE.shelf.maxX - FURNITURE.shelf.minX;
 const SHELF_Z0 = FURNITURE.shelf.minZ;
 const SHELF_LEN = FURNITURE.shelf.maxZ - FURNITURE.shelf.minZ;
 const BOARDS = [0.06, 0.48, 0.9, 1.32, 1.86];
-const GAME_BOARD = BOARDS[3];
+/** Games fill the upper board first, then the one below it. */
+const GAME_BOARDS = [BOARDS[3], BOARDS[2]];
+const PER_BOARD = 4;
 /** Where a box ends up when it goes into the console. */
 export const CONSOLE_SLOT = new Vector3(TV.x - 0.2, 0.3, -2.25);
 
-/** Featured games first, so they sit in the middle of the shelf. */
+/** Featured games first, so they sit on the top games board. */
 export const shelfGames = () =>
-  [...projectsByCategory('games')].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 6);
+  [...projectsByCategory('games')].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, PER_BOARD * GAME_BOARDS.length);
 
 export function pickUp(p: PortfolioProject) {
   const room = useRoom.getState();
@@ -47,19 +49,25 @@ export function openManual(p: PortfolioProject) {
 
 export function GameShelf() {
   const games = useMemo(shelfGames, []);
-  const step = Math.min(0.36, (SHELF_LEN - 0.3) / Math.max(1, games.length));
-  const start = SHELF_Z0 + SHELF_LEN / 2 - (step * (games.length - 1)) / 2;
+  const rows = Math.ceil(games.length / PER_BOARD);
   return (
     <group>
-      <Bookcase />
-      {games.map((p, i) => (
-        <GameBox key={p.id} project={p} rest={new Vector3(SHELF_X + 0.14, GAME_BOARD + 0.02 + BOX.h / 2, start + i * step)} lean={(i % 2 ? -1 : 1) * 0.04} />
-      ))}
+      <Bookcase gameRows={rows} />
+      {games.map((p, i) => {
+        const row = Math.floor(i / PER_BOARD);
+        const inRow = Math.min(PER_BOARD, games.length - row * PER_BOARD);
+        const step = Math.min(0.36, (SHELF_LEN - 0.3) / inRow);
+        const start = SHELF_Z0 + SHELF_LEN / 2 - (step * (inRow - 1)) / 2;
+        const z = start + (i % PER_BOARD) * step;
+        return (
+          <GameBox key={p.id} project={p} rest={new Vector3(SHELF_X + 0.14, GAME_BOARDS[row] + 0.02 + BOX.h / 2, z)} lean={(i % 2 ? -1 : 1) * 0.04} />
+        );
+      })}
     </group>
   );
 }
 
-function Bookcase() {
+function Bookcase({ gameRows }: { gameRows: number }) {
   const wood = useMemo(() => new MeshStandardMaterial({ color: '#6b4c35', roughness: 0.7 }), []);
   const cx = SHELF_X + SHELF_DEPTH / 2;
   const cz = SHELF_Z0 + SHELF_LEN / 2;
@@ -79,22 +87,24 @@ function Bookcase() {
           <boxGeometry args={[SHELF_DEPTH, 0.03, SHELF_LEN]} />
         </mesh>
       ))}
-      {/* Label strip on the games shelf */}
-      <mesh position={[-SHELF_DEPTH / 2 - 0.001, GAME_BOARD - 0.005, 0]} rotation-y={-Math.PI / 2}>
-        <planeGeometry args={[SHELF_LEN - 0.1, 0.022]} />
-        <meshBasicMaterial color="#ff3fb4" toneMapped={false} />
-      </mesh>
-      <ShelfClutter />
+      {/* Label strips on the games boards */}
+      {GAME_BOARDS.slice(0, gameRows).map((y) => (
+        <mesh key={y} position={[-SHELF_DEPTH / 2 - 0.001, y - 0.005, 0]} rotation-y={-Math.PI / 2}>
+          <planeGeometry args={[SHELF_LEN - 0.1, 0.022]} />
+          <meshBasicMaterial color="#ff3fb4" toneMapped={false} />
+        </mesh>
+      ))}
+      <ShelfClutter gameRows={gameRows} />
     </group>
   );
 }
 
-/** Books, cartridges and a trophy on the other shelves. */
-function ShelfClutter() {
+/** Books, cartridges and a trophy on the shelves the games leave free. */
+function ShelfClutter({ gameRows }: { gameRows: number }) {
   const books = useMemo(() => {
     const colors = ['#c0392b', '#2c3e8f', '#e1b12c', '#16a085', '#8e44ad', '#d35400', '#2d3436'];
     const out: { z: number; h: number; t: number; c: string; y: number }[] = [];
-    [BOARDS[1], BOARDS[2]].forEach((y, row) => {
+    (gameRows > 1 ? [BOARDS[1]] : [BOARDS[1], BOARDS[2]]).forEach((y, row) => {
       let z = -SHELF_LEN / 2 + 0.08;
       let i = row * 3;
       while (z < (row ? 0.1 : SHELF_LEN / 2 - 0.1)) {
@@ -106,7 +116,9 @@ function ShelfClutter() {
       }
     });
     return out;
-  }, []);
+  }, [gameRows]);
+  // The trophy moves to the top of the bookcase when the games take its board.
+  const trophyY = gameRows > 1 ? BOARDS[4] : BOARDS[2];
   return (
     <group>
       {books.map((b, i) => (
@@ -116,7 +128,7 @@ function ShelfClutter() {
         </mesh>
       ))}
       {/* Trophy */}
-      <group position={[0, BOARDS[2] + 0.015, 0.55]}>
+      <group position={[0, trophyY + 0.015, 0.55]}>
         <mesh position-y={0.03}>
           <boxGeometry args={[0.1, 0.06, 0.1]} />
           <meshStandardMaterial color="#2d2d2d" />

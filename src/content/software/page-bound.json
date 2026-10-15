@@ -1,0 +1,18 @@
+{
+  "id": "page-bound",
+  "title": "Pagebound",
+  "category": "software",
+  "shortDescription": "A desktop app that turns scanned book pages into PDF and Kindle-ready EPUB ebooks.",
+  "description": "A local Python desktop app built with PySide6. Import JPG, PNG or WEBP page scans (or whole folders), preview, reorder and rotate pages, add a cover and book details, then export an image-based PDF, a fixed-layout EPUB 3 or both. Everything runs on your own computer.",
+  "technologies": [
+    "Python",
+    "PySide6",
+    "Pillow",
+    "img2pdf",
+    "EPUB 3"
+  ],
+  "screenshots": [],
+  "githubUrl": "https://github.com/jglobo/Page-bound",
+  "featured": true,
+  "world": "software"
+}

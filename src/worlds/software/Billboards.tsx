@@ -131,6 +131,7 @@ class BillboardScreen {
       g.drawImage(this.img, px + (pw - w) / 2, py + (ph - h) / 2, w, h);
     }
     if (p.id === 'study-clock') this.drawClock(px, py, pw, t);
+    if (p.id === 'page-bound') this.drawPages(px, py, pw, ph, t);
     g.strokeStyle = '#19e6ff';
     g.lineWidth = 4;
     g.strokeRect(px, py, pw, ph);
@@ -168,6 +169,39 @@ class BillboardScreen {
     g.fillStyle = '#ffd23f';
     g.font = '800 48px ui-monospace, monospace';
     g.fillText(`${mm}:${ss}`, px + pw - 176, py + 64);
+  }
+
+  /** Scanned pages flying into a book, for the ebook builder. */
+  private drawPages(px: number, py: number, pw: number, ph: number, t: number) {
+    const { g } = this;
+    const bx = px + pw - 150;
+    const by = py + ph / 2 - 80;
+    for (let i = 0; i < 5; i++) {
+      const u = (t * 0.35 + i / 5) % 1;
+      const x = px + 40 + u * (bx - px - 40);
+      const y = py + 70 + i * 52 - u * (i * 52 - 90);
+      g.save();
+      g.translate(x, y);
+      g.rotate((1 - u) * (i % 2 ? 0.25 : -0.2));
+      g.globalAlpha = Math.min(1, (1 - u) * 3);
+      g.fillStyle = '#f4f1e8';
+      g.fillRect(-36, -48, 72, 96);
+      g.fillStyle = '#9aa7b8';
+      for (let l = 0; l < 6; l++) g.fillRect(-26, -34 + l * 13, l === 5 ? 30 : 52, 4);
+      g.restore();
+    }
+    g.globalAlpha = 1;
+    g.fillStyle = '#1e5aa8';
+    g.fillRect(bx, by, 120, 160);
+    g.fillStyle = '#0f3a73';
+    g.fillRect(bx, by, 14, 160);
+    g.fillStyle = '#ffffff';
+    g.font = '800 26px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.fillText('EPUB', bx + 67, by + 70);
+    g.font = '700 20px system-ui, sans-serif';
+    g.fillText('+ PDF', bx + 67, by + 102);
+    g.textAlign = 'left';
   }
 
   private drawPortal(px: number, py: number, pw: number, ph: number, t: number) {
