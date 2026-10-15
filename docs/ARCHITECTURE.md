@@ -183,8 +183,12 @@ binary assets to download for the Hub or the Space world.
 * **Aim**: the Hub controller raycasts from the camera centre against meshes tagged
   `userData.portalSurface`. The crosshair turns into the destination symbol when a
   valid surface is under it; surfaces have a faint grid that brightens when aimed at.
-* **Fire**: a projectile travels from the launcher to the hit point (≈0.25 s), then
-  the portal is placed flush with the surface and expands with an eased scale.
+* **Fire**: Jose's portal gun (`hub/assets/portal_gun.glb`, loaded by his controller in
+  `portalGunController.ts`) plays its Fire clip and sends an orb from its Muzzle socket to
+  the aimed point. Where the orb lands his portal model (`portal.glb`) opens with its
+  Open clip; the destination window below shows inside its inner ring, and the portal
+  can be walked through once the clip finishes. The gun's energy, the orb and the
+  portal rings take the selected destination's colours.
 * **Window effect**: an optimized illusion rather than a second render pass. The
   portal disc uses a fragment shader that draws a parallax preview of the
   destination (for Data Science: star field, nebula and the Earth's limb scrolling

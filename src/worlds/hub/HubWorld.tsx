@@ -1,10 +1,9 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { AdditiveBlending, Group, Mesh, Quaternion, Vector3 } from 'three';
+import { AdditiveBlending, Mesh, Quaternion, Vector3 } from 'three';
 import { Portal } from '../../engine/portals/Portal';
 import { destination } from '../../engine/portals/destinations';
 import { useInteractable } from '../../engine/interaction/interactions';
-import { audio } from '../../engine/audio/AudioManager';
 import { preloadWorld } from '../../engine/loading/worlds';
 import { releaseLock } from '../../engine/input/pointerLock';
 import { track } from '../../analytics/track';
@@ -13,9 +12,15 @@ import { qualityProfile } from '../../stores/settingsStore';
 import { makeTextTexture } from '../../utils/textTexture';
 import { HubEnvironment, type HubEnvironmentHandle } from './HubEnvironment';
 import { HubFirstPersonController } from './HubFirstPersonController';
-import { PortalLauncher } from './PortalLauncher';
+import { PORTAL_SCALE, PortalLauncher } from './PortalLauncher';
 import { hubAim } from './hubAim';
 import { useHubTutorial } from './useHubTutorial';
+
+/** The Open clip's length: the portal can be walked through once it has opened. */
+const OPEN_SECONDS = 0.6;
+/** Fit the destination window (a 2.56 × 3.36 disc) inside the portal's inner ring. */
+const WINDOW_X = (0.476 * PORTAL_SCALE) / 1.28;
+const WINDOW_Y = (0.899 * PORTAL_SCALE) / 1.68;
 
 export default function HubWorld() {
   const env = useRef<HubEnvironmentHandle>(null);
@@ -92,21 +97,21 @@ function AimMarker() {
       m.position.copy(hit.position);
       m.quaternion.copy(q.setFromUnitVectors(z, hit.normal));
       const s = 1 + Math.sin(state.clock.elapsedTime * 4) * 0.03;
-      m.scale.set(s, s * 1.3, 1);
+      m.scale.set(s * PORTAL_SCALE * 0.52, s * PORTAL_SCALE, 1);
     }
   });
   return (
     <mesh ref={ref} visible={false} renderOrder={4}>
-      <ringGeometry args={[1.18, 1.28, 64]} />
+      <ringGeometry args={[0.98, 1.04, 64]} />
       <meshBasicMaterial color={color} transparent opacity={0.55} depthWrite={false} blending={AdditiveBlending} />
     </mesh>
   );
 }
 
-/** Projectile flight, then the portal expands on the wall. */
+/** The destination window inside Jose's portal. His gun flies the orb and plays the
+ *  portal's Open clip (PortalLauncher); this shows where the portal leads once it lands. */
 function ActivePortal() {
   const portal = useGame((s) => s.portal);
-  const projectile = useRef<Group>(null);
   const t = useRef(0);
 
   useEffect(() => {
@@ -115,48 +120,26 @@ function ActivePortal() {
   }, [portal?.id, portal?.state, portal?.destination]);
 
   useFrame((_, dt) => {
-    if (!portal || portal.state === 'open') return;
+    if (!portal || portal.state !== 'opening') return;
     t.current += dt;
-    const game = useGame.getState();
-    if (portal.state === 'projectile') {
-      const k = Math.min(1, t.current / 0.22);
-      projectile.current?.position.lerpVectors(new Vector3(...portal.from), new Vector3(...portal.position), k);
-      if (k >= 1) {
-        audio.play('portalOpen');
-        game.setPortal({ ...portal, state: 'opening' });
-      }
-    } else if (portal.state === 'opening' && t.current > 1.1) {
-      game.setPortal({ ...portal, state: 'open' });
-    }
+    if (t.current > OPEN_SECONDS) useGame.getState().setPortal({ ...portal, state: 'open' });
   });
 
+  const quat = useMemo(() => (portal ? new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), new Vector3(...portal.normal)) : undefined), [portal?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!portal) return null;
   const d = destination(portal.destination)!;
   return (
-    <>
-      {portal.state === 'projectile' && (
-        <group ref={projectile} position={portal.from}>
-          <mesh>
-            <sphereGeometry args={[0.07, 12, 12]} />
-            <meshBasicMaterial color={d.color2} toneMapped={false} />
-          </mesh>
-          <mesh>
-            <sphereGeometry args={[0.2, 12, 12]} />
-            <meshBasicMaterial color={d.color} transparent opacity={0.5} blending={AdditiveBlending} depthWrite={false} />
-          </mesh>
-          <pointLight color={d.color} intensity={4} distance={6} />
-        </group>
-      )}
+    <group position={portal.position} quaternion={quat} scale={[WINDOW_X, WINDOW_Y, 1]}>
       <Portal
         key={portal.id}
-        position={portal.position}
-        normal={portal.normal}
+        position={[0, 0, 0]}
+        normal={[0, 0, 1]}
         color={d.color}
         color2={d.color2}
         preview={d.id === 'data-science' ? 'space' : d.id === 'games' ? 'room' : d.id === 'software' ? 'road' : 'town'}
         open={portal.state === 'projectile' ? 0 : 1}
       />
-    </>
+    </group>
   );
 }
 

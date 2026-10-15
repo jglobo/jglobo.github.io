@@ -11,14 +11,13 @@ import { debugInfo } from '../../engine/debug/debugInfo';
 import { gameplayBlocked, useGame } from '../../stores/gameStore';
 import { useSettings } from '../../stores/settingsStore';
 import { CORE_RADIUS, ROOM, type HubEnvironmentHandle } from './HubEnvironment';
-import { launcherRuntime } from './PortalLauncher';
+import { PORTAL_HALF_W, fireGun, launcherRuntime } from './PortalLauncher';
 import { hubAim } from './hubAim';
 
 const EYE = 1.7;
 const RADIUS = 0.45;
 const WALK = 4.2;
 const SPRINT = 7;
-const PORTAL_HALF_W = 1.28;
 const PORTAL_CENTER_Y = 1.72;
 
 export function HubFirstPersonController({ env }: { env: RefObject<HubEnvironmentHandle | null> }) {
@@ -53,16 +52,21 @@ export function HubFirstPersonController({ env }: { env: RefObject<HubEnvironmen
           audio.play('deny');
           return;
         }
-        launcherRuntime.recoil = 1;
+        // Jose's gun flies an orb to the wall and opens the portal when it lands; until the
+        // model has loaded, the portal opens straight away.
+        const shot = fireGun(hit.position, hit.surface);
+        if (shot === 'busy') return;
         audio.play('fire');
+        if (shot === 'missed') return;
         game.completeInteraction('portal-fired');
+        if (shot === 'unloaded') audio.play('portalOpen');
         game.setPortal({
           id: performance.now(),
           from: launcherRuntime.muzzle.toArray() as [number, number, number],
           position: hit.position.toArray() as [number, number, number],
           normal: hit.normal.toArray() as [number, number, number],
           destination: game.portalDestination,
-          state: 'projectile',
+          state: shot === 'unloaded' ? 'opening' : 'projectile',
         });
       }),
     [],
@@ -165,7 +169,7 @@ export function HubFirstPersonController({ env }: { env: RefObject<HubEnvironmen
         const world = (h.object as Mesh).localToWorld(local);
         world.y = PORTAL_CENTER_Y;
         world.addScaledVector(normal, 0.03);
-        hubAim.hit = { position: world, normal };
+        hubAim.hit = { position: world, normal, surface: h.object };
       }
     }
     hubAim.surface = hubAim.hit ? 1 : 0;

@@ -64,3 +64,14 @@ test('flight input picks the astronaut clip, and the model has every clip', () =
   const clips = json.animations.map((a: { name: string }) => a.name);
   for (const c of ['Hover', 'Fly_Up', 'Fly_Down', 'Fly_Left', 'Fly_Right', 'Boost']) assert.ok(clips.includes(c), c);
 });
+
+test("Jose's portal gun has its Fire clip and Muzzle socket, and the portal its Open clip", () => {
+  const read = (name: string) => {
+    const glb = readFileSync(new URL(`../src/worlds/hub/assets/${name}`, import.meta.url));
+    return JSON.parse(glb.subarray(20, 20 + glb.readUInt32LE(12)).toString('utf8'));
+  };
+  const gun = read('portal_gun.glb');
+  assert.ok(gun.animations.some((a: { name: string }) => a.name === 'Fire'));
+  assert.ok(gun.nodes.some((n: { name: string }) => n.name === 'Muzzle'));
+  assert.ok(read('portal.glb').animations.some((a: { name: string }) => a.name === 'Open'));
+});
