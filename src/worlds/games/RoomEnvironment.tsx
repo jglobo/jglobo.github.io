@@ -2,12 +2,13 @@
 // dresser, posters, LED strip, rug and beanbag. All primitive geometry.
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { BackSide, MeshBasicMaterial, type Mesh, type PointLight } from 'three';
+import { BackSide, MeshBasicMaterial, type Group, type Mesh, type PointLight } from 'three';
 import { useSettings } from '../../stores/settingsStore';
 import { audio } from '../../engine/audio/AudioManager';
 import { BEANBAG, FURNITURE, ROOM, type Rect } from './layout';
 import { useLookTarget } from './lookTargets';
 import { useRoom } from './roomStore';
+import { sitAtComputer } from './ScreenGames';
 import { carpetTexture, monitorTexture, nightWindowTexture, posterTexture, rugTexture, wallpaperTexture, type PosterKind } from './textures';
 import { useOwnedTexture } from './useTexture';
 
@@ -172,6 +173,19 @@ function Desk() {
   );
   useLookTarget(target);
 
+  const monitor = useRef<Group>(null);
+  const pc = useMemo(
+    () => ({
+      id: 'pc',
+      object: () => monitor.current,
+      prompt: () => '[E] Use the computer: play my browser games',
+      use: sitAtComputer,
+      reach: 2.6,
+    }),
+    [],
+  );
+  useLookTarget(pc);
+
   return (
     <group position={[cx, 0, cz]}>
       <mesh position-y={0.74}>
@@ -193,7 +207,7 @@ function Desk() {
         <boxGeometry args={[0.02, 0.02, 0.005]} />
         <meshBasicMaterial color="#5dff9a" toneMapped={false} />
       </mesh>
-      <group position={[0.05, 0.98, -0.05]}>
+      <group ref={monitor} userData={{ lookId: 'pc' }} position={[0.05, 0.98, -0.05]}>
         <mesh>
           <boxGeometry args={[0.46, 0.38, 0.4]} />
           <meshStandardMaterial color="#d9d2bf" roughness={0.6} />

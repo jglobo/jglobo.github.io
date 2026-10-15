@@ -7,6 +7,7 @@ import { setEscapeHandler } from '../../engine/input/input';
 import { releaseLock } from '../../engine/input/pointerLock';
 import { audio } from '../../engine/audio/AudioManager';
 import { track } from '../../analytics/track';
+import { projectById } from '../../content';
 import { useGame } from '../../stores/gameStore';
 import { useHud } from '../../stores/hudStore';
 import { CrtSystem } from './crt/CrtSystem';
@@ -16,6 +17,7 @@ import { PORTAL, ROOM } from './layout';
 import { RoomController, putBack, standUp, type RoomKeys } from './RoomController';
 import { RoomEnvironment } from './RoomEnvironment';
 import { useRoom } from './roomStore';
+import { ScreenGames, leaveComputer, playGame, sitAtComputer, stopGame } from './ScreenGames';
 
 const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
 const SCREEN_KEYS = new Set(['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space']);
@@ -35,6 +37,7 @@ export default function GameRoomWorld() {
           const win = window.open(url, '_blank');
           if (win) win.opener = null;
         },
+        play: (p) => playGame(p),
         exit: () => standUp(crt),
         cheat: () => useRoom.getState().cheat,
       }),
@@ -42,9 +45,9 @@ export default function GameRoomWorld() {
   );
 
   useEffect(() => {
-    useRoom.setState({ mode: 'walk', heldId: null, insertedId: null, lampOn: true });
+    useRoom.setState({ mode: 'walk', heldId: null, insertedId: null, embed: null, lampOn: true });
     useHud.setState({
-      controls: ['WASD: walk · mouse: look', 'Click or E: pick up / use', 'I: read the manual', 'Q or Esc: put down / stand up', 'Walk into the portal: back to the Hub'],
+      controls: ['WASD: walk · mouse: look', 'Click or E: pick up / use', 'E at the desk: play browser games', 'I: read the manual', 'Q or Esc: put down / stand up', 'Walk into the portal: back to the Hub'],
     });
     const g = useGame.getState();
     if (!g.completedInteractions.includes('game-inserted')) g.setHint('Your games are on the shelf to the right. Pick one up and play it on the TV.');
@@ -56,12 +59,23 @@ export default function GameRoomWorld() {
         putBack();
         return true;
       }
+      if (room.embed) {
+        stopGame();
+        return true;
+      }
       if (room.mode === 'crt') {
         if (!crt.back()) standUp(crt);
         return true;
       }
+      if (room.mode === 'pc') {
+        leaveComputer();
+        return true;
+      }
       return room.mode === 'inserting';
     });
+
+    // Debug builds (?debug) expose the room for automated browser checks.
+    if (g.debug) Object.assign(window, { __room: { useRoom, crt, sitAtComputer, projectById } });
 
     let konami = 0;
     const down = (e: KeyboardEvent) => {
@@ -94,7 +108,7 @@ export default function GameRoomWorld() {
       useHud.setState({ controls: [] });
       useGame.getState().setHint(null);
       useGame.setState({ freeCursor: false });
-      useRoom.setState({ mode: 'walk', heldId: null, insertedId: null });
+      useRoom.setState({ mode: 'walk', heldId: null, insertedId: null, embed: null });
       crt.dispose();
     };
   }, [crt, keys]);
@@ -110,6 +124,7 @@ export default function GameRoomWorld() {
       <RoomEnvironment />
       <GameShelf />
       <CrtTv crt={crt} />
+      <ScreenGames />
       <Portal position={[PORTAL.x, PORTAL.y, ROOM.halfZ - 0.02]} normal={[0, 0, -1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.62} />
       <RoomController crt={crt} keys={keys} />
     </>

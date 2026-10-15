@@ -13,6 +13,8 @@
     "images/hoops.jpg"
   ],
   "githubUrl": "https://github.com/jglobo/Hoops",
+  "playUrl": "play/hoops/index.html",
+  "playOn": "pc",
   "featured": false,
   "world": "games",
   "boxColor": "#e8701f"

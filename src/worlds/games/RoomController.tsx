@@ -11,7 +11,7 @@ import { travelTo } from '../../engine/loading/travel';
 import { debugInfo } from '../../engine/debug/debugInfo';
 import { gameplayBlocked, useGame } from '../../stores/gameStore';
 import { useSettings } from '../../stores/settingsStore';
-import { EYE, TV, TV_SEAT, collide, inReturnPortal } from './layout';
+import { EYE, MONITOR, PC_SEAT, TV, TV_SEAT, collide, inReturnPortal } from './layout';
 import { allLookTargets, targetFor, type LookTarget } from './lookTargets';
 import { roomRuntime, useRoom } from './roomStore';
 import { openManual } from './GameShelf';
@@ -47,7 +47,7 @@ export function standUp(crt: CrtSystem) {
   const room = useRoom.getState();
   if (room.mode !== 'crt') return;
   crt.back();
-  room.set({ mode: 'walk' });
+  room.set({ mode: 'walk', embed: null });
   useGame.setState({ freeCursor: false });
   clearInput();
   tryLock();
@@ -68,9 +68,19 @@ export function RoomController({ crt, keys }: { crt: CrtSystem; keys: RoomKeys }
     // Camera-style orientation (looking down -z) from the beanbag towards the screen.
     const seatPos = new Vector3(TV_SEAT.x, TV_SEAT.y, TV_SEAT.z);
     const m = new Matrix4().lookAt(seatPos, new Vector3(TV.x, TV.screenY - 0.07, TV.screenZ), new Vector3(0, 1, 0));
+    // ...and from the desk chair towards the computer monitor.
+    const pcPos = new Vector3(PC_SEAT.x, PC_SEAT.y, PC_SEAT.z);
+    const pm = new Matrix4().lookAt(pcPos, new Vector3(MONITOR.x, MONITOR.y, MONITOR.z), new Vector3(0, 1, 0));
     return {
       seatPos,
       seatQuat: new Quaternion().setFromRotationMatrix(m),
+      tvPos: seatPos.clone(),
+      // Leaning in while a browser game runs on the TV, so it fills the view.
+      tvClosePos: new Vector3(TV.x, TV.screenY, TV.screenZ + 0.42),
+      tvCloseQuat: new Quaternion(),
+      tvQuat: new Quaternion().setFromRotationMatrix(m),
+      pcPos,
+      pcQuat: new Quaternion().setFromRotationMatrix(pm),
       walkPos: new Vector3(),
       walkQuat: new Quaternion(),
       euler: new Euler(0, 0, 0, 'YXZ'),
@@ -89,7 +99,7 @@ export function RoomController({ crt, keys }: { crt: CrtSystem; keys: RoomKeys }
       const mode = useRoom.getState().mode;
       if (gameplayBlocked()) return;
       if (mode === 'walk') active.current?.use();
-      else if (mode === 'crt') keys.click = true;
+      else if (mode === 'crt' && !useRoom.getState().embed) keys.click = true;
     });
   }, [camera, keys]);
 
@@ -130,7 +140,16 @@ export function RoomController({ crt, keys }: { crt: CrtSystem; keys: RoomKeys }
     }
 
     // Camera: blend between the walking view and the seat in front of the TV.
-    const seated = room.mode === 'crt' || room.mode === 'inserting';
+    const seated = room.mode === 'crt' || room.mode === 'inserting' || room.mode === 'pc';
+    // Remember which seat we are in, so standing up blends back from the right one.
+    if (seated) {
+      const pc = room.mode === 'pc';
+      const close = !pc && !!room.embed;
+      // Snap when sitting down from a walk; glide when leaning in or out.
+      const k = blend.current < 0.02 ? 1 : Math.min(1, dt * 4);
+      tmp.seatPos.lerp(pc ? tmp.pcPos : close ? tmp.tvClosePos : tmp.tvPos, k);
+      tmp.seatQuat.slerp(pc ? tmp.pcQuat : close ? tmp.tvCloseQuat : tmp.tvQuat, k);
+    }
     blend.current += ((seated ? 1 : 0) - blend.current) * Math.min(1, dt * 3);
     const b = blend.current * blend.current * (3 - 2 * blend.current);
     tmp.walkPos.set(p.x, EYE + (reducedMotion ? 0 : Math.sin(bob.current) * 0.025 * Math.min(1, speed)), p.z);
@@ -193,9 +212,11 @@ export function RoomController({ crt, keys }: { crt: CrtSystem; keys: RoomKeys }
     }
 
     // The TV always runs; it only gets the keyboard while you sit in front of it.
-    const playing = room.mode === 'crt' && !blocked;
+    // A bundled browser game on the TV takes the keyboard itself.
+    const playing = room.mode === 'crt' && !blocked && !room.embed;
     crt.update(rawDt, playing ? keys : { held: EMPTY, pressed: EMPTY, click: false });
-    if (room.mode === 'crt') prompt = crt.controls;
+    if (room.mode === 'crt') prompt = room.embed ? null : crt.controls;
+    if (room.mode === 'pc') prompt = null;
     keys.pressed.clear();
     keys.click = false;
 

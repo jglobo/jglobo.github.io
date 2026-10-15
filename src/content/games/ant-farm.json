@@ -12,6 +12,8 @@
     "images/antfarm.png"
   ],
   "githubUrl": "https://github.com/jglobo/Ant-Farm",
+  "playUrl": "play/ant-farm/index.html",
+  "playOn": "pc",
   "featured": false,
   "world": "games",
   "boxColor": "#6b4426"

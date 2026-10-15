@@ -7,12 +7,12 @@ import { projectById } from '../../content';
 import { useGame } from '../../stores/gameStore';
 import { releaseLock } from '../../engine/input/pointerLock';
 import { useSettings } from '../../stores/settingsStore';
-import { FURNITURE, TV } from './layout';
+import { FURNITURE, TV, TV_SCREEN } from './layout';
 import { useLookTarget } from './lookTargets';
 import { useRoom } from './roomStore';
 import type { CrtSystem } from './crt/CrtSystem';
 
-const SCREEN = { w: 0.6, h: 0.45 };
+const SCREEN = TV_SCREEN;
 const BODY = { w: 0.8, h: 0.64, d: 0.52 };
 
 const vertex = /* glsl */ `

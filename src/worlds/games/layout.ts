@@ -21,6 +21,17 @@ export const BEANBAG: Circle = { x: 0.6, z: -1.2, r: 0.42 };
 export const PORTAL = { x: 0, halfWidth: 0.8, y: 1.3, triggerZ: ROOM.halfZ - 0.42 };
 
 export const TV = { x: 0.6, screenY: 0.9, screenZ: -2.215 };
+/** Glass of the TV and of the desk computer's monitor (both face +z). */
+export const TV_SCREEN = { w: 0.6, h: 0.45 };
+export const MONITOR = {
+  x: (FURNITURE.desk.minX + FURNITURE.desk.maxX) / 2 + 0.05,
+  y: 0.98,
+  z: (FURNITURE.desk.minZ + FURNITURE.desk.maxZ) / 2 - 0.05 + 0.201,
+  w: 0.38,
+  h: 0.29,
+};
+/** Where your eyes are when you sit at the computer. */
+export const PC_SEAT = { x: MONITOR.x, y: MONITOR.y + 0.01, z: MONITOR.z + 0.3 };
 export const TV_SEAT = { x: 0.6, y: 0.98, z: -1.48 };
 
 /** Pushes a point out of walls and furniture. Mutates and returns `p`. */

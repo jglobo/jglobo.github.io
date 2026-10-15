@@ -5,14 +5,15 @@ import { assetUrl, type PortfolioProject, type ProjectVisualization } from '../c
 import { track, type AnalyticsEvent } from '../analytics/track';
 import { correlatedPoints } from '../utils/random';
 
-export function ExtLink({ href, event, children, className = 'btn', download }: { href: string; event?: AnalyticsEvent; children: React.ReactNode; className?: string; download?: boolean }) {
+export function ExtLink({ href, event, children, className = 'btn', download, newTab }: { href: string; event?: AnalyticsEvent; children: React.ReactNode; className?: string; download?: boolean; newTab?: boolean }) {
   const external = /^https?:/.test(href);
+  const tab = external || newTab;
   return (
     <a
       className={className}
       href={external ? href : assetUrl(href)}
-      target={external ? '_blank' : undefined}
-      rel={external ? 'noopener noreferrer' : undefined}
+      target={tab ? '_blank' : undefined}
+      rel={tab ? 'noopener noreferrer' : undefined}
       download={download || undefined}
       onClick={() => event && track(event, { href })}
     >
@@ -25,9 +26,10 @@ export function ProjectLinks({ project }: { project: PortfolioProject }) {
   return (
     <div className="project-links">
       {project.demoUrl && <ExtLink href={project.demoUrl} event="demo_clicked" className="btn primary">Open live project ↗</ExtLink>}
+      {project.playUrl && !project.demoUrl && <ExtLink href={project.playUrl} event="game_played" className="btn primary" newTab>Play in your browser ↗</ExtLink>}
       {project.githubUrl && (
-        <ExtLink href={project.githubUrl} event="github_clicked" className={project.demoUrl ? 'btn' : 'btn primary'}>
-          {project.demoUrl ? 'Source code ↗' : 'Open project on GitHub ↗'}
+        <ExtLink href={project.githubUrl} event="github_clicked" className={project.demoUrl || project.playUrl ? 'btn' : 'btn primary'}>
+          {project.demoUrl || project.playUrl ? 'Source code ↗' : 'Open project on GitHub ↗'}
         </ExtLink>
       )}
       {project.videoUrl && <ExtLink href={project.videoUrl} event="demo_clicked">Video ↗</ExtLink>}

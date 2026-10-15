@@ -11,10 +11,11 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rolldownOptions: {
       output: {
-        // three.js + R3F in one cacheable vendor chunk, loaded only on "Enter portfolio".
+        // three.js + R3F + drei (and drei's Babel helper, or it lands in a world chunk and
+        // creates an import cycle) in one cacheable vendor chunk, loaded on "Enter portfolio".
         codeSplitting: {
           includeDependenciesRecursively: false,
-          groups: [{ name: 'three-vendor', test: /node_modules[\\/](three|@react-three|three-stdlib)/ }],
+          groups: [{ name: 'three-vendor', test: /node_modules[\\/](three|@react-three|three-stdlib|@babel[\\/]runtime)/ }],
         },
       },
     },

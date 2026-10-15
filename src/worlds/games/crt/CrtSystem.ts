@@ -18,6 +18,8 @@ export interface CrtCallbacks {
   sfx: (name: SfxName) => void;
   openInfo: (project: PortfolioProject) => void;
   openUrl: (url: string, project: PortfolioProject) => void;
+  /** PLAY on a game bundled with the site that runs on the TV (it takes over the screen). */
+  play: (project: PortfolioProject) => void;
   /** BACK from the menu: stand up from the TV. */
   exit: () => void;
   cheat: () => boolean;
@@ -166,6 +168,15 @@ export class CrtSystem {
     this.cb.sfx('select');
     switch (MENU[this.selected]) {
       case 'PLAY': {
+        if (!p.crtGame && p.playUrl && p.playOn === 'tv') {
+          this.cb.play(p);
+          return;
+        }
+        if (!p.crtGame && p.playUrl) {
+          this.message = ['THIS ONE PLAYS ON', 'THE COMPUTER ON THE DESK.', '', 'STAND UP AND SIT AT THE PC,', 'OR CHOOSE SOURCE', 'FOR THE CODE.'];
+          this.go('message');
+          return;
+        }
         if (!p.crtGame) {
           const how = p.downloadUrl ? 'CHOOSE SOURCE TO DOWNLOAD IT,' : p.githubUrl ? 'CHOOSE SOURCE FOR THE CODE,' : 'ASK JOSE FOR A DEMO,';
           this.message = ['THIS CARTRIDGE RUNS ON', gamePlatform(p).tv, '', how, 'OR PICK A GAME MARKED', '"PLAYS ON TV" FROM THE SHELF.'];
@@ -302,7 +313,7 @@ export class CrtSystem {
         g.fillRect(110, y - MENU_STEP / 2 + 4, SCREEN_W - 220, MENU_STEP - 8);
       }
       let label: string = item;
-      if (item === 'PLAY' && !p.crtGame) label = 'PLAY (DESKTOP)';
+      if (item === 'PLAY' && !p.crtGame && !(p.playUrl && p.playOn === 'tv')) label = p.playUrl ? 'PLAY (ON THE PC)' : 'PLAY (DESKTOP)';
       if (item === 'SOURCE' && !p.githubUrl && p.downloadUrl) label = 'SOURCE (.ZIP)';
       this.text(label, SCREEN_W / 2, y, 26, on ? '#ffe066' : '#d8dcff');
       if (on && Math.floor(this.t * 3) % 2 === 0) this.text('▶', 140, y, 24, '#ffe066');

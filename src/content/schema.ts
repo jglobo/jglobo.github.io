@@ -46,6 +46,10 @@ export interface PortfolioProject {
   crtGame?: 'space-duel' | 'flappy';
   /** Games world: box art colours. */
   boxColor?: string;
+  /** A copy of the game bundled with this site (play/<id>/), see scripts/sync-play.mjs. */
+  playUrl?: string;
+  /** Games world: where the bundled copy runs, the TV (insert the box) or the desk computer. */
+  playOn?: 'tv' | 'pc';
 }
 
 export interface Profile {

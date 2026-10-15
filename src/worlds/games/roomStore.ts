@@ -5,13 +5,16 @@ import { create } from 'zustand';
  * inspect: holding a game box in front of the camera
  * inserting: the box is flying to the console (short animation)
  * crt: sitting in front of the TV, the screen takes the keyboard
+ * pc: sitting at the desk computer
  */
-export type RoomMode = 'walk' | 'inspect' | 'inserting' | 'crt';
+export type RoomMode = 'walk' | 'inspect' | 'inserting' | 'crt' | 'pc';
 
 interface RoomState {
   mode: RoomMode;
   heldId: string | null;
   insertedId: string | null;
+  /** Id of the bundled browser game running on the TV or the computer, if any. */
+  embed: string | null;
   lampOn: boolean;
   cheat: boolean;
   set: (p: Partial<Omit<RoomState, 'set'>>) => void;
@@ -21,6 +24,7 @@ export const useRoom = create<RoomState>((set) => ({
   mode: 'walk',
   heldId: null,
   insertedId: null,
+  embed: null,
   lampOn: true,
   cheat: false,
   set: (p) => set(p),
