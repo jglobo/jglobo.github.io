@@ -34,6 +34,7 @@ export const SITES: SiteDef[] = [
   { id: 'station', name: 'Orbital Station', x: -26, y: 13, collide: 3.2, reach: 9, symbol: '◎' },
   { id: 'satellite', name: 'Research Satellite', x: 5, y: 27, collide: 2.2, reach: 7, symbol: '✧' },
   { id: 'probe', name: 'Autopilot Test Range', x: -15, y: -12, collide: 2.8, reach: 7.5, symbol: '✦' },
+  { id: 'fuel-depot', name: 'Orbital Fuel Depot', x: 31, y: -13, collide: 2.8, reach: 7.5, symbol: '◈' },
 ];
 
 export const activeSites = () =>
@@ -123,6 +124,7 @@ function ProjectSite({ site, project, runtime }: { site: SiteDef; project: Portf
       {site.id === 'station' && <OrbitalStation />}
       {site.id === 'satellite' && <ResearchSatellite />}
       {site.id === 'probe' && <AutopilotRange />}
+      {site.id === 'fuel-depot' && <FuelDepot />}
       {/* Name plate above the site */}
       <mesh position={[0, site.collide + 2.4, 0]}>
         <planeGeometry args={[6, 1]} />
@@ -331,6 +333,69 @@ function AutopilotRange() {
           <boxGeometry args={[0.3, 0.04, 0.7]} />
         </mesh>
         <pointLight color="#ffd27f" intensity={2.5} distance={5} />
+      </group>
+    </group>
+  );
+}
+
+/** A floating fuel tank with a pump, a price board and a slowly turning docking ring. */
+function FuelDepot() {
+  const ring = useRef<Group>(null);
+  const reducedMotion = useSettings((s) => s.reducedMotion);
+  const tank = useMemo(() => new MeshStandardMaterial({ color: '#d9dde3', roughness: 0.35, metalness: 0.6 }), []);
+  const band = useMemo(() => new MeshStandardMaterial({ color: '#e0453a', roughness: 0.4, metalness: 0.3 }), []);
+  const dark = useMemo(() => new MeshStandardMaterial({ color: '#2a2f38', roughness: 0.5, metalness: 0.5 }), []);
+  const board = useMemo(
+    () =>
+      makeTextTexture(
+        [
+          { text: 'GAS PRICES', size: 54, weight: '800', color: '#ffd27f' },
+          { text: 'FORECAST', size: 64, weight: '800', color: '#ffffff' },
+          { text: 'LIVE APP · PRESS E', size: 30, weight: '600', color: '#7fe0ff' },
+        ],
+        { width: 640, height: 320, background: '#0b1420', glow: '#ffd27f' },
+      ),
+    [],
+  );
+  useEffect(() => () => { tank.dispose(); band.dispose(); dark.dispose(); board.dispose(); }, [tank, band, dark, board]);
+  useFrame((_, dt) => {
+    if (ring.current && !reducedMotion) ring.current.rotation.z += dt * 0.4;
+  });
+  return (
+    <group rotation-z={-0.12}>
+      {/* Tank */}
+      <mesh material={tank} rotation-z={Math.PI / 2} position={[-0.6, 0, 0]}>
+        <capsuleGeometry args={[1.1, 2.2, 8, 24]} />
+      </mesh>
+      {[-1.4, 0.2].map((x) => (
+        <mesh key={x} material={band} rotation-z={Math.PI / 2} position={[x, 0, 0]}>
+          <cylinderGeometry args={[1.14, 1.14, 0.22, 24]} />
+        </mesh>
+      ))}
+      {/* Pump with hose */}
+      <mesh material={dark} position={[1.9, -0.2, 0]}>
+        <boxGeometry args={[0.9, 1.8, 0.7]} />
+      </mesh>
+      <mesh material={band} position={[1.9, 0.75, 0.36]}>
+        <boxGeometry args={[0.7, 0.18, 0.02]} />
+      </mesh>
+      <mesh material={dark} position={[2.45, -0.4, 0]} rotation-z={0.5}>
+        <torusGeometry args={[0.45, 0.06, 8, 24, Math.PI]} />
+      </mesh>
+      {/* Price board on a mast */}
+      <mesh material={dark} position={[1.9, 1.5, -0.1]}>
+        <cylinderGeometry args={[0.06, 0.06, 1.2, 8]} />
+      </mesh>
+      <mesh position={[1.9, 2.55, 0]}>
+        <planeGeometry args={[2.2, 1.1]} />
+        <meshBasicMaterial map={board} toneMapped={false} />
+      </mesh>
+      {/* Docking ring */}
+      <group ref={ring} position={[-0.6, 0, 0]}>
+        <mesh>
+          <torusGeometry args={[1.9, 0.05, 8, 48]} />
+          <meshBasicMaterial color="#ffd27f" transparent opacity={0.55} blending={AdditiveBlending} depthWrite={false} />
+        </mesh>
       </group>
     </group>
   );

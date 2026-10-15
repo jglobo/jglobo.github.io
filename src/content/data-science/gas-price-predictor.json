@@ -1,0 +1,26 @@
+{
+  "id": "gas-price-predictor",
+  "title": "Gas Price Predictor",
+  "category": "data-science",
+  "shortDescription": "A live web app that predicts gas prices.",
+  "description": "A gas price prediction app built with Streamlit. It is hosted on Render, so the first visit can take a little while as the app wakes up.",
+  "technologies": [
+    "Python",
+    "Streamlit",
+    "Render"
+  ],
+  "screenshots": [],
+  "demoUrl": "https://gas-price-predictor.onrender.com/",
+  "featured": true,
+  "world": "data-science",
+  "location": "fuel-depot",
+  "technicalDetails": {
+    "problem": "Estimate where gas prices are headed."
+  },
+  "visualization": {
+    "kind": "line",
+    "label": "Price over time (illustrative shape)",
+    "illustrative": true,
+    "values": [0.42, 0.47, 0.44, 0.52, 0.6, 0.56, 0.63, 0.7, 0.66, 0.74]
+  }
+}

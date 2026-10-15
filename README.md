@@ -62,7 +62,7 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
    (see `src/content/schema.ts` for the fields).
 2. Put screenshots in `images/` and list them in `screenshots`.
 3. To place it in a world, set `location` to a site id (Data Science sites:
-   `asteroid-lab`, `station`, `satellite`, `probe`; add more in `SITES` in
+   `asteroid-lab`, `station`, `satellite`, `probe`, `fuel-depot`; add more in `SITES` in
    `src/worlds/data-science/ProjectSites.tsx`). Without a location it still appears in the
    menus and Quick Portfolio.
 4. Games appear on the bedroom shelf automatically (featured first, four per board on two
