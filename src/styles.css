@@ -168,7 +168,7 @@ kbd {
 .inspector.holo { position: relative; }
 .reduced-motion .inspector.holo::after { display: none; }
 .inspector.crt { font-family: var(--mono); }
-.inspector.journal { background: #f4ecd8; color: #2b2418; }
+.inspector.journal { background: #f4ecd8; color: #2b2418; --text: #2b2418; --muted: #5c4a30; --accent2: #6b3f00; --line: #d8c6a0; }
 
 .project-details .lede { font-size: 1.08rem; color: var(--text); font-weight: 600; }
 .project-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
