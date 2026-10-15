@@ -19,6 +19,7 @@ import {
   type SkinnedMesh,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { loadGltf } from '../../utils/loadGltf';
 
 export interface FireOptions {
   direction?: Vector3;
@@ -55,7 +56,7 @@ interface Shot {
 /** Load once per player. +Z muzzle axis, Y up, meters. Call update(dt) every frame. */
 export async function loadPortalGun(gunURL: string, portalURL: string, effectScene: Object3D): Promise<PortalGun> {
   const loader = new GLTFLoader();
-  const [gun, portal] = await Promise.all([loader.loadAsync(gunURL), loader.loadAsync(portalURL)]);
+  const [gun, portal] = await Promise.all([loadGltf(gunURL, loader), loadGltf(portalURL, loader)]);
   const object = gun.scene;
   const mixer = new AnimationMixer(object);
   const fireClip = AnimationClip.findByName(gun.animations, 'Fire');

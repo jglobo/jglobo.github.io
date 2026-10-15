@@ -1,7 +1,7 @@
 // Jose's flight-character loader for his astronaut.glb (originally astronaut-controller.js),
 // with TypeScript types added (and the skeleton disposed too). Loads the GLB, and crossfades between its flight clips.
 import { AnimationMixer, LoopRepeat, type AnimationAction, type Material, type Mesh, type BufferGeometry, type Object3D, type SkinnedMesh } from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { loadGltf } from '../../utils/loadGltf';
 
 export type FlightState = 'hover' | 'up' | 'down' | 'left' | 'right' | 'boost';
 
@@ -16,7 +16,7 @@ export interface FlightCharacter {
 
 /** Load a flight character. Add `object` to your scene and call update(dt) each frame. */
 export async function loadAstronaut(url: string): Promise<FlightCharacter> {
-  const gltf = await new GLTFLoader().loadAsync(url);
+  const gltf = await loadGltf(url);
   const object = gltf.scene;
   const mixer = new AnimationMixer(object);
   const clips: Record<string, AnimationAction> = Object.fromEntries(gltf.animations.map((clip) => [clip.name, mixer.clipAction(clip)]));
