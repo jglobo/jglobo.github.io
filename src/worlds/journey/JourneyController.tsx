@@ -13,9 +13,9 @@ import { travelTo } from '../../engine/loading/travel';
 import { gameplayBlocked, useGame } from '../../stores/gameStore';
 import { useHud, type NavMarker } from '../../stores/hudStore';
 import { journeyRuntime, useJourney } from './journeyStore';
-import { JOSE_SPOT, MAILBOX, PORTAL_SPOT, SPAWN, collide, type TownLayout } from './layout';
-import type { DogBrain } from './NPCs';
-import { HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, humanAtlas } from './sprites/pixelArt';
+import { JOSE_SPOT, MAILBOX, PORTAL_SPOT, SPAWN, WIFE_SPOT, collide, type TownLayout } from './layout';
+import type { DogBrain, KidBrain } from './NPCs';
+import { HUMAN_FRAMES, HUMAN_H, HUMAN_W, robotAtlas } from './sprites/pixelArt';
 import { PixelSprite, type SpriteState } from './sprites/PixelSprite';
 
 const WALK = 4.2;
@@ -42,16 +42,18 @@ function Interact({ item }: { item: Interactable }) {
 export function JourneyController({
   layout,
   dog,
+  kid,
   returnPortal,
   onSummon,
 }: {
   layout: TownLayout;
   dog: DogBrain;
+  kid: KidBrain;
   returnPortal: { x: number; z: number } | null;
   onSummon: (p: { x: number; z: number }) => void;
 }) {
   const camera = useThree((s) => s.camera);
-  const atlas = useMemo(() => humanAtlas(LOOKS.visitor), []);
+  const atlas = useMemo(robotAtlas, []);
   const sprite = useMemo<SpriteState>(() => ({ x: SPAWN.x, y: 0, z: SPAWN.z, frame: 0, flip: false, visible: true }), []);
   const me = useRef({ x: SPAWN.x, z: SPAWN.z, dir: 'down' as 'down' | 'up' | 'side', flip: false, dist: 0, speed: 0 });
   const player = useMemo(() => new Vector3(), []);
@@ -67,6 +69,7 @@ export function JourneyController({
       return () => v;
     };
     const dogPos = new Vector3();
+    const kidPos = new Vector3();
     return [
       ...layout.stops.map((s) => {
         const stop = journey.stops.find((j) => j.id === s.id)!;
@@ -76,11 +79,32 @@ export function JourneyController({
         id: 'jose',
         label: '[E] Talk to Jose',
         position: at(JOSE_SPOT.x, JOSE_SPOT.z),
-        radius: 2.6,
+        radius: 2.2,
         onInteract: () => {
           useJourney.setState({ talking: 'jose' });
           useGame.getState().openOverlay('dialogue');
           useGame.getState().completeInteraction('journey:talk-jose');
+        },
+      },
+      {
+        id: 'wife',
+        label: "[E] Say hi to Jose's wife",
+        position: at(WIFE_SPOT.x, WIFE_SPOT.z),
+        radius: 2,
+        onInteract: () => {
+          useJourney.setState({ talking: 'wife' });
+          useGame.getState().openOverlay('dialogue');
+        },
+      },
+      {
+        id: 'son',
+        label: "[E] Say hi to Jose's son",
+        position: () => kidPos.set(kid.x, 0, kid.z),
+        radius: 1.8,
+        onInteract: () => {
+          const lines = journey.npcs.find((n) => n.id === 'son')?.lines ?? [];
+          useGame.getState().setHint(lines[Math.floor(Math.random() * lines.length)] ?? '');
+          setTimeout(() => useGame.getState().setHint(null), 3500);
         },
       },
       {
@@ -117,7 +141,7 @@ export function JourneyController({
         onInteract: () => useGame.getState().openProject('portal-hub'),
       },
     ];
-  }, [layout, dog]);
+  }, [layout, dog, kid]);
 
   useEffect(() => {
     journeyRuntime.x = SPAWN.x;
@@ -163,7 +187,8 @@ export function JourneyController({
     sprite.flip = p.dir === 'side' && p.flip;
     sprite.x = p.x;
     sprite.z = p.z;
-    sprite.y = moving ? Math.abs(Math.sin(p.dist * (running ? 5.7 : 7.4))) * 0.05 : 0;
+    // The robot bounces as it walks and hovers a little when idle.
+    sprite.y = moving ? Math.abs(Math.sin(p.dist * (running ? 5.7 : 7.4))) * 0.09 : (Math.sin(journeyRuntime.time * 2.4) + 1) * 0.02;
     journeyRuntime.x = p.x;
     journeyRuntime.z = p.z;
     journeyRuntime.moving = moving;

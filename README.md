@@ -72,8 +72,8 @@ Add `?debug` to a production URL to see FPS, draw calls, memory and world telepo
   up the path automatically.
 * `src/content/dialogue.json` holds Jose's questions and answers (`question`, `answer`,
   `category`). Every entry appears in the ASK A QUESTION menu.
-* The character looks are palettes in `src/worlds/journey/sprites/pixelArt.ts`
-  (`LOOKS`), drawn in code at runtime.
+* The family's looks are palettes in `src/worlds/journey/sprites/pixelArt.ts` (`LOOKS`,
+  `DOG_LOOK`) and the visitor robot is `robotGrid`, all drawn in code at runtime.
 
 ## Deploying
 

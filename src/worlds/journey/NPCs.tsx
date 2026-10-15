@@ -1,36 +1,39 @@
-// The people (and dog) at home. Jose turns to face the visitor and waves when you
-// talk to him; the dog wanders the yard, sits and wags, and follows you for a
-// while after a pat.
+// The family at home. Jose and his wife turn to face the visitor and wave; their
+// son chases a ball across the front yard; the dog wanders, sits and wags, and
+// follows you for a while after a pat.
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
-import { Mesh, OctahedronGeometry, Sprite, SpriteMaterial } from 'three';
+import { Mesh, MeshStandardMaterial, OctahedronGeometry, Sprite, SpriteMaterial } from 'three';
+import { qualityProfile } from '../../stores/settingsStore';
 import { useGame } from '../../stores/gameStore';
 import { audio } from '../../engine/audio/AudioManager';
 import type { Kit } from './Buildings';
 import { journeyRuntime, useJourney } from './journeyStore';
-import { JOSE_SPOT, YARD, collide, type TownLayout } from './layout';
-import { DOG_FRAMES, DOG_H, DOG_LOOK, DOG_W, HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, dogAtlas, humanAtlas } from './sprites/pixelArt';
+import { KID_LANE, YARD, collide, type TownLayout } from './layout';
+import { DOG_FRAMES, DOG_H, DOG_LOOK, DOG_W, HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, dogAtlas, humanAtlas, type HumanLook } from './sprites/pixelArt';
 import { PixelSprite, type SpriteState } from './sprites/PixelSprite';
 import { heartTexture } from './textures';
 import { useOwned } from './useOwned';
 
 const F = (name: (typeof HUMAN_FRAMES)[number]) => HUMAN_FRAMES.indexOf(name);
 
-export function JoseNpc({ kit }: { kit: Kit }) {
-  const atlas = useMemo(() => humanAtlas(LOOKS.jose), []);
-  const state = useMemo<SpriteState>(() => ({ x: JOSE_SPOT.x, y: 0, z: JOSE_SPOT.z, frame: 0, flip: false, visible: true }), []);
+/** Jose or his wife: stands by the porch, turns toward the visitor, waves hello. */
+export function PersonNpc({ id, look, spot, kit, marker }: { id: string; look: HumanLook; spot: { x: number; z: number }; kit: Kit; marker?: string }) {
+  const atlas = useMemo(() => humanAtlas(look), [look]);
+  const state = useMemo<SpriteState>(() => ({ x: spot.x, y: 0, z: spot.z, frame: 0, flip: false, visible: true }), [spot]);
   const talkTime = useRef(0);
   const greet = useRef(0);
   const wasNear = useRef(false);
-  const marker = useRef<Mesh>(null);
+  const markerRef = useRef<Mesh>(null);
   const markerGeo = useOwned(() => new OctahedronGeometry(0.22, 0));
-  const talked = useGame((s) => s.completedInteractions.includes('journey:talk-jose'));
+  const showMarker = useGame((s) => !!marker && !s.completedInteractions.includes(marker));
+  const phase = useMemo(() => spot.x * 1.7, [spot]);
 
   useFrame((st, dt) => {
-    const dx = journeyRuntime.x - JOSE_SPOT.x;
-    const dz = journeyRuntime.z - JOSE_SPOT.z;
+    const dx = journeyRuntime.x - spot.x;
+    const dz = journeyRuntime.z - spot.z;
     const near = Math.hypot(dx, dz) < 7;
-    const talking = useGame.getState().overlay === 'dialogue' && useJourney.getState().talking === 'jose';
+    const talking = useGame.getState().overlay === 'dialogue' && useJourney.getState().talking === id;
     if (near && !wasNear.current) greet.current = 1.6; // wave hello when the visitor walks up
     wasNear.current = near;
     greet.current = Math.max(0, greet.current - dt);
@@ -51,17 +54,71 @@ export function JoseNpc({ kit }: { kit: Kit }) {
       state.flip = false;
     }
     // A gentle breathing bob.
-    state.y = Math.max(0, Math.sin(t * 2.2)) * 0.02;
-    if (marker.current) {
-      marker.current.rotation.y = t * 2;
-      marker.current.position.y = 2.35 + Math.sin(t * 3) * 0.08;
+    state.y = Math.max(0, Math.sin(t * 2.2 + phase)) * 0.02;
+    if (markerRef.current) {
+      markerRef.current.rotation.y = t * 2;
+      markerRef.current.position.y = 2.35 + Math.sin(t * 3) * 0.08;
     }
   });
 
   return (
     <>
       <PixelSprite atlas={atlas} frames={HUMAN_FRAMES.length} pxW={HUMAN_W} pxH={HUMAN_H} state={state} />
-      {!talked && <mesh ref={marker} geometry={markerGeo} material={kit.lampGlow} position={[JOSE_SPOT.x, 2.35, JOSE_SPOT.z]} />}
+      {showMarker && <mesh ref={markerRef} geometry={markerGeo} material={kit.lampGlow} position={[spot.x, 2.35, spot.z]} />}
+    </>
+  );
+}
+
+export interface KidBrain { x: number; z: number; ballX: number; ballV: number; dir: 1 | -1; dist: number }
+export const makeKid = (): KidBrain => ({ x: KID_LANE.x0 + 1, z: KID_LANE.z, ballX: KID_LANE.x0 + 2.5, ballV: 3.2, dir: 1, dist: 0 });
+
+/** Jose's son, running back and forth across the front yard after his ball. */
+export function Kid({ kid, kit }: { kid: KidBrain; kit: Kit }) {
+  const atlas = useMemo(() => humanAtlas(LOOKS.son), []);
+  const state = useMemo<SpriteState>(() => ({ x: kid.x, y: 0, z: kid.z, frame: 0, flip: false, visible: true }), [kid]);
+  const ball = useRef<Mesh>(null);
+  const ballMat = useOwned(() => new MeshStandardMaterial({ color: '#e8453c', roughness: 0.5 }));
+  const spin = useRef(0);
+
+  useFrame((_, rawDt) => {
+    const dt = Math.min(rawDt, 0.05);
+    // The ball rolls and slows down; the boy runs after it and kicks it back.
+    kid.ballX += kid.ballV * dt;
+    kid.ballV *= Math.pow(0.55, dt);
+    if (kid.ballX < KID_LANE.x0 || kid.ballX > KID_LANE.x1) {
+      kid.ballX = Math.max(KID_LANE.x0, Math.min(KID_LANE.x1, kid.ballX));
+      kid.ballV *= -0.5;
+    }
+    spin.current += kid.ballV * dt * 3;
+    const gap = kid.ballX - kid.x;
+    const target = kid.ballX - Math.sign(gap || 1) * 0.45;
+    const speed = Math.min(3.6, Math.abs(target - kid.x) * 4);
+    const step = Math.sign(target - kid.x) * Math.min(Math.abs(target - kid.x), speed * dt);
+    kid.x += step;
+    kid.dist += Math.abs(step);
+    if (Math.abs(step) > 1e-3) kid.dir = step > 0 ? 1 : -1;
+    if (Math.abs(gap) < 0.6 && Math.abs(kid.ballV) < 0.8) {
+      // Kick toward whichever end of the yard is farther away.
+      const towardEnd = kid.ballX - KID_LANE.x0 > KID_LANE.x1 - kid.ballX ? -1 : 1;
+      kid.ballV = towardEnd * (3.4 + Math.random() * 1.6);
+      audio.play('click');
+    }
+    const running = Math.abs(step) > 1e-3;
+    state.x = kid.x;
+    state.z = kid.z;
+    state.flip = kid.dir < 0;
+    state.frame = running ? F(`side${[1, 0, 2, 0][Math.floor(kid.dist / 0.28) % 4]}` as (typeof HUMAN_FRAMES)[number]) : F('down0');
+    state.y = running ? Math.abs(Math.sin(kid.dist * 9)) * 0.05 : 0;
+    if (ball.current) {
+      ball.current.position.set(kid.ballX, 0.16, kid.z + 0.25);
+      ball.current.rotation.z = -spin.current;
+    }
+  });
+
+  return (
+    <>
+      <PixelSprite atlas={atlas} frames={HUMAN_FRAMES.length} pxW={HUMAN_W} pxH={HUMAN_H} state={state} scale={0.68} shadowSize={0.6} />
+      <mesh ref={ball} geometry={kit.ball} material={ballMat} scale={0.32} castShadow={qualityProfile().shadows} />
     </>
   );
 }

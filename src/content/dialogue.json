@@ -38,5 +38,15 @@
     "question": "What are you currently learning?",
     "answer": "Three.js, React Three Fiber and machine learning. This portfolio is the practice project.",
     "category": "learning"
+  },
+  {
+    "question": "What are your career goals?",
+    "answer": "My career goal is to continue to learn and grow along with this continuously evolving field of computer and data science. As technology quickly changes with the help of AI, I want to be a leader and be part of this rapidly changing world in order to help others achieve their goals.",
+    "category": "career"
+  },
+  {
+    "question": "What do you enjoy outside work?",
+    "answer": "I love spending time with my family, making and playing video games and other fun applications. I love watching shows and movies. I love to watch and play sports. When I'm able, I love to travel and see the world.",
+    "category": "personal"
   }
 ]

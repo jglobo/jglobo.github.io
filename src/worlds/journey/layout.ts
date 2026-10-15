@@ -49,7 +49,10 @@ export const PORCH = { cx: -9.5, cz: 2.4, w: 5, d: 1.8 };
 export const YARD = { minX: -14.5, maxX: -4, minZ: 3.4, maxZ: 8.6 };
 export const MAILBOX = { x: -3.3, z: 8.8 };
 export const DOGHOUSE = { cx: -13.4, cz: 4.6, w: 1.4, d: 1.3 };
-export const JOSE_SPOT = { x: -4.6, z: 3.6 };
+export const JOSE_SPOT = { x: -4.4, z: 5.0 };
+export const WIFE_SPOT = { x: -5.9, z: 4.9 };
+/** The son runs back and forth along this line chasing his ball. */
+export const KID_LANE = { x0: -13, x1: -6.5, z: 7.6 };
 export const SPAWN = { x: 1.6, z: 11.5 };
 export const PORTAL_SPOT = { x: 6.5, z: 13 };
 
@@ -122,7 +125,7 @@ export function buildLayout(input: StopInput[]): TownLayout {
     !ponds.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + m) &&
     Math.abs(x - pathX(z)) > PATH_HALF + 2.2 &&
     !stops.some((s) => Math.abs(z - s.door.z) < 2.2 && (x - pathX(z)) * s.side > 0 && Math.abs(x - pathX(z)) < Math.abs(s.cx - pathX(z)) + 1) &&
-    !(x > YARD.minX - 1 && x < 1 && z > -5 && z < 10) &&
+    !(x > YARD.minX - 1 && x < 4 && z > -5 && z < 17) && // keep the view of the yard clear
     Math.hypot(x - PORTAL_SPOT.x, z - PORTAL_SPOT.z) > 3 &&
     Math.hypot(x - plaza.x, z - plaza.z) > 9;
   for (let i = 0; i < 400 && trees.length < 90; i++) {

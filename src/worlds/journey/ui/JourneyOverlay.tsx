@@ -9,7 +9,7 @@ import { useGame } from '../../../stores/gameStore';
 import { useSettings } from '../../../stores/settingsStore';
 import { GOODBYE, menuFor, moveSelection, visibleChars, type Choice } from '../dialogue';
 import { useJourney } from '../journeyStore';
-import { HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, humanAtlas } from '../sprites/pixelArt';
+import { HUMAN_H, HUMAN_W, LOOKS, humanAtlas, type HumanLook } from '../sprites/pixelArt';
 
 export default function JourneyOverlay() {
   const overlay = useGame((s) => s.overlay);
@@ -24,10 +24,10 @@ function close() {
   useJourney.setState({ talking: null, stop: null });
 }
 
-function Portrait() {
+function Portrait({ look }: { look: HumanLook }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
-    const atlas = humanAtlas(LOOKS.jose);
+    const atlas = humanAtlas(look);
     const c = ref.current;
     if (!c) return;
     const img = new ImageData(HUMAN_W, HUMAN_H);
@@ -38,31 +38,42 @@ function Portrait() {
       }
     }
     c.getContext('2d')!.putImageData(img, 0, 0);
-  }, []);
-  return <canvas ref={ref} className="dlg-portrait" width={HUMAN_W} height={HUMAN_H} aria-hidden="true" data-frames={HUMAN_FRAMES.length} />;
+  }, [look]);
+  return <canvas ref={ref} className="dlg-portrait" width={HUMAN_W} height={HUMAN_H} aria-hidden="true" />;
 }
 
+type Mode = 'say' | 'menu';
+
+/**
+ * Conversation box. A line (greeting or answer) types out and then stays on screen
+ * until the visitor presses E / Enter / Space or clicks Continue; only then does
+ * the question menu come back. Picking a question shows its answer the same way.
+ */
 function DialogueBox() {
-  const npc = journey.npcs.find((n) => n.id === 'jose')!;
+  const id = useJourney((s) => s.talking) ?? 'jose';
+  const npc = journey.npcs.find((n) => n.id === id) ?? journey.npcs[0];
+  const look = LOOKS[id as keyof typeof LOOKS] ?? LOOKS.jose;
+  const hasQuestions = id === 'jose';
   const reduced = useSettings((s) => s.reducedMotion);
   const asked = useJourney((s) => s.asked);
+  const [mode, setMode] = useState<Mode>('say');
   const [text, setText] = useState(npc.greeting ?? '');
   const [question, setQuestion] = useState<string | null>(null);
   const [shown, setShown] = useState(reduced ? Infinity : 0);
   const [sel, setSel] = useState(0);
   const started = useRef(performance.now());
   const choices = useMemo(() => menuFor(dialogue, asked), [asked]);
-  const typing = shown < text.length;
+  const typing = mode === 'say' && shown < text.length;
   const list = useRef<HTMLUListElement>(null);
 
-  // Typewriter.
+  // Typewriter for the current line.
   useEffect(() => {
+    if (mode !== 'say') return;
     if (reduced) {
       setShown(Infinity);
       return;
     }
     started.current = performance.now();
-    setShown(0);
     let id = 0;
     let last = 0;
     const tick = () => {
@@ -76,7 +87,13 @@ function DialogueBox() {
     };
     id = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(id);
-  }, [text, reduced]);
+  }, [text, mode, reduced]);
+
+  const say = (line: string) => {
+    setShown(reduced ? Infinity : 0);
+    setText(line);
+    setMode('say');
+  };
 
   // Finish the line at once (the typewriter loop then sees it as complete).
   const skip = () => {
@@ -84,35 +101,48 @@ function DialogueBox() {
     setShown(Infinity);
   };
 
+  const proceed = () => {
+    if (!hasQuestions) return close();
+    audio.play('ui');
+    setMode('menu');
+  };
+
   const choose = (c: Choice) => {
     if (c.id === GOODBYE) return close();
     audio.play('select');
     setQuestion(c.label);
-    setText(c.answer ?? '');
+    say(c.answer ?? '');
     if (!asked.includes(c.id)) {
       const next = [...asked, c.id];
       useJourney.setState({ asked: next });
       useGame.setState((s) => ({ dialogueProgress: { ...s.dialogueProgress, jose: next.length } }));
       if (next.length === dialogue.length) useGame.getState().completeInteraction('journey:all-questions');
     }
-    // Move the cursor to the next question not asked yet.
-    const after = choices.findIndex((x, i) => i > choices.indexOf(c) && !x.asked && x.id !== c.id);
+    // When the menu comes back, the cursor waits on the next question not asked yet.
+    const i = choices.indexOf(c);
+    const after = choices.findIndex((x, j) => j > i && !x.asked && x.id !== c.id);
     setSel(after >= 0 ? after : choices.length - 1);
   };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const k = e.code;
-      if (['ArrowUp', 'ArrowDown', 'Space', 'KeyW', 'KeyS'].includes(k)) e.preventDefault();
-      if (k === 'Enter' || k === 'KeyE' || k === 'Space') {
-        if (e.repeat) return;
-        if (typing) skip();
-        else choose(choices[sel]);
-      } else if (k === 'ArrowUp' || k === 'KeyW') setSel((i) => moveSelection(i, -1, choices.length));
+      if (['ArrowUp', 'ArrowDown', 'Space', 'KeyW', 'KeyS', 'Enter'].includes(k)) e.preventDefault();
+      if (e.repeat) return;
+      const confirm = k === 'Enter' || k === 'KeyE' || k === 'Space';
+      if (mode === 'say') {
+        if (confirm) {
+          if (typing) skip();
+          else proceed();
+        }
+        return;
+      }
+      if (confirm) choose(choices[sel]);
+      else if (k === 'ArrowUp' || k === 'KeyW') setSel((i) => moveSelection(i, -1, choices.length));
       else if (k === 'ArrowDown' || k === 'KeyS') setSel((i) => moveSelection(i, 1, choices.length));
       else if (/^Digit[1-9]$/.test(k)) {
         const c = choices[Number(k.slice(5)) - 1];
-        if (c && !typing) choose(c);
+        if (c) choose(c);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -120,27 +150,44 @@ function DialogueBox() {
   });
 
   useEffect(() => {
-    (list.current?.children[sel] as HTMLElement | undefined)?.scrollIntoView({ block: 'nearest' });
-  }, [sel]);
+    if (mode === 'menu') (list.current?.children[sel] as HTMLElement | undefined)?.scrollIntoView({ block: 'nearest' });
+  }, [sel, mode]);
+
+  // Buttons never take focus, so a key press is only ever handled once (above).
+  const noFocus = (e: React.MouseEvent) => e.preventDefault();
 
   return (
     <div className="dlg-wrap" role="dialog" aria-modal="true" aria-label={`Talking with ${npc.name}`}>
       <section className="dlg">
-        <Portrait />
+        <Portrait look={look} />
         <div className="dlg-main">
           <div className="dlg-name">{npc.name}</div>
-          {question && <div className="dlg-question">“{question}”</div>}
-          <p className="dlg-text" aria-live="polite">
-            {text.slice(0, shown)}
-            {typing && <span className="dlg-caret" aria-hidden="true">▌</span>}
-          </p>
-          {!typing && (
+          {mode === 'say' ? (
+            <>
+              {question && <div className="dlg-question">“{question}”</div>}
+              <p className="dlg-text" aria-live="polite">
+                {text.slice(0, shown)}
+                {typing && <span className="dlg-caret" aria-hidden="true">▌</span>}
+              </p>
+              {!typing && (
+                <button className="dlg-continue" tabIndex={-1} onMouseDown={noFocus} onClick={proceed}>
+                  {hasQuestions ? 'Continue' : 'Goodbye'} <span aria-hidden="true">▼</span>
+                </button>
+              )}
+            </>
+          ) : (
             <>
               <div className="dlg-kicker">ASK A QUESTION</div>
               <ul ref={list} className="dlg-choices" role="listbox" aria-label="Questions">
                 {choices.map((c, i) => (
                   <li key={c.id} role="option" aria-selected={i === sel}>
-                    <button className={`dlg-choice ${i === sel ? 'sel' : ''} ${c.asked ? 'asked' : ''}`} onMouseEnter={() => setSel(i)} onClick={() => choose(c)}>
+                    <button
+                      className={`dlg-choice ${i === sel ? 'sel' : ''} ${c.asked ? 'asked' : ''}`}
+                      tabIndex={-1}
+                      onMouseDown={noFocus}
+                      onMouseEnter={() => setSel(i)}
+                      onClick={() => choose(c)}
+                    >
                       <span className="dlg-cursor" aria-hidden="true">{i === sel ? '▶' : ''}</span>
                       {i < 9 && <kbd>{i + 1}</kbd>}
                       {c.label}
@@ -152,7 +199,11 @@ function DialogueBox() {
             </>
           )}
           <div className="dlg-help">
-            {typing ? 'E / Enter: skip' : '↑ ↓: choose · E / Enter: ask · Esc: leave'}
+            {mode === 'menu'
+              ? '↑ ↓: choose · E / Enter: ask · Esc: leave'
+              : typing
+                ? 'E / Enter: show the whole line'
+                : `E / Enter: ${hasQuestions ? 'back to the questions' : 'goodbye'} · Esc: leave`}
           </div>
         </div>
       </section>

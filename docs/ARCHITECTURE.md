@@ -288,10 +288,8 @@ or click-and-drag look, keyboard-only menus, and survives repeated round trips.
   whether any have metrics or datasets to visualize for real.
 * Final art direction (stylized low-poly vs. more realistic) and whether commissioned
   or CC0 models will be used.
-* Whether Jose wants the spouse and toddler NPCs (only the family dog is in for now), and
-  how his own character should look.
-* Answers in his own words for "What are your career goals?" and "What do you enjoy
-  outside work?" (left out rather than guessed).
+* Jose's family NPCs (wife, son, white dog) and his own look follow his description of
+  2026-10-15; the visitor is an original little robot.
 * LinkedIn/email preferences for the contact panel (email currently shown, since it
   was public on the old site).
 * Whether Pirate Platformer etc. should run inside the CRT (iframe) or full screen.
@@ -305,7 +303,7 @@ For the slice: none (procedural). Later, all original or CC0:
   Earth albedo/night/cloud textures (NASA Blue Marble is public domain).
 * Game Room: bedroom furniture, CRT, fictional console, box art for Jose's games. All drawn procedurally in `src/worlds/games/textures.ts`; sounds are synthesized.
 * Software: eight vehicles, road/terrain kit, billboards.
-* Journey: pixel-art characters (visitor, Jose, dog) and all town buildings are drawn in
+* Journey: pixel-art characters (visitor robot, Jose, his wife and son, dog) and all town buildings are drawn in
   code (`src/worlds/journey/sprites/pixelArt.ts`, `textures.ts`); music is synthesized.
 * Audio: per-world ambience loops (currently synthesized), UI SFX.
 

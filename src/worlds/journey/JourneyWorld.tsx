@@ -15,8 +15,9 @@ import { HD2DCamera } from './HD2DCamera';
 import { Home } from './Home';
 import { CONTROLS, JourneyController, plazaPortal } from './JourneyController';
 import { useJourney } from './journeyStore';
-import { PORTAL_SPOT, buildLayout } from './layout';
-import { Dog, JoseNpc, makeDog } from './NPCs';
+import { JOSE_SPOT, PORTAL_SPOT, WIFE_SPOT, buildLayout } from './layout';
+import { Dog, Kid, PersonNpc, makeDog, makeKid } from './NPCs';
+import { LOOKS } from './sprites/pixelArt';
 import { TiltShift } from './TiltShift';
 import { Town } from './Town';
 
@@ -26,6 +27,7 @@ export default function JourneyWorld() {
   const layout = useMemo(() => buildLayout(journey.stops), []);
   const kit = useKit();
   const dog = useMemo(makeDog, []);
+  const kid = useMemo(makeKid, []);
   const quality = useSettings((s) => s.quality);
   const [returnPortal, setReturnPortal] = useState<{ x: number; z: number } | null>(null);
   const exit = plazaPortal(layout);
@@ -52,14 +54,16 @@ export default function JourneyWorld() {
       <Atmosphere />
       <Town kit={kit} layout={layout} />
       <Home kit={kit} layout={layout} />
-      <JoseNpc kit={kit} />
+      <PersonNpc id="jose" look={LOOKS.jose} spot={JOSE_SPOT} kit={kit} marker="journey:talk-jose" />
+      <PersonNpc id="wife" look={LOOKS.wife} spot={WIFE_SPOT} kit={kit} />
+      <Kid kid={kid} kit={kit} />
       <Dog dog={dog} layout={layout} />
       <Portal position={[PORTAL_SPOT.x, 1.9, PORTAL_SPOT.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.7} />
       <Portal position={[exit.x, 1.9, exit.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.7} />
       {returnPortal && (
         <Portal position={[returnPortal.x, 1.9, returnPortal.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.7} />
       )}
-      <JourneyController layout={layout} dog={dog} returnPortal={returnPortal} onSummon={setReturnPortal} />
+      <JourneyController layout={layout} dog={dog} kid={kid} returnPortal={returnPortal} onSummon={setReturnPortal} />
       <HD2DCamera />
       {TILT[quality] > 0 && <TiltShift strength={TILT[quality]} />}
     </>

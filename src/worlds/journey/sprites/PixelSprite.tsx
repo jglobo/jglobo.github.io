@@ -35,6 +35,7 @@ export function PixelSprite({
   pxH,
   state,
   shadowSize = 0.9,
+  scale = 1,
 }: {
   atlas: { width: number; height: number; data: Uint8ClampedArray };
   frames: number;
@@ -42,14 +43,15 @@ export function PixelSprite({
   pxH: number;
   state: SpriteState;
   shadowSize?: number;
+  scale?: number;
 }) {
   const mesh = useRef<Mesh>(null);
   const blob = useRef<Mesh>(null);
   const shadows = qualityProfile().shadows;
   const res = useOwned(() => {
     const map = atlasTexture(atlas, frames);
-    const w = pxW * PIXEL;
-    const h = pxH * PIXEL;
+    const w = pxW * PIXEL * scale;
+    const h = pxH * PIXEL * scale;
     const geo = new PlaneGeometry(w, h);
     geo.translate(0, h / 2, 0);
     const mat = new MeshStandardMaterial({ map, alphaTest: 0.5, side: DoubleSide, roughness: 1, metalness: 0, emissive: '#ffffff', emissiveMap: map, emissiveIntensity: 0.28 });
@@ -58,7 +60,7 @@ export function PixelSprite({
     const blobGeo = new PlaneGeometry(shadowSize, shadowSize * 0.55);
     blobGeo.rotateX(-Math.PI / 2);
     return { map, geo, mat, blobMap, blobMat, blobGeo };
-  }, [atlas]);
+  }, [atlas, scale]);
 
   useFrame(() => {
     const m = mesh.current;

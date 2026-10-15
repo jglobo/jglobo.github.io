@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { buildLayout, collide, pathX, HOUSE, SPAWN, JOSE_SPOT, PORTAL_SPOT, type StopInput } from '../src/worlds/journey/layout.ts';
-import { HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, OUTLINE, humanAtlas, humanGrid, stylize, dogAtlas, DOG_LOOK, DOG_FRAMES, DOG_W } from '../src/worlds/journey/sprites/pixelArt.ts';
+import { HUMAN_FRAMES, HUMAN_H, HUMAN_W, LOOKS, OUTLINE, humanAtlas, humanGrid, robotAtlas, robotGrid, stylize, dogAtlas, DOG_LOOK, DOG_FRAMES, DOG_W } from '../src/worlds/journey/sprites/pixelArt.ts';
 import { GOODBYE, menuFor, moveSelection, visibleChars } from '../src/worlds/journey/dialogue.ts';
 
 const json = (p: string) => JSON.parse(readFileSync(new URL(`../src/content/${p}`, import.meta.url), 'utf8'));
@@ -60,7 +60,9 @@ test('collision keeps the visitor out of buildings and inside the town', () => {
 });
 
 test('pixel-art sprites: atlas size, outline and readable frames', () => {
-  const a = humanAtlas(LOOKS.visitor);
+  const a = robotAtlas();
+  assert.ok(stylize(robotGrid('down1'))[HUMAN_H - 1].some((c) => c !== null), 'robot stands on the bottom row');
+  assert.equal(humanAtlas(LOOKS.wife).width, HUMAN_W * HUMAN_FRAMES.length);
   assert.equal(a.width, HUMAN_W * HUMAN_FRAMES.length);
   assert.equal(a.height, HUMAN_H);
   const g = stylize(humanGrid(LOOKS.jose, 'down0'));

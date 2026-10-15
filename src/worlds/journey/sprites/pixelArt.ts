@@ -15,7 +15,7 @@ export const OUTLINE = '#2b1d1a';
 export interface HumanLook {
   skin: string;
   hair: string;
-  hairStyle: 'short' | 'cap';
+  hairStyle: 'short' | 'long' | 'cap';
   cap?: string;
   shirt: string;
   pants: string;
@@ -71,6 +71,7 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
       rect(g, 5, 2, 7, 3, look.hair);
       rect(g, 5, 5, 3, 3, look.hair);
       px(g, 11, 5, look.hair);
+      if (look.hairStyle === 'long') rect(g, 4, 5, 3, 7, look.hair);
     }
     px(g, 10, 7, eye);
     if (look.beard) rect(g, 8, 9, 4, 2, look.hair);
@@ -109,6 +110,7 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
     px(g, 4, 8, look.skin);
     px(g, 11, 8, look.skin);
     if (look.hairStyle === 'cap') rect(g, 4, 2, 8, 3, look.cap ?? look.hair);
+    if (look.hairStyle === 'long') rect(g, 4, 8, 8, 5, look.hair);
     return g;
   }
 
@@ -126,6 +128,10 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
     rect(g, 4, 5, 2, 2, look.hair);
     rect(g, 10, 5, 2, 1, look.hair);
     px(g, 8, 5, look.hair);
+    if (look.hairStyle === 'long') {
+      rect(g, 4, 5, 1, 7, look.hair);
+      rect(g, 11, 5, 1, 7, look.hair);
+    }
   }
   px(g, 6, 8, eye);
   px(g, 9, 8, eye);
@@ -140,6 +146,82 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
     px(g, 5, 12, darken(look.backpack, 0.1));
     px(g, 10, 12, darken(look.backpack, 0.1));
   }
+  return g;
+}
+
+/**
+ * The visitor: a small, round robot with a big visor and glowing eyes, drawn for
+ * this project (16 x 24, same frames as a person so it shares the controller).
+ */
+export function robotGrid(frame: HumanFrame): Grid {
+  const g = blank(HUMAN_W, HUMAN_H);
+  const shell = '#eef2f8';
+  const joint = '#7d8fb6';
+  const visor = '#1c2240';
+  const eye = '#62f2ff';
+  const glow = '#ffcf5a';
+  const dir = frame.startsWith('side') ? 'side' : frame.startsWith('up') ? 'up' : 'down';
+  const step = frame === 'wave' ? 0 : Number(frame.slice(-1));
+  const liftA = step === 1 ? 1 : 0;
+  const liftB = step === 2 ? 1 : 0;
+
+  if (dir === 'side') {
+    const k = step === 0 ? 0 : step === 1 ? 2 : -2;
+    rect(g, 6 - k, 19, 2, 3, darken(joint, 0.15));
+    rect(g, 5 - k, 22, 4, 1, darken(shell, 0.1));
+    rect(g, 7 + k, 19, 2, 3, joint);
+    rect(g, 6 + k, 22, 4, 1, shell);
+    rect(g, 5, 13, 6, 6, shell);
+    rect(g, 3, 14, 2, 3, joint);
+    px(g, 3, 15, glow);
+    const swing = step === 0 ? 0 : step === 1 ? 1 : -1;
+    rect(g, 7 + swing, 14, 2, 3, joint);
+    rect(g, 7 + swing * 2, 17, 2, 1, shell);
+    rect(g, 3, 4, 10, 9, shell);
+    rect(g, 8, 6, 5, 5, visor);
+    rect(g, 10, 7, 2, 3, eye);
+    rect(g, 2, 7, 1, 3, joint);
+    rect(g, 6, 2, 1, 2, joint);
+    rect(g, 5, 0, 2, 2, glow);
+    return g;
+  }
+
+  // Legs and feet; the walk lifts one foot at a time.
+  rect(g, 5, 19, 2, 3 - liftA, joint);
+  rect(g, 9, 19, 2, 3 - liftB, darken(joint, 0.1));
+  rect(g, 4, 22 - liftA, 4, 1, shell);
+  rect(g, 8, 22 - liftB, 4, 1, shell);
+  // Body and arms.
+  rect(g, 4, 13, 8, 6, shell);
+  const armL = frame === 'wave' ? 0 : liftB - liftA;
+  rect(g, 2, 14 + Math.max(0, armL), 2, 3, joint);
+  rect(g, 2, 17 + Math.max(0, armL), 2, 1, shell);
+  if (frame === 'wave') {
+    rect(g, 12, 9, 2, 4, joint);
+    rect(g, 12, 7, 2, 2, shell);
+  } else {
+    rect(g, 12, 14 + Math.max(0, -armL), 2, 3, joint);
+    rect(g, 12, 17 + Math.max(0, -armL), 2, 1, shell);
+  }
+  // Head: a big rounded helmet, ear pods and an antenna with a glowing tip.
+  rect(g, 3, 5, 10, 8, shell);
+  rect(g, 4, 4, 8, 1, shell);
+  rect(g, 1, 7, 2, 3, joint);
+  rect(g, 13, 7, 2, 3, joint);
+  rect(g, 8, 2, 1, 2, joint);
+  rect(g, 7, 0, 3, 2, glow);
+  if (dir === 'up') {
+    rect(g, 6, 7, 4, 3, darken(shell, 0.08));
+    rect(g, 6, 14, 4, 4, joint);
+    rect(g, 7, 17, 2, 1, glow);
+    return g;
+  }
+  rect(g, 4, 6, 8, 5, visor);
+  rect(g, 5, 7, 2, 3, eye);
+  rect(g, 9, 7, 2, 3, eye);
+  px(g, 5, 7, '#ffffff');
+  px(g, 9, 7, '#ffffff');
+  rect(g, 7, 15, 2, 2, glow);
   return g;
 }
 
@@ -249,11 +331,14 @@ export function rasterize(frames: Grid[]): { width: number; height: number; data
 }
 
 export const humanAtlas = (look: HumanLook) => rasterize(HUMAN_FRAMES.map((f) => stylize(humanGrid(look, f))));
+export const robotAtlas = () => rasterize(HUMAN_FRAMES.map((f) => stylize(robotGrid(f))));
 export const dogAtlas = (look: DogLook) => rasterize(DOG_FRAMES.map((f) => stylize(dogGrid(look, f))));
 
-// The cast. Jose's look is a friendly placeholder until he says how he wants to look.
+// The family, as Jose described them: black hair and light brown skin for him and
+// his wife, brown hair for their son, generic clothes, and a white dog.
 export const LOOKS = {
-  visitor: { skin: '#e8b48a', hair: '#6b4024', hairStyle: 'cap', cap: '#e8a628', shirt: '#c8553d', pants: '#43567a', shoes: '#3a2a22', backpack: '#7a5230' },
-  jose: { skin: '#c98d62', hair: '#2a1d16', hairStyle: 'short', shirt: '#2f7fb8', pants: '#383d52', shoes: '#5a3a26' },
+  jose: { skin: '#cf9e76', hair: '#141011', hairStyle: 'short', shirt: '#2f7fb8', pants: '#383d52', shoes: '#4a3426' },
+  wife: { skin: '#cf9e76', hair: '#141011', hairStyle: 'long', shirt: '#b8577a', pants: '#3d3a4f', shoes: '#4a3426' },
+  son: { skin: '#d4a57e', hair: '#6a4126', hairStyle: 'short', shirt: '#e8a628', pants: '#3f6a8a', shoes: '#f2f2f2' },
 } satisfies Record<string, HumanLook>;
-export const DOG_LOOK: DogLook = { fur: '#c98b4a', light: '#f3d9b0', ear: '#7a4a24' };
+export const DOG_LOOK: DogLook = { fur: '#f3f0ea', light: '#ffffff', ear: '#d8cdbd' };
