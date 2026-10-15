@@ -9,7 +9,7 @@ Every asset used by the game is listed here with its source and licence.
 | All sound (ambience, portal, jetpack, UI) | Synthesized at runtime (`src/engine/audio/AudioManager.ts`) | Original | Same as the repository |
 | Project screenshots and GIFs (`images/`) | Quick Portfolio, inspector | Jose's own project captures | Jose Lobo |
 | Portrait (`images/portphoto.jpg`) | Quick Portfolio "About" | Jose's own photo | Jose Lobo |
-| New project screenshots (`images/neonblocks.jpg`, `hoops.jpg`, `breathingapp.jpg`, `digitalclock.jpg`, `antfarm.png`) | Quick Portfolio, inspector, billboards | Captured from Jose's own repos (Ant Farm image is from its `shots/` folder) | Jose Lobo |
+| New project screenshots (`images/neonblocks.jpg`, `hoops.jpg`, `breathingapp.jpg`, `digitalclock.jpg`, `antfarm.png`, `gaspredictor.png`) | Quick Portfolio, inspector, billboards | Captured from Jose's own repos (Ant Farm image is from its `shots/` folder; the Gas Price Predictor screenshot was supplied by Jose) | Jose Lobo |
 | Fraunces and Source Sans 3 fonts (title screen and Quick Portfolio, Studio Paper theme), loaded from Google Fonts | Headings and body text on the paper-styled pages | Open-source fonts | SIL Open Font License 1.1 |
 | Astronaut model and its six flight animations (`src/worlds/data-science/assets/astronaut.glb`), loaded by his controller (`astronautController.ts`) | Data Science world player | Jose's own model, made in Blender | Jose Lobo |
 | Portal gun with its Fire clip and Muzzle socket, and the portal with its Open clip (`src/worlds/hub/assets/portal_gun.glb`, `portal.glb`), loaded by his controller (`portalGunController.ts`) | Portal Hub launcher and portal | Jose's own models, made in Blender | Jose Lobo |
