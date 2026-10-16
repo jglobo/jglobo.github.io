@@ -1,12 +1,15 @@
 // Everything in the town built from Jose's kit models: his garage with its sign, bays,
-// lamps, bollards and verges (laid out as in his scene_layout.json, see kit.ts), and
-// the roads, street lamps, grass verges and jumps across the whole town (roads.ts and
-// layout.ts). The repeated pieces are instanced, so hundreds of them stay cheap.
+// lamps, bollards and verges (laid out as in his scene_layout.json, see kit.ts); the
+// roads, street lamps, grass verges and jumps across the whole town (roads.ts and
+// layout.ts); and his houses, buildings and trees (neighborhood.ts). The repeated
+// pieces are instanced, so hundreds of them stay cheap.
 import { useEffect, useRef } from 'react';
 import { Group, InstancedMesh, Matrix4, Quaternion, Vector3, type Material, type Mesh, type Object3D } from 'three';
 import { loadGltf } from '../../utils/loadGltf';
 import { KIT_ORIGIN, KIT_PIECES, KIT_SIZES, type KitFile } from './kit';
-import { RAMPS, type Ramp } from './layout';
+import { qualityProfile } from '../../stores/settingsStore';
+import { RAMPS, TREES, type Ramp } from './layout';
+import { LOTS, TREE_KINDS, type NeighborhoodFile, type TreeFile } from './neighborhood';
 import { LAMPS, STRAIGHTS, T_JUNCTIONS, VERGES, type Placed } from './roads';
 import garageShell from './assets/garage_shell.glb?url';
 import garageSign from './assets/garage_sign.glb?url';
@@ -19,8 +22,18 @@ import roadJunction from './assets/road_t_junction.glb?url';
 import roadStraight from './assets/road_straight.glb?url';
 import boostRamp from './assets/boost_ramp.glb?url';
 import grassVerge from './assets/grass_verge.glb?url';
+import fisherCottage from './assets/house_fisher_cottage.glb?url';
+import sageVeranda from './assets/house_sage_veranda.glb?url';
+import courtyardVilla from './assets/house_courtyard_villa.glb?url';
+import cornerShop from './assets/building_corner_shop.glb?url';
+import civicHall from './assets/building_civic_hall.glb?url';
+import terraceApartments from './assets/building_terrace_apartments.glb?url';
+import coastalPine from './assets/tree_coastal_pine.glb?url';
+import broadleaf from './assets/tree_broadleaf.glb?url';
+import cypress from './assets/tree_cypress.glb?url';
+import windsweptPalm from './assets/tree_windswept_palm.glb?url';
 
-type ModelFile = KitFile | 'road_straight' | 'road_t_junction';
+type ModelFile = KitFile | 'road_straight' | 'road_t_junction' | NeighborhoodFile | TreeFile;
 
 const URLS: Record<ModelFile, string> = {
   garage_shell: garageShell,
@@ -34,6 +47,16 @@ const URLS: Record<ModelFile, string> = {
   road_straight: roadStraight,
   boost_ramp: boostRamp,
   grass_verge: grassVerge,
+  house_fisher_cottage: fisherCottage,
+  house_sage_veranda: sageVeranda,
+  house_courtyard_villa: courtyardVilla,
+  building_corner_shop: cornerShop,
+  building_civic_hall: civicHall,
+  building_terrace_apartments: terraceApartments,
+  tree_coastal_pine: coastalPine,
+  tree_broadleaf: broadleaf,
+  tree_cypress: cypress,
+  tree_windswept_palm: windsweptPalm,
 };
 
 const FLAT = new Set<ModelFile>(['road_straight', 'road_t_junction', 'sports_car_bay', 'bicycle_bay', 'grass_verge']);
@@ -107,6 +130,13 @@ export function KitTown() {
         add('street_lamp', LAMPS.map((p) => placedMatrix(p)));
         add('grass_verge', VERGES.map((p) => placedMatrix({ ...p, stretch: 1 }).setPosition(p.x, -0.005, p.z)));
         add('boost_ramp', RAMPS.map(rampMatrix));
+        for (const f of new Set(LOTS.map((l) => l.file))) add(f, LOTS.filter((l) => l.file === f).map((l) => placedMatrix(l)));
+        // Fewer trees on lower quality settings; each takes the next of his four kinds.
+        const trees = TREES.slice(0, Math.round(TREES.length * Math.min(1, qualityProfile().particles / 90)));
+        TREE_KINDS.forEach((f, k) => {
+          const mine = trees.filter((_, i) => i % TREE_KINDS.length === k);
+          add(f, mine.map((t, i) => placedMatrix({ x: t.x, z: t.z, rotationY: (i * 2.4 + k) % (Math.PI * 2) }, new Vector3().setScalar(0.9 + ((i * 37) % 10) / 30))));
+        });
       },
       (err) => console.error('Kit models failed to load', err),
     );

@@ -3,6 +3,7 @@
 // x runs east, z runs south (towards the camera), y is up.
 import { KIT_ORIGIN, KIT_PIECES, KIT_SIZES } from './kit.ts';
 import { LAMPS, ROAD_RECTS } from './roads.ts';
+import { BILLBOARD, LOTS, lotRect } from './neighborhood.ts';
 
 export const WORLD_HALF = 70;
 
@@ -44,16 +45,8 @@ export const KIT_RAMPS: Ramp[] = KIT_PIECES.filter((p) => p.file === 'boost_ramp
 /** Keep trees off the garage forecourt. */
 const KIT_AREA: Box = { minX: -9, maxX: 8, minZ: GARAGE.minZ - 2, maxZ: 14, height: 0 };
 
-/** City blocks north of the loop and a campus to the west. */
-export const BUILDINGS: Box[] = [
-  { minX: -26, maxX: -12, minZ: -58, maxZ: -46, height: 16, color: '#4a5a78' },
-  { minX: 12, maxX: 22, minZ: -60, maxZ: -48, height: 22, color: '#3d4b66' },
-  { minX: 24, maxX: 34, minZ: -56, maxZ: -44, height: 12, color: '#56688a' },
-  { minX: -40, maxX: -30, minZ: -62, maxZ: -50, height: 10, color: '#5a6782' },
-  { minX: -62, maxX: -48, minZ: -14, maxZ: -2, height: 8, color: '#6c7fa0' },
-  { minX: -62, maxX: -50, minZ: 6, maxZ: 16, height: 6, color: '#7b8db0' },
-  { minX: 48, maxX: 60, minZ: -40, maxZ: -28, height: 9, color: '#59607a' },
-];
+/** Jose's houses and buildings (neighborhood.ts): you bump into their footprints. */
+export const BUILDINGS: Box[] = LOTS.map(lotRect);
 
 /** Jumps, drawn with Jose's boost ramp scaled to size: one on the cross street, one at
  *  the end of each road heading south, and two in the dirt park. */
@@ -74,7 +67,7 @@ export const BILLBOARD_SPOTS = [
   { x: 16, z: 44, label: 'Park billboard' },
   { x: -18, z: 46, label: 'Meadow billboard' },
 ];
-export const BILLBOARD_POST_HALF = 6;
+export const BILLBOARD_POST_HALF = BILLBOARD.legX * BILLBOARD.scale;
 
 export const PORTAL_SPOT = { x: -7.5, z: 3.8 };
 export const SPAWN = { x: -6.5, z: 6.2 };
@@ -154,7 +147,7 @@ export function collide(x: number, z: number, r: number): Push {
   }
   const circles: Circle[] = [...TREES, ...KIT_PROPS, ...LAMP_POSTS];
   for (const s of BILLBOARD_SPOTS) {
-    circles.push({ x: s.x - BILLBOARD_POST_HALF, z: s.z, r: 0.5 }, { x: s.x + BILLBOARD_POST_HALF, z: s.z, r: 0.5 });
+    circles.push({ x: s.x - BILLBOARD_POST_HALF, z: s.z, r: 0.55 }, { x: s.x + BILLBOARD_POST_HALF, z: s.z, r: 0.55 });
   }
   for (const c of circles) {
     const dx = x - c.x;

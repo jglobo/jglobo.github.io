@@ -105,3 +105,19 @@ test("the town's roads are Jose's pieces, joined end to end, clear of buildings"
   for (let z = -40; z <= 40; z += 0.5) assert.ok(onRoad(30, z), `gap in the east road at ${z}`);
   assert.equal(ROADS.length, ROAD_RECTS.length);
 });
+
+test("Jose's houses and buildings stand clear of the roads, each other, the garage and the billboards", async () => {
+  const { ROADS, GARAGE, RAMPS, BILLBOARD_SPOTS, BILLBOARD_POST_HALF, PORTAL_SPOT, SPAWN, KIT_RAMPS } = await import('../src/worlds/software/layout.ts');
+  const hit = (a: { minX: number; maxX: number; minZ: number; maxZ: number }, b: typeof a, m = 0) =>
+    a.minX < b.maxX + m && a.maxX > b.minX - m && a.minZ < b.maxZ + m && a.maxZ > b.minZ - m;
+  const pt = (x: number, z: number, r: number) => ({ minX: x - r, maxX: x + r, minZ: z - r, maxZ: z + r });
+  BUILDINGS.forEach((b, i) => {
+    for (const r of ROADS) assert.ok(!hit(b, r, 0.3), `lot ${i} is on a road`);
+    BUILDINGS.forEach((o, j) => j > i && assert.ok(!hit(b, o, 0.3), `lots ${i} and ${j} overlap`));
+    assert.ok(!hit(b, GARAGE, 2), `lot ${i} crowds the garage`);
+    for (const s of BILLBOARD_SPOTS) assert.ok(!hit(b, { minX: s.x - BILLBOARD_POST_HALF - 0.6, maxX: s.x + BILLBOARD_POST_HALF + 0.6, minZ: s.z - 1, maxZ: s.z + 5 }), `lot ${i} blocks ${s.label}`);
+    for (const r of [...RAMPS, ...KIT_RAMPS]) assert.ok(!hit(b, pt(r.x, r.z, r.length + 1)), `lot ${i} is on a jump`);
+    for (const p of [PORTAL_SPOT, SPAWN]) assert.ok(!hit(b, pt(p.x, p.z, 2)), `lot ${i} blocks the arrival`);
+    assert.ok(Math.max(Math.abs(b.minX), Math.abs(b.maxX), Math.abs(b.minZ), Math.abs(b.maxZ)) < 68, `lot ${i} is off the map`);
+  });
+});

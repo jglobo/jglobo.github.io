@@ -17,20 +17,6 @@ function make(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void,
   return t;
 }
 
-export const windowsTexture = (seed: number) =>
-  make(128, 256, (g) => {
-    g.fillStyle = '#1b2233';
-    g.fillRect(0, 0, 128, 256);
-    const r = rng(seed);
-    for (let y = 6; y < 256; y += 16) {
-      for (let x = 6; x < 128; x += 16) {
-        const lit = r() < 0.45;
-        g.fillStyle = lit ? (r() < 0.5 ? '#ffe7a3' : '#bfe6ff') : '#2c3650';
-        g.fillRect(x, y, 10, 10);
-      }
-    }
-  });
-
 export const dirtTexture = () =>
   make(128, 128, (g) => {
     g.fillStyle = '#8a6a44';

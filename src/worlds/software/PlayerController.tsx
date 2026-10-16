@@ -116,6 +116,20 @@ export function PlayerController({
     audio.setEngine(0, 0);
   }
 
+  // Debug only (?debug): move the robot on foot, for checking the town.
+  useEffect(() => {
+    if (!useGame.getState().debug) return;
+    const w = window as unknown as Record<string, unknown>;
+    w.__software = {
+      place: (x: number, z: number) => {
+        walker.x = x;
+        walker.z = z;
+        camTarget.set(x, 0, z);
+      },
+    };
+    return () => void delete w.__software;
+  }, [walker, camTarget]);
+
   useEffect(() => {
     walker.x = SPAWN.x;
     walker.z = SPAWN.z;
