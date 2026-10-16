@@ -2,7 +2,7 @@
 // (ASK A QUESTION) and the memory journal for each chapter building. Loaded as
 // part of the Journey chunk, only while that world is open.
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { achievements, dialogue, education, experience, journey, type JourneyStop } from '../../../content';
+import { achievements, dialogue, education, experience, journey, resume, type JourneyStop } from '../../../content';
 import { audio } from '../../../engine/audio/AudioManager';
 import { clearInput } from '../../../engine/input/input';
 import { useGame } from '../../../stores/gameStore';
@@ -309,6 +309,16 @@ function MemoryBody({ stop }: { stop: JourneyStop }) {
           )}
         </article>
       ))}
+      {stop.volunteer && (
+        <article className="memory-entry">
+          <h3>Volunteer experience</h3>
+          <ul>
+            {resume.volunteer.map((v) => (
+              <li key={v}>{v}</li>
+            ))}
+          </ul>
+        </article>
+      )}
       {!!certs.length && (
         <article className="memory-entry">
           <h3>Certifications</h3>

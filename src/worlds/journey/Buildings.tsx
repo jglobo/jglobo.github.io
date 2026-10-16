@@ -96,6 +96,7 @@ interface BuildingProps { kit: Kit; place: StopPlacement; stop: JourneyStop }
 export function Building(props: BuildingProps) {
   switch (props.place.building) {
     case 'campus': return <Campus {...props} />;
+    case 'hall': return <Hall {...props} />;
     case 'clinic': return <Clinic {...props} />;
     case 'market': return <Market {...props} />;
     case 'lab': return <Lab {...props} />;
@@ -150,6 +151,57 @@ function Campus(props: BuildingProps) {
       <mesh geometry={tower} material={roof.mat} position={[p.cx, p.h + 2.4, p.cz]} castShadow={qualityProfile().shadows} />
       <mesh geometry={kit.cyl} material={kit.trim} position={[p.cx, p.h + 1.4, p.cz + 1.02]} rotation-x={Math.PI / 2} scale={[1.1, 0.06, 1.1]} />
       <mesh geometry={kit.box} material={kit.iron} position={[p.cx, p.h + 1.55, p.cz + 1.08]} scale={[0.06, 0.4, 0.02]} />
+      {/* School sign on the lawn, facing the path. */}
+      <group position={[p.cx - p.side * (p.w / 2 - 0.6), 0, f + 3.4]}>
+        <B kit={kit} p={[0, 0.45, 0]} s={[4.2, 0.9, 0.6]} m={brick.mat} />
+        <B kit={kit} p={[0, 0.96, 0]} s={[4.4, 0.12, 0.7]} m={kit.trim} />
+        <Sign kit={kit} title="Middle Tennessee State University" sub="MURFREESBORO, TN" p={[0, 1.62, 0.02]} width={4} bg="#0b3d91" accent="#ffffff" />
+        <B kit={kit} p={[0, 1.62, -0.03]} s={[4.1, 1.32, 0.06]} m={kit.trim} shadow={false} />
+      </group>
+    </Frame>
+  );
+}
+
+/** Community hall for the volunteering years: a warm gabled hall with a heart sign, a meal table and food crates. */
+function Hall(props: BuildingProps) {
+  const { kit, place: p } = props;
+  const walls = useWalls('#f4e6cc', '#b8473a', 0.6, 27, p.w, p.h, p.d);
+  const roof = useRoof('shingle', '#b8473a');
+  const gable = useOwned(() => prismGeometry(p.w + 0.6, 2.2, p.d + 0.8), [p.w, p.d]);
+  const heart = useOwned(() => new MeshStandardMaterial({ color: '#e0455a', emissive: '#e0455a', emissiveIntensity: 0.6, roughness: 0.6 }));
+  const cloth = useOwned(() => new MeshStandardMaterial({ color: '#f7f1e3', roughness: 0.9 }));
+  const f = front(p);
+  const t = p.cx - p.side * 3.4;
+  return (
+    <Frame {...props} signY={3.35} signColors={{ bg: '#b8473a', accent: '#ffe2b0' }}>
+      <Body kit={kit} cx={p.cx} cz={p.cz} w={p.w} h={p.h} d={p.d} walls={walls} roofMat={roof.mat} />
+      <mesh geometry={gable} material={roof.mat} position={[p.cx, p.h, p.cz]} castShadow={qualityProfile().shadows} />
+      {/* Heart in the gable: two balls and a turned cube. */}
+      <group position={[p.cx, p.h + 0.85, f + 0.45]} scale={0.55}>
+        <mesh geometry={kit.ball} material={heart} position={[-0.3, 0.25, 0]} scale={0.75} />
+        <mesh geometry={kit.ball} material={heart} position={[0.3, 0.25, 0]} scale={0.75} />
+        <mesh geometry={kit.box} material={heart} position={[0, -0.12, 0]} rotation-z={Math.PI / 4} scale={[0.76, 0.76, 0.6]} />
+      </group>
+      <B kit={kit} p={[p.cx, 0.1, f + 0.9]} s={[3, 0.2, 1.6]} m={kit.trim} />
+      {/* Meal table with bowls, and donated food waiting to be packed. */}
+      <group position={[t, 0, f + 1.8]}>
+        <B kit={kit} p={[0, 0.74, 0]} s={[2.4, 0.08, 0.9]} m={cloth} />
+        {[-1, 1].map((x) => (
+          <B key={x} kit={kit} p={[x * 1.05, 0.36, 0]} s={[0.1, 0.72, 0.8]} m={kit.wood} />
+        ))}
+        {[-0.8, -0.27, 0.27, 0.8].map((x) => (
+          <mesh key={x} geometry={kit.ball} material={kit.trim} position={[x, 0.82, 0]} scale={[0.3, 0.14, 0.3]} />
+        ))}
+        {[-0.7, 0.7].map((x) => (
+          <B key={x} kit={kit} p={[x, 0.22, 0.85]} s={[0.9, 0.44, 0.35]} m={kit.wood} />
+        ))}
+      </group>
+      <group position={[p.cx + p.side * 3.3, 0, f + 1.2]}>
+        <B kit={kit} p={[0, 0.3, 0]} s={[0.8, 0.6, 0.6]} m={kit.cardboard} />
+        <B kit={kit} p={[0.85, 0.3, 0.1]} s={[0.8, 0.6, 0.6]} m={kit.cardboard} />
+        <B kit={kit} p={[0.4, 0.85, 0.05]} s={[0.78, 0.5, 0.58]} m={kit.crate} />
+        <B kit={kit} p={[0.4, 1.14, 0.05]} s={[0.66, 0.1, 0.46]} m={kit.produce[2]} shadow={false} />
+      </group>
     </Frame>
   );
 }

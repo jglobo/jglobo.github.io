@@ -11,7 +11,7 @@
       "Build retrieval-augmented generation (RAG) applications with LangChain that ground model answers in curated document collections.",
       "Design data pipelines that collect and clean public datasets, then train, evaluate and fine-tune models on personal workstations.",
       "Assemble and maintain personal AI ecosystems from open-source tools, managing multiple systems across my own computers.",
-      "Apply Laya classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
+      "Apply the Laya and Jev classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
     ],
     "technologies": [
       "Python",
@@ -32,7 +32,7 @@
     "highlights": [
       "Lead data ingestion, cleaning, EDA, feature engineering, model development and evaluation.",
       "Develop and evaluate classification and regression models in Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
-      "Partner with the team to turn denied-claim classification models into products that identify reversible denials and recover revenue from health insurance providers.",
+      "Partner with the team to turn denied-claim classification models into products that identify reversible denials, supporting revenue recovery in the tens of millions of dollars from health insurance providers.",
       "Build forecasting models that predict emergency department patient volumes, so operations teams can plan staffing and allocate resources ahead of demand.",
       "Design and maintain executive-ready dashboards and recurring reports in Tableau, Power BI, R Shiny and Streamlit.",
       "Translate complex findings into actionable insights for technical and non-technical stakeholders.",

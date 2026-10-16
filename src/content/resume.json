@@ -14,7 +14,7 @@
       "bullets": [
         "Lead end-to-end data science workflows including data ingestion, cleaning, EDA, feature engineering, model development, and evaluation.",
         "Develop and evaluate machine learning models (classification and regression) using Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
-        "Partner with the team to turn denied-claim classification models into products that identify reversible denials and recover revenue from health insurance providers.",
+        "Partner with the team to turn denied-claim classification models into products that identify reversible denials, supporting revenue recovery in the tens of millions of dollars from health insurance providers.",
         "Build forecasting models that predict emergency department patient volumes, so operations teams can plan staffing and allocate resources ahead of demand.",
         "Design and maintain executive-ready dashboards and recurring reports using Tableau, Power BI, R Shiny, and Streamlit.",
         "Translate complex analytical findings into actionable insights for technical and non-technical stakeholders.",
@@ -31,7 +31,7 @@
         "Build retrieval-augmented generation (RAG) applications with LangChain that ground model answers in curated document collections.",
         "Design data pipelines that collect and clean public datasets, then train, evaluate and fine-tune models on personal workstations.",
         "Assemble and maintain personal AI ecosystems from open-source tools, managing multiple systems across my own computers.",
-        "Apply Laya classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
+        "Apply the Laya and Jev classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
       ]
     },
     {
@@ -98,7 +98,7 @@
     ],
     [
       "AI & Agentic Engineering",
-      "Agentic coding and agent harnesses; cloud and local LLMs (Claude, OpenAI, DeepSeek, MiniMax, MiMo); retrieval-augmented generation (RAG); LangChain; model fine-tuning; Laya classification models; open-source AI tooling and self-hosted AI systems"
+      "Agentic coding and agent harnesses; cloud and local LLMs (Claude, OpenAI, DeepSeek, MiniMax, MiMo); retrieval-augmented generation (RAG); LangChain; model fine-tuning; Laya and Jev classification models; open-source AI tooling and self-hosted AI systems"
     ],
     [
       "Data Platforms",

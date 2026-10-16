@@ -169,6 +169,12 @@ function ExperienceSection() {
           </li>
         ))}
       </ul>
+      <h4>Volunteer</h4>
+      <ul className="timeline">
+        {resume.volunteer.map((v) => (
+          <li key={v}>{v}</li>
+        ))}
+      </ul>
       <h4>Certifications</h4>
       <ul className="certs">
         {achievements.map((a) => (

@@ -4,7 +4,7 @@
 // further up the hill means moving forward in time.
 import { rng } from '../../utils/random.ts';
 
-export type BuildingStyle = 'campus' | 'clinic' | 'market' | 'lab' | 'library' | 'office' | 'tower';
+export type BuildingStyle = 'campus' | 'hall' | 'clinic' | 'market' | 'lab' | 'library' | 'office' | 'tower';
 export interface StopInput { id: string; building: BuildingStyle; district: string }
 
 export interface Box { minX: number; maxX: number; minZ: number; maxZ: number }
@@ -28,6 +28,7 @@ export interface StopPlacement extends StopInput {
 /** Building footprints [w, d, h]. */
 export const FOOTPRINT: Record<BuildingStyle, [number, number, number]> = {
   campus: [12, 7, 6],
+  hall: [9, 6, 4.4],
   clinic: [9, 6, 4.2],
   market: [9, 6, 4.4],
   lab: [9, 6, 5],

@@ -1,8 +1,13 @@
-// Light/dark switch for the paper-styled pages (title screen and Quick Portfolio).
+// Light/dark switch for Studio Paper: the title screen and Quick Portfolio pages, and the
+// game's HUD, menus and panels (paper-ui, which sets the colours without a page background).
 import { useSettings } from '../stores/settingsStore';
 
 export function usePaperClass() {
   return useSettings((s) => (s.pageTheme === 'dark' ? 'paper paper-dark' : 'paper'));
+}
+
+export function usePaperUiClass() {
+  return useSettings((s) => (s.pageTheme === 'dark' ? 'paper-ui paper-dark' : 'paper-ui'));
 }
 
 export function ThemeToggle({ className = '' }: { className?: string }) {

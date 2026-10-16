@@ -3,6 +3,7 @@ import { useGame, type QuickSection } from '../stores/gameStore';
 import { travelTo } from '../engine/loading/travel';
 import { audio } from '../engine/audio/AudioManager';
 import { WorldMap } from './WorldMap';
+import { ThemeToggle } from './ThemeToggle';
 import { SettingsPanel } from './SettingsPanel';
 
 type View = 'main' | 'map' | 'settings';
@@ -37,7 +38,10 @@ export function PauseMenu() {
       <section className="pause" role="dialog" aria-modal="true" aria-labelledby="pause-title">
         {view === 'main' && (
           <>
-            <h2 id="pause-title">Paused</h2>
+            <header className="pause-header">
+              <h2 id="pause-title">Paused</h2>
+              <ThemeToggle className="pause-theme" />
+            </header>
             <nav className="pause-list">
               {started && (
                 <button ref={first} className="btn primary" onClick={() => game.closeOverlay()}>

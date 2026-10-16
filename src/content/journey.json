@@ -47,6 +47,15 @@
       "story": "This is where it started: a biology degree with a physiology concentration and a chemistry minor. Before tech I trained in biology and medicine, which is where my love of data started."
     },
     {
+      "id": "volunteer",
+      "label": "Giving Back",
+      "year": "2008 – 2015",
+      "district": "old-town",
+      "building": "hall",
+      "volunteer": true,
+      "story": "Alongside school I spent time volunteering: building and fundraising for accessible spaces with Push America, running the Rivalry Run 5K, serving meals at the RIFA soup kitchen in Jackson, and packing food with Stop Hunger Now. It taught me that the work matters most when it reaches people."
+    },
+    {
       "id": "umhs",
       "label": "Medical School",
       "year": "2013 – 2017",

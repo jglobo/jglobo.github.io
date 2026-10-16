@@ -359,8 +359,9 @@ kbd {
 .screen-bar kbd { margin-left: 6px; }
 
 /* Studio Paper: warm paper, navy ink and gold for the title screen and Quick Portfolio,
-   with a dark variant (ink-blue paper) behind the theme toggle. */
-.paper {
+   with a dark variant (ink-blue paper) behind the theme toggle. paper-ui carries the same
+   colours to the game's HUD, menus and panels without painting a page background. */
+.paper, .paper-ui {
   --bg: #fbf8f2;
   --panel: #fbf8f2;
   --panel-solid: #fbf8f2;
@@ -378,12 +379,16 @@ kbd {
   --focus: #2f6f73;
   --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
   --sans: 'Source Sans 3', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --veil: rgba(251, 248, 242, 0.9);
+  --shadow: 0 1px 2px rgba(31, 42, 55, 0.08), 0 8px 24px rgba(31, 42, 55, 0.12);
+}
+.paper {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
   color-scheme: light;
 }
-.paper.paper-dark {
+.paper.paper-dark, .paper-ui.paper-dark {
   --bg: #161b22;
   --panel: #161b22;
   --panel-solid: #161b22;
@@ -399,16 +404,20 @@ kbd {
   --link: #8fd0cb;
   --good: #8fd6a8;
   --focus: #e0b25c;
-  color-scheme: dark;
+  --veil: rgba(22, 27, 34, 0.88);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
 }
-.high-contrast .paper { --line: var(--text); --muted: var(--text); }
+.paper.paper-dark { color-scheme: dark; }
+.paper-ui { display: contents; color: var(--text); font-family: var(--sans); }
+.high-contrast :is(.paper, .paper-ui) { --line: var(--text); --muted: var(--text); }
+.high-contrast .paper-ui { --veil: var(--bg); }
 .paper a { color: var(--link); }
-.paper kbd { border-color: color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 10%, transparent); }
-.paper .btn { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); border-radius: 8px; }
-.paper .btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); border-color: var(--ink); }
-.paper .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
-.paper .btn.primary:hover { filter: none; background: color-mix(in srgb, var(--ink) 86%, var(--gold)); }
-.paper .btn.ghost { border-color: var(--line); }
+:is(.paper, .paper-ui) kbd { border-color: color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 10%, transparent); }
+:is(.paper, .paper-ui) .btn { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); border-radius: 8px; }
+:is(.paper, .paper-ui) .btn:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); border-color: var(--ink); }
+:is(.paper, .paper-ui) .btn.primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+:is(.paper, .paper-ui) .btn.primary:hover { filter: none; background: color-mix(in srgb, var(--ink) 86%, var(--gold)); }
+:is(.paper, .paper-ui) .btn.ghost { border-color: var(--line); }
 
 .theme-toggle { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--line); background: var(--side, transparent); color: var(--text); cursor: pointer; font-weight: 600; font-size: 0.85rem; }
 .theme-toggle:hover { border-color: var(--gold, var(--accent)); }
@@ -460,3 +469,59 @@ kbd {
 .quick.paper .resume-sheet { background: #fffdf8; box-shadow: 0 1px 2px rgba(31, 42, 55, 0.06), 0 10px 30px rgba(31, 42, 55, 0.06); }
 .quick.paper.paper-dark .resume-sheet { background: var(--side); box-shadow: none; }
 .quick.paper .resume-sheet header h4 { font-family: var(--serif); font-size: 1.8rem; }
+
+/* Studio Paper for the game UI: HUD pills, menus, settings, the world map, project
+   inspectors and the Journey dialogue box. World colours stay as accents. */
+.paper-ui .loader { background: var(--bg); color: var(--muted); }
+.paper-ui .loader-rings span { border-top-color: var(--gold); }
+.paper-ui .loader-rings span:nth-child(2) { border-top-color: var(--accent2); }
+.paper-ui .loader-rings span:nth-child(3) { border-top-color: var(--ink); }
+.paper-ui :is(.hud-world, .hud-btn, .hud-hint, .hud-prompt, .selector-item, .controls-legend ul, .controls-toggle, .nav-label, .return-charge) {
+  background: var(--veil); color: var(--text); border-color: var(--line); box-shadow: var(--shadow); text-shadow: none; }
+.paper-ui .hud-world { font-family: var(--serif); letter-spacing: 0.01em; }
+.paper-ui .hud-btn:hover { border-color: var(--gold); }
+.paper-ui .hud-prompt { border: 1.5px solid var(--gold); }
+.paper-ui .controls-legend { color: var(--muted); }
+.paper-ui .selector-item { opacity: 0.85; }
+.paper-ui .selector-item.active { opacity: 1; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 16%, var(--bg)); box-shadow: var(--shadow); }
+.paper-ui .selector-item.active .selector-symbol { color: var(--accent); }
+.paper-ui .selector-symbol { color: color-mix(in srgb, var(--accent) 70%, var(--ink)); }
+.paper-ui .nav-marker { color: var(--text); text-shadow: none; }
+.paper-ui .nav-link { background: var(--ink); color: var(--on-ink); }
+.paper-ui .nav-link:hover { background: var(--gold); color: #1f2a37; }
+.paper-ui .return-charge { padding: 4px 14px 4px 6px; border-radius: 999px; border: 1px solid var(--line); }
+.paper-ui .return-charge .track { stroke: var(--line); }
+.paper-ui .return-charge .fill { stroke: var(--gold); }
+.paper-ui .overlay-backdrop { background: rgba(31, 42, 55, 0.28); }
+.paper-ui .pause { background: var(--panel); box-shadow: var(--shadow); }
+.paper-ui :is(.pause h2, .inspector h2) { font-family: var(--serif); font-weight: 700; }
+.paper-ui .pause-header .pause-theme { margin-left: auto; }
+.paper-ui .icon-btn { color: var(--text); }
+.paper-ui .inspector { background: var(--panel); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: var(--shadow); }
+.paper-ui .inspector.holo { background: var(--panel); }
+.paper-ui .inspector.holo::after { display: none; }
+.paper-ui .kicker { color: color-mix(in srgb, var(--accent) 55%, var(--ink)); }
+.paper-ui .inspector.journal .kicker { color: var(--accent); }
+.paper-ui .chip { background: transparent; border-color: var(--line); border-radius: 6px; }
+.paper-ui .shot { background: var(--side); }
+.paper-ui .mini-chart svg { background: var(--side); }
+.paper-ui .mini-chart :is(circle, rect) { fill: var(--accent2); }
+.paper-ui .mini-chart polyline { stroke: var(--gold); }
+.paper-ui .mini-chart .axis { stroke: var(--line); }
+.paper-ui .quality { background: transparent; }
+.paper-ui .quality.active { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.paper-ui .setting-row input { accent-color: var(--accent2); }
+.paper-ui .world-map { background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--gold) 14%, transparent), transparent 60%); }
+.paper-ui .world-map line { stroke: var(--line); }
+.paper-ui .world-map line.lit { stroke: var(--gold); }
+.paper-ui .map-node.here .map-symbol { outline-color: var(--ink); }
+.paper-ui .dlg { background: var(--panel); color: var(--text); border-color: var(--gold); box-shadow: var(--shadow); }
+.paper-ui .dlg-portrait { background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--gold) 30%, transparent), transparent 70%), var(--side); border-color: var(--line); }
+.paper-ui .dlg-question { color: var(--accent); }
+.paper-ui .dlg-kicker, .paper-ui .dlg-cursor, .paper-ui .dlg-caret { color: var(--accent); }
+.paper-ui .dlg-choice.sel { background: color-mix(in srgb, var(--gold) 20%, transparent); color: var(--text); }
+.paper-ui .dlg-choice.asked { color: var(--muted); }
+.paper-ui .dlg-check { color: var(--good); }
+.paper-ui .dlg-help { color: var(--muted); }
+.paper-ui .dlg-continue { color: var(--text); border-color: var(--gold); background: color-mix(in srgb, var(--gold) 14%, transparent); }
+.paper-ui .dlg-continue span { color: var(--accent); }

@@ -76,12 +76,14 @@ export interface JourneyStop {
   label: string;
   year: string;
   district: 'old-town' | 'island' | 'market' | 'healthcare' | 'data' | 'tech';
-  building: 'campus' | 'clinic' | 'market' | 'lab' | 'library' | 'office' | 'tower';
+  building: 'campus' | 'hall' | 'clinic' | 'market' | 'lab' | 'library' | 'office' | 'tower';
   /** ids from education.json / experience.json shown in this stop's memory. */
   education?: string[];
   experience?: string[];
   /** Also list the certifications (achievements.json) from this issuer. */
   certificationsFrom?: string;
+  /** Also list the résumé's volunteer experience. */
+  volunteer?: boolean;
   story: string;
 }
 

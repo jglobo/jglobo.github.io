@@ -10,6 +10,7 @@ import { QuickPortfolio } from '../portfolio/QuickPortfolio';
 import { ProjectInspector } from '../portfolio/ProjectInspector';
 import { DebugOverlay } from '../engine/debug/DebugOverlay';
 import { preloadWorld } from '../engine/loading/worlds';
+import { usePaperUiClass } from '../ui/ThemeToggle';
 
 const loadShell = () => import('./GameShell');
 // The Journey world's dialogue box and memory journal (DOM), part of its own chunk.
@@ -22,6 +23,7 @@ export function App() {
   const highContrast = useSettings((s) => s.highContrast);
   const reducedMotion = useSettings((s) => s.reducedMotion);
   const caps = useMemo(detectCapabilities, []);
+  const paperUi = usePaperUiClass();
 
   useEffect(() => {
     const s = useSettings.getState();
@@ -41,7 +43,7 @@ export function App() {
   };
 
   return (
-    <>
+    <div className={paperUi}>
       {!started && <Landing caps={caps} onEnter={enter} />}
       {started && (
         <Suspense fallback={<Loader />}>
@@ -59,7 +61,7 @@ export function App() {
       <PauseMenu />
       <QuickPortfolio />
       {started && <DebugOverlay />}
-    </>
+    </div>
   );
 }
 
