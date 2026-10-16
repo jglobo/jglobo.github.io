@@ -17,36 +17,6 @@ function make(w: number, h: number, draw: (g: CanvasRenderingContext2D) => void,
   return t;
 }
 
-export const grassTexture = () =>
-  make(256, 256, (g) => {
-    g.fillStyle = '#4f8a3c';
-    g.fillRect(0, 0, 256, 256);
-    const r = rng(4);
-    for (let i = 0; i < 3500; i++) {
-      const v = Math.floor(r() * 40);
-      g.fillStyle = `rgb(${60 + v},${110 + v},${50 + v / 2})`;
-      g.fillRect(r() * 256, r() * 256, 2, 3);
-    }
-  }, [36, 36]);
-
-/** Asphalt strip with a dashed centre line; u runs along the road. */
-export const roadTexture = () =>
-  make(256, 64, (g) => {
-    g.fillStyle = '#3a3d45';
-    g.fillRect(0, 0, 256, 64);
-    const r = rng(8);
-    for (let i = 0; i < 900; i++) {
-      const v = 50 + Math.floor(r() * 25);
-      g.fillStyle = `rgb(${v},${v},${v + 6})`;
-      g.fillRect(r() * 256, r() * 64, 2, 2);
-    }
-    g.fillStyle = '#e8e2c8';
-    g.fillRect(0, 2, 256, 2);
-    g.fillRect(0, 60, 256, 2);
-    g.fillStyle = '#ffd23f';
-    for (let x = 0; x < 256; x += 64) g.fillRect(x, 30, 36, 4);
-  });
-
 export const windowsTexture = (seed: number) =>
   make(128, 256, (g) => {
     g.fillStyle = '#1b2233';

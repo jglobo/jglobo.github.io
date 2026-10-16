@@ -89,3 +89,19 @@ test('clips play at the rate that matches the ground speed', async () => {
   assert.equal(footClip(2).name, 'Walk');
   assert.equal(footClip(5.6).name, 'Run');
 });
+
+test("the town's roads are Jose's pieces, joined end to end, clear of buildings", async () => {
+  const { STRAIGHTS, LAMPS, ROAD_RECTS } = await import('../src/worlds/software/roads.ts');
+  const { ROADS, onRoad } = await import('../src/worlds/software/layout.ts');
+  for (const s of STRAIGHTS) assert.ok(s.stretch! > 0.55 && s.stretch! < 1.35, `stretch ${s.stretch}`);
+  for (const r of ROAD_RECTS) {
+    assert.ok(r.maxX > r.minX && r.maxZ > r.minZ);
+    for (const b of BUILDINGS) assert.ok(r.maxX <= b.minX || r.minX >= b.maxX || r.maxZ <= b.minZ || r.minZ >= b.maxZ, 'road runs into a building');
+  }
+  for (const l of LAMPS) assert.ok(!onRoad(l.x, l.z), `lamp on the road at ${l.x}, ${l.z}`);
+  // Driving the cross street, the avenue and the east road stays on tarmac the whole way.
+  for (let x = -28; x <= 24; x += 0.5) assert.ok(onRoad(x, -26), `gap in the cross street at ${x}`);
+  for (let x = -34; x <= 3; x += 0.5) assert.ok(onRoad(x, 9.8), `gap in the avenue at ${x}`);
+  for (let z = -40; z <= 40; z += 0.5) assert.ok(onRoad(30, z), `gap in the east road at ${z}`);
+  assert.equal(ROADS.length, ROAD_RECTS.length);
+});

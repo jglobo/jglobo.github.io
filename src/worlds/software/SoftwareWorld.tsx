@@ -9,7 +9,7 @@ import { useHud } from '../../stores/hudStore';
 import { qualityProfile } from '../../stores/settingsStore';
 import { Billboards } from './Billboards';
 import { Characters } from './Characters';
-import { CoastalKit } from './CoastalKit';
+import { KitTown } from './KitTown';
 import { PORTAL_SPOT, SPAWN } from './layout';
 import { CONTROLS, PlayerController, type SoftwareKeys } from './PlayerController';
 import { parked, useSoftware } from './softwareStore';
@@ -73,7 +73,7 @@ export default function SoftwareWorld() {
         shadow-camera-bottom={-70}
       />
       <Terrain />
-      <CoastalKit />
+      <KitTown />
       <Billboards />
       <Characters walker={walker} poses={poses} />
       <Portal position={[PORTAL_SPOT.x, 2.1, PORTAL_SPOT.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.8} />

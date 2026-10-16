@@ -1,10 +1,13 @@
-// Ground, roads, ramps, trees, city blocks and street lights. Trees and lights are
-// instanced; textures are drawn in code.
+// Ground, trees and city blocks. The roads, lamps, verges and jumps are Jose's kit
+// pieces (KitTown.tsx). Trees are instanced; textures are drawn in code.
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { Color, InstancedMesh, MeshStandardMaterial, Object3D, RepeatWrapping, type Texture } from 'three';
+import { Color, InstancedMesh, Object3D, RepeatWrapping, type Texture } from 'three';
 import { qualityProfile } from '../../../stores/settingsStore';
-import { BUILDINGS, RAMPS, ROADS, TREES, WORLD_HALF, type Box, type Ramp } from '../layout';
-import { dirtTexture, grassTexture, roadTexture, windowsTexture } from './textures';
+import { BUILDINGS, TREES, WORLD_HALF, type Box } from '../layout';
+import { dirtTexture, windowsTexture } from './textures';
+
+/** Jose's grass verge base colour (Kit / muted olive grass). */
+const GRASS = '#859d76';
 
 function useOwned<T extends Texture>(make: () => T, deps: unknown[] = []) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -14,83 +17,31 @@ function useOwned<T extends Texture>(make: () => T, deps: unknown[] = []) {
 }
 
 export function Terrain() {
-  const grass = useOwned(grassTexture);
   const dirt = useOwned(dirtTexture);
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
+      {/* The colour of Jose's grass verges. A little below y = 0 so his road surfaces,
+          which sit within a centimetre of 0, never fight it for depth (flicker). */}
+      <mesh rotation-x={-Math.PI / 2} position-y={-0.04} receiveShadow>
         <planeGeometry args={[WORLD_HALF * 2 + 60, WORLD_HALF * 2 + 60]} />
-        <meshStandardMaterial map={grass} roughness={1} />
+        <meshStandardMaterial color={GRASS} roughness={1} />
       </mesh>
       {/* Dirt jump park in the south-east corner */}
       <mesh rotation-x={-Math.PI / 2} position={[49, 0.01, 30]} receiveShadow>
         <planeGeometry args={[22, 20]} />
         <meshStandardMaterial map={dirt} roughness={1} />
       </mesh>
-      {ROADS.map((r, i) => (
-        <Road key={i} road={r} />
-      ))}
-      {RAMPS.map((r, i) => (
-        <RampMesh key={i} ramp={r} />
-      ))}
       {BUILDINGS.map((b, i) => (
         <Building key={i} b={b} seed={i + 1} />
       ))}
       <Trees />
-      <StreetLights />
       {/* Low hills at the map edge so the world does not end at a line */}
       {[[-WORLD_HALF - 14, 0], [WORLD_HALF + 14, 0], [0, -WORLD_HALF - 14], [0, WORLD_HALF + 14]].map(([x, z], i) => (
         <mesh key={i} position={[x, -2, z]} scale={[i < 2 ? 1 : 9, 1, i < 2 ? 9 : 1]}>
           <sphereGeometry args={[18, 16, 8]} />
-          <meshStandardMaterial color="#3f7a34" roughness={1} />
+          <meshStandardMaterial color={GRASS} roughness={1} />
         </mesh>
       ))}
-    </group>
-  );
-}
-
-function Road({ road }: { road: Box }) {
-  const w = road.maxX - road.minX;
-  const d = road.maxZ - road.minZ;
-  const alongX = w >= d;
-  const tex = useOwned(() => {
-    const t = roadTexture();
-    t.wrapS = RepeatWrapping;
-    t.repeat.set((alongX ? w : d) / 8, 1);
-    return t;
-  }, [w, d]);
-  return (
-    <mesh rotation-x={-Math.PI / 2} rotation-z={alongX ? 0 : Math.PI / 2} position={[(road.minX + road.maxX) / 2, 0.02, (road.minZ + road.maxZ) / 2]} receiveShadow>
-      <planeGeometry args={alongX ? [w, d] : [d, w]} />
-      <meshStandardMaterial map={tex} roughness={0.9} polygonOffset polygonOffsetFactor={-1} />
-    </mesh>
-  );
-}
-
-function RampMesh({ ramp }: { ramp: Ramp }) {
-  // A wedge: rises along its local +x from 0 to height over `length`.
-  const rotY = { e: 0, n: Math.PI / 2, w: Math.PI, s: -Math.PI / 2 }[ramp.dir];
-  const slope = Math.atan2(ramp.height, ramp.length);
-  const hyp = Math.hypot(ramp.height, ramp.length);
-  return (
-    <group position={[ramp.x, 0, ramp.z]} rotation-y={rotY}>
-      <group position={[ramp.length / 2, ramp.height / 2, 0]} rotation-z={slope}>
-        <mesh castShadow receiveShadow>
-          <boxGeometry args={[hyp, 0.15, ramp.width]} />
-          <meshStandardMaterial color="#d98a2b" roughness={0.7} />
-        </mesh>
-        {/* Chevrons */}
-        {[-0.25, 0, 0.25].map((t) => (
-          <mesh key={t} position={[hyp * t, 0.08, 0]} rotation-x={-Math.PI / 2}>
-            <planeGeometry args={[0.5, ramp.width * 0.7]} />
-            <meshBasicMaterial color="#ffffff" />
-          </mesh>
-        ))}
-      </group>
-      <mesh position={[ramp.length, ramp.height / 2, 0]}>
-        <boxGeometry args={[0.2, ramp.height, ramp.width]} />
-        <meshStandardMaterial color="#9a5a1a" />
-      </mesh>
     </group>
   );
 }
@@ -156,40 +107,3 @@ function Trees() {
   );
 }
 
-function StreetLights() {
-  const poles = useRef<InstancedMesh>(null);
-  const lamps = useRef<InstancedMesh>(null);
-  const spots = useMemo(() => {
-    const out: [number, number][] = [];
-    for (let x = -32; x <= 32; x += 16) out.push([x, 25.2], [x, -31.2]);
-    for (let z = -14; z <= 10; z += 12) out.push([-37.2, z], [37.2, z]);
-    for (let z = -56; z <= -36; z += 10) out.push([5.2, z], [-5.2, z]);
-    return out;
-  }, []);
-  const lampMat = useMemo(() => new MeshStandardMaterial({ color: '#fff2c4', emissive: '#ffe08a', emissiveIntensity: 1.2 }), []);
-  useEffect(() => () => lampMat.dispose(), [lampMat]);
-  useLayoutEffect(() => {
-    const o = new Object3D();
-    spots.forEach(([x, z], i) => {
-      o.position.set(x, 2.5, z);
-      o.updateMatrix();
-      poles.current!.setMatrixAt(i, o.matrix);
-      o.position.y = 5.1;
-      o.updateMatrix();
-      lamps.current!.setMatrixAt(i, o.matrix);
-    });
-    poles.current!.instanceMatrix.needsUpdate = true;
-    lamps.current!.instanceMatrix.needsUpdate = true;
-  }, [spots]);
-  return (
-    <group>
-      <instancedMesh ref={poles} args={[undefined, undefined, spots.length]}>
-        <cylinderGeometry args={[0.1, 0.14, 5, 6]} />
-        <meshStandardMaterial color="#555b66" metalness={0.5} roughness={0.5} />
-      </instancedMesh>
-      <instancedMesh ref={lamps} args={[undefined, undefined, spots.length]} material={lampMat}>
-        <boxGeometry args={[0.5, 0.25, 0.5]} />
-      </instancedMesh>
-    </group>
-  );
-}

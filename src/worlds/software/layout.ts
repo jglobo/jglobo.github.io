@@ -2,6 +2,7 @@
 // helpers (no three.js) so collision and ramps can be unit tested.
 // x runs east, z runs south (towards the camera), y is up.
 import { KIT_ORIGIN, KIT_PIECES, KIT_SIZES } from './kit.ts';
+import { LAMPS, ROAD_RECTS } from './roads.ts';
 
 export const WORLD_HALF = 70;
 
@@ -19,25 +20,12 @@ export const GARAGE_WALLS: Box[] = [
   { ...GARAGE, minX: GARAGE.maxX - G.wall },
 ];
 
-/** Roads: a loop around the garage and a boulevard north to downtown. */
-export const ROADS: Box[] = [
-  { minX: -36, maxX: 36, minZ: 16, maxZ: 24, height: 0 },
-  { minX: -36, maxX: 36, minZ: -30, maxZ: -22, height: 0 },
-  { minX: -36, maxX: -28, minZ: -30, maxZ: 24, height: 0 },
-  { minX: 28, maxX: 36, minZ: -30, maxZ: 24, height: 0 },
-  { minX: -4, maxX: 4, minZ: -60, maxZ: -30, height: 0 },
-];
+/** Roads: Jose's road pieces, laid out in roads.ts. */
+export const ROADS: Box[] = ROAD_RECTS.map((r) => ({ ...r, height: 0 }));
 
-/** Jose's kit roads (drawn by the kit models, not the terrain): the junction in front of
- *  the garage and the road west from it to the ring road. */
-const J = KIT_SIZES.junction;
-const JZ = KIT_ORIGIN.z + (KIT_PIECES.find((p) => p.file === 'road_t_junction')?.position[2] ?? 0);
-const lastRoad = Math.min(...KIT_PIECES.filter((p) => p.file === 'road_straight').map((p) => p.position[0]));
-export const KIT_ROADS: Box[] = [
-  { minX: KIT_ORIGIN.x - KIT_SIZES.roadHalfW, maxX: KIT_ORIGIN.x + KIT_SIZES.roadHalfW, minZ: JZ + J.stemMinZ, maxZ: JZ + J.barMinZ, height: 0 },
-  { minX: KIT_ORIGIN.x - J.halfW, maxX: KIT_ORIGIN.x + J.halfW, minZ: JZ + J.barMinZ, maxZ: JZ + J.barMaxZ, height: 0 },
-  { minX: KIT_ORIGIN.x + lastRoad - 2, maxX: KIT_ORIGIN.x - J.halfW, minZ: JZ - KIT_SIZES.roadHalfW, maxZ: JZ + KIT_SIZES.roadHalfW, height: 0 },
-];
+/** Street lamps along the roads (poles you bump into). */
+const LAMP_POSTS: Circle[] = LAMPS.map((l) => ({ x: l.x, z: l.z, r: KIT_SIZES.lampR }));
+
 /** Lamps, bollards and the cabinet around the garage. */
 export const KIT_PROPS: Circle[] = KIT_PIECES.flatMap((p) => {
   const r = p.file === 'bollard' ? KIT_SIZES.bollardR : p.file === 'street_lamp' ? KIT_SIZES.lampR : p.file === 'utility_cabinet' ? KIT_SIZES.cabinetR : 0;
@@ -54,7 +42,7 @@ export const KIT_RAMPS: Ramp[] = KIT_PIECES.filter((p) => p.file === 'boost_ramp
   };
 });
 /** Keep trees off the garage forecourt. */
-const KIT_AREA: Box = { minX: -9, maxX: 8, minZ: GARAGE.minZ - 2, maxZ: JZ + 4, height: 0 };
+const KIT_AREA: Box = { minX: -9, maxX: 8, minZ: GARAGE.minZ - 2, maxZ: 14, height: 0 };
 
 /** City blocks north of the loop and a campus to the west. */
 export const BUILDINGS: Box[] = [
@@ -67,9 +55,12 @@ export const BUILDINGS: Box[] = [
   { minX: 48, maxX: 60, minZ: -40, maxZ: -28, height: 9, color: '#59607a' },
 ];
 
+/** Jumps, drawn with Jose's boost ramp scaled to size: one on the cross street, one at
+ *  the end of each road heading south, and two in the dirt park. */
 export const RAMPS: Ramp[] = [
-  { x: 6, z: 20, dir: 'e', length: 7, width: 5, height: 1.6 },
-  { x: -18, z: -26, dir: 'w', length: 6, width: 5, height: 1.2 },
+  { x: 10, z: -26, dir: 'e', length: 7, width: 3.9, height: 1.6 },
+  { x: -20, z: 34, dir: 's', length: 6, width: 3.9, height: 1.4 },
+  { x: 30, z: 40, dir: 's', length: 6, width: 3.9, height: 1.6 },
   { x: 44, z: 30, dir: 'n', length: 6, width: 4, height: 1.8 },
   { x: 52, z: 30, dir: 'n', length: 5, width: 4, height: 1.2 },
 ];
@@ -96,7 +87,7 @@ export const TREES: Circle[] = (() => {
     const x = (rand() * 2 - 1) * (WORLD_HALF - 4);
     const z = (rand() * 2 - 1) * (WORLD_HALF - 4);
     const blocked =
-      [...ROADS, ...KIT_ROADS, ...BUILDINGS, KIT_AREA].some((b) => x > b.minX - 3 && x < b.maxX + 3 && z > b.minZ - 3 && z < b.maxZ + 3) ||
+      [...ROADS, ...BUILDINGS, KIT_AREA].some((b) => x > b.minX - 3 && x < b.maxX + 3 && z > b.minZ - 3 && z < b.maxZ + 3) ||
       RAMPS.some((r) => Math.hypot(x - r.x, z - r.z) < 10) ||
       BILLBOARD_SPOTS.some((b) => Math.hypot(x - b.x, z - b.z) < 10) ||
       Math.hypot(x - PORTAL_SPOT.x, z - PORTAL_SPOT.z) < 6 ||
@@ -119,7 +110,7 @@ export function groundAt(x: number, z: number): number {
   return 0;
 }
 
-export const onRoad = (x: number, z: number) => [...ROADS, ...KIT_ROADS].some((b) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ);
+export const onRoad = (x: number, z: number) => ROADS.some((b) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ);
 
 export interface Push { x: number; z: number; nx: number; nz: number; hit: boolean }
 
@@ -161,7 +152,7 @@ export function collide(x: number, z: number, r: number): Push {
       else { z = b.maxZ + r; nz += 1; }
     }
   }
-  const circles: Circle[] = [...TREES, ...KIT_PROPS];
+  const circles: Circle[] = [...TREES, ...KIT_PROPS, ...LAMP_POSTS];
   for (const s of BILLBOARD_SPOTS) {
     circles.push({ x: s.x - BILLBOARD_POST_HALF, z: s.z, r: 0.5 }, { x: s.x + BILLBOARD_POST_HALF, z: s.z, r: 0.5 });
   }
