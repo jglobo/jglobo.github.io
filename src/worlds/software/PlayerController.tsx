@@ -19,10 +19,11 @@ import { collide, PORTAL_SPOT, SPAWN } from './layout';
 import { parked, playerRuntime, useSoftware } from './softwareStore';
 import { SPECS, forwardOf, initialVehicle, speedOf, stepVehicle, type VehicleState } from './vehicles/vehiclePhysics';
 import type { VehiclePose } from './vehicles/pose';
-import type { WalkerPose } from './Character';
+import type { WalkerPose } from './vehicles/pose';
 
-const WALK = 4.5;
-const RUN = 7.5;
+/** Jose's robot is about 2.5 m tall; these keep its Walk and Run clips at 1.6x. */
+const WALK = 2.0;
+const RUN = 5.6;
 const RETURN_HOLD = 0.8;
 export const CONTROLS = {
   foot: ['WASD: walk · Shift: run', 'E: ride a vehicle / inspect a billboard', 'Hold R: return portal', 'Tab: Quick Portfolio'],
@@ -157,6 +158,8 @@ export function PlayerController({
       pose.speed = fwd;
       pose.steer += (input.steer - pose.steer) * Math.min(1, dt * 8);
       pose.ridden = ridden;
+      pose.throttle = input.throttle;
+      pose.grounded = s.grounded;
       if (id === 'bicycle') pose.roll += ((ridden ? input.steer * Math.min(1, Math.abs(fwd) / 6) * 0.35 : 0.12) - pose.roll) * Math.min(1, dt * 5);
       else pose.roll += (Math.max(-0.08, Math.min(0.08, side * -0.02)) - pose.roll) * Math.min(1, dt * 6);
       pose.pitch += (Math.max(-0.06, Math.min(0.06, (fwd - speedOf(prev)) / Math.max(dt, 1e-3) * -0.004)) - pose.pitch) * Math.min(1, dt * 6);

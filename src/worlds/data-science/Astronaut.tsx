@@ -43,7 +43,8 @@ export function Astronaut({ runtime }: { runtime: React.RefObject<AstronautRunti
         // Skinned meshes move away from their bind-pose bounds; never cull them.
         o.frustumCulled = false;
       });
-      nozzles.current = ['exhaust.L', 'exhaust.R'].map((n) => c.object.getObjectByName(n)).filter((o): o is Object3D => !!o);
+      // GLTFLoader drops the dots from node names: exhaust.L is loaded as exhaustL.
+      nozzles.current = ['exhaustL', 'exhaustR'].map((n) => c.object.getObjectByName(n)).filter((o): o is Object3D => !!o);
       root.current?.add(c.object);
       character.current = c;
     }, (err) => console.error('Astronaut model failed to load', err));

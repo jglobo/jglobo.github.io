@@ -14,6 +14,12 @@ export interface VehiclePose {
   pitch: number;
   /** Rider visible on top (bicycle). */
   ridden: boolean;
+  /** -1..1 pedal / gas input this frame. */
+  throttle: number;
+  grounded: boolean;
 }
 
-export const makePose = (x: number, z: number, heading: number): VehiclePose => ({ x, y: 0, z, heading, speed: 0, steer: 0, roll: 0, pitch: 0, ridden: false });
+export const makePose = (x: number, z: number, heading: number): VehiclePose => ({ x, y: 0, z, heading, speed: 0, steer: 0, roll: 0, pitch: 0, ridden: false, throttle: 0, grounded: true });
+
+/** The robot on foot; written by the controller each frame. */
+export interface WalkerPose { x: number; z: number; heading: number; speed: number; visible: boolean }

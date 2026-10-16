@@ -1,20 +1,22 @@
 // Map of the Software world: a compact test town around the garage. Pure data and
 // helpers (no three.js) so collision and ramps can be unit tested.
 // x runs east, z runs south (towards the camera), y is up.
+import { KIT_ORIGIN, KIT_PIECES, KIT_SIZES } from './kit.ts';
 
 export const WORLD_HALF = 70;
 
 export interface Box { minX: number; maxX: number; minZ: number; maxZ: number; height: number; color?: string }
 export interface Circle { x: number; z: number; r: number }
-/** A ramp rising along +dir from (x,z); length along its axis, width across. */
-export interface Ramp { x: number; z: number; dir: 'n' | 's' | 'e' | 'w'; length: number; width: number; height: number }
+/** A ramp rising along +dir (or along `heading`, if given) from (x,z); length along its axis, width across. */
+export interface Ramp { x: number; z: number; dir: 'n' | 's' | 'e' | 'w'; heading?: number; length: number; width: number; height: number }
 
-export const GARAGE: Box = { minX: -12, maxX: 12, minZ: -8, maxZ: 6, height: 5.5 };
+const G = KIT_SIZES.garage;
+export const GARAGE: Box = { minX: KIT_ORIGIN.x - G.halfW, maxX: KIT_ORIGIN.x + G.halfW, minZ: KIT_ORIGIN.z + G.back, maxZ: KIT_ORIGIN.z + G.front, height: G.height };
 /** Garage walls you collide with (the south side is open). */
 export const GARAGE_WALLS: Box[] = [
-  { minX: -12, maxX: 12, minZ: -8, maxZ: -7.4, height: 5.5 },
-  { minX: -12, maxX: -11.4, minZ: -8, maxZ: 6, height: 5.5 },
-  { minX: 11.4, maxX: 12, minZ: -8, maxZ: 6, height: 5.5 },
+  { ...GARAGE, maxZ: GARAGE.minZ + G.wall },
+  { ...GARAGE, maxX: GARAGE.minX + G.wall },
+  { ...GARAGE, minX: GARAGE.maxX - G.wall },
 ];
 
 /** Roads: a loop around the garage and a boulevard north to downtown. */
@@ -24,8 +26,35 @@ export const ROADS: Box[] = [
   { minX: -36, maxX: -28, minZ: -30, maxZ: 24, height: 0 },
   { minX: 28, maxX: 36, minZ: -30, maxZ: 24, height: 0 },
   { minX: -4, maxX: 4, minZ: -60, maxZ: -30, height: 0 },
-  { minX: -4, maxX: 4, minZ: 6, maxZ: 16, height: 0 },
 ];
+
+/** Jose's kit roads (drawn by the kit models, not the terrain): the junction in front of
+ *  the garage and the road west from it to the ring road. */
+const J = KIT_SIZES.junction;
+const JZ = KIT_ORIGIN.z + (KIT_PIECES.find((p) => p.file === 'road_t_junction')?.position[2] ?? 0);
+const lastRoad = Math.min(...KIT_PIECES.filter((p) => p.file === 'road_straight').map((p) => p.position[0]));
+export const KIT_ROADS: Box[] = [
+  { minX: KIT_ORIGIN.x - KIT_SIZES.roadHalfW, maxX: KIT_ORIGIN.x + KIT_SIZES.roadHalfW, minZ: JZ + J.stemMinZ, maxZ: JZ + J.barMinZ, height: 0 },
+  { minX: KIT_ORIGIN.x - J.halfW, maxX: KIT_ORIGIN.x + J.halfW, minZ: JZ + J.barMinZ, maxZ: JZ + J.barMaxZ, height: 0 },
+  { minX: KIT_ORIGIN.x + lastRoad - 2, maxX: KIT_ORIGIN.x - J.halfW, minZ: JZ - KIT_SIZES.roadHalfW, maxZ: JZ + KIT_SIZES.roadHalfW, height: 0 },
+];
+/** Lamps, bollards and the cabinet around the garage. */
+export const KIT_PROPS: Circle[] = KIT_PIECES.flatMap((p) => {
+  const r = p.file === 'bollard' ? KIT_SIZES.bollardR : p.file === 'street_lamp' ? KIT_SIZES.lampR : p.file === 'utility_cabinet' ? KIT_SIZES.cabinetR : 0;
+  return r ? [{ x: KIT_ORIGIN.x + p.position[0], z: KIT_ORIGIN.z + p.position[2], r }] : [];
+});
+/** Jose's boost ramp (rotated, so it carries its own heading; the model draws it). */
+export const KIT_RAMPS: Ramp[] = KIT_PIECES.filter((p) => p.file === 'boost_ramp').map((p) => {
+  const heading = -p.rotationY; // the model rises towards its -z
+  const { length, width, height } = KIT_SIZES.ramp;
+  return {
+    x: KIT_ORIGIN.x + p.position[0] - Math.sin(heading) * (length / 2),
+    z: KIT_ORIGIN.z + p.position[2] + Math.cos(heading) * (length / 2),
+    dir: 'n' as const, heading, length, width, height,
+  };
+});
+/** Keep trees off the garage forecourt. */
+const KIT_AREA: Box = { minX: -9, maxX: 8, minZ: GARAGE.minZ - 2, maxZ: JZ + 4, height: 0 };
 
 /** City blocks north of the loop and a campus to the west. */
 export const BUILDINGS: Box[] = [
@@ -56,8 +85,8 @@ export const BILLBOARD_SPOTS = [
 ];
 export const BILLBOARD_POST_HALF = 6;
 
-export const PORTAL_SPOT = { x: -15, z: 11 };
-export const SPAWN = { x: -9, z: 11 };
+export const PORTAL_SPOT = { x: -7.5, z: 3.8 };
+export const SPAWN = { x: -6.5, z: 6.2 };
 
 export const TREES: Circle[] = (() => {
   const out: Circle[] = [];
@@ -67,7 +96,7 @@ export const TREES: Circle[] = (() => {
     const x = (rand() * 2 - 1) * (WORLD_HALF - 4);
     const z = (rand() * 2 - 1) * (WORLD_HALF - 4);
     const blocked =
-      [...ROADS, ...BUILDINGS, GARAGE].some((b) => x > b.minX - 3 && x < b.maxX + 3 && z > b.minZ - 3 && z < b.maxZ + 3) ||
+      [...ROADS, ...KIT_ROADS, ...BUILDINGS, KIT_AREA].some((b) => x > b.minX - 3 && x < b.maxX + 3 && z > b.minZ - 3 && z < b.maxZ + 3) ||
       RAMPS.some((r) => Math.hypot(x - r.x, z - r.z) < 10) ||
       BILLBOARD_SPOTS.some((b) => Math.hypot(x - b.x, z - b.z) < 10) ||
       Math.hypot(x - PORTAL_SPOT.x, z - PORTAL_SPOT.z) < 6 ||
@@ -81,8 +110,8 @@ const DIRS = { n: [0, -1], s: [0, 1], e: [1, 0], w: [-1, 0] } as const;
 
 /** Ground height and the slope (rise per metre) along the vehicle's travel direction. */
 export function groundAt(x: number, z: number): number {
-  for (const r of RAMPS) {
-    const [dx, dz] = DIRS[r.dir];
+  for (const r of [...RAMPS, ...KIT_RAMPS]) {
+    const [dx, dz] = r.heading === undefined ? DIRS[r.dir] : [Math.sin(r.heading), -Math.cos(r.heading)];
     const along = (x - r.x) * dx + (z - r.z) * dz;
     const across = Math.abs((x - r.x) * -dz + (z - r.z) * dx);
     if (along >= 0 && along <= r.length && across <= r.width / 2) return (along / r.length) * r.height;
@@ -90,7 +119,7 @@ export function groundAt(x: number, z: number): number {
   return 0;
 }
 
-export const onRoad = (x: number, z: number) => ROADS.some((b) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ);
+export const onRoad = (x: number, z: number) => [...ROADS, ...KIT_ROADS].some((b) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ);
 
 export interface Push { x: number; z: number; nx: number; nz: number; hit: boolean }
 
@@ -132,7 +161,7 @@ export function collide(x: number, z: number, r: number): Push {
       else { z = b.maxZ + r; nz += 1; }
     }
   }
-  const circles: Circle[] = [...TREES];
+  const circles: Circle[] = [...TREES, ...KIT_PROPS];
   for (const s of BILLBOARD_SPOTS) {
     circles.push({ x: s.x - BILLBOARD_POST_HALF, z: s.z, r: 0.5 }, { x: s.x + BILLBOARD_POST_HALF, z: s.z, r: 0.5 });
   }

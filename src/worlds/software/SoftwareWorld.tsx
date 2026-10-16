@@ -1,5 +1,5 @@
-// Software Engineering world: a compact town around a garage. Walk to a vehicle,
-// ride it, and drive to the billboards where the apps live.
+// Software Engineering world: a compact town around Jose's garage. Walk the robot to
+// the car or the bike, ride it, and drive to the billboards where the apps live.
 import { useEffect, useMemo, useState } from 'react';
 import { Portal } from '../../engine/portals/Portal';
 import { HUB_THEME } from '../../engine/portals/destinations';
@@ -8,15 +8,13 @@ import { useGame } from '../../stores/gameStore';
 import { useHud } from '../../stores/hudStore';
 import { qualityProfile } from '../../stores/settingsStore';
 import { Billboards } from './Billboards';
-import { Walker, type WalkerPose } from './Character';
+import { Characters } from './Characters';
+import { CoastalKit } from './CoastalKit';
 import { PORTAL_SPOT, SPAWN } from './layout';
 import { CONTROLS, PlayerController, type SoftwareKeys } from './PlayerController';
 import { parked, useSoftware } from './softwareStore';
 import { Terrain } from './terrain/Terrain';
-import { Bicycle } from './vehicles/Bicycle';
-import { makePose } from './vehicles/pose';
-import { SportsCar } from './vehicles/SportsCar';
-import { VehicleGarage } from './VehicleGarage';
+import { makePose, type WalkerPose } from './vehicles/pose';
 
 export default function SoftwareWorld() {
   const shadows = qualityProfile().shadows;
@@ -75,11 +73,9 @@ export default function SoftwareWorld() {
         shadow-camera-bottom={-70}
       />
       <Terrain />
-      <VehicleGarage />
+      <CoastalKit />
       <Billboards />
-      <SportsCar pose={poses['sports-car']} />
-      <Bicycle pose={poses.bicycle} />
-      <Walker pose={walker} />
+      <Characters walker={walker} poses={poses} />
       <Portal position={[PORTAL_SPOT.x, 2.1, PORTAL_SPOT.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.8} />
       {returnPortal && (
         <Portal position={[returnPortal.x, 2.1, returnPortal.z]} normal={[0, 0, 1]} color={HUB_THEME.color} color2={HUB_THEME.color2} preview="hub" open={1} scale={0.8} />
