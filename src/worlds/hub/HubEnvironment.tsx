@@ -1,290 +1,322 @@
-// The dimensional research chamber: an original lab with four portal-compatible wall
-// panels, a floating dimensional core and signage. Primitives + emissive materials +
-// canvas-texture signs only, so it costs nothing to download.
-import { useFrame } from '@react-three/fiber';
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef } from 'react';
-import {
-  AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, Group, Mesh, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace,
-} from 'three';
-import { DESTINATIONS } from '../../engine/portals/destinations';
-import { qualityProfile, useSettings } from '../../stores/settingsStore';
+// The test chamber: a bright, original lab built from primitives and canvas textures.
+// White tiled panels take portals; grey concrete and dark metal do not. The pit (data
+// science), the chasm and ledge (journey) and the door openings are cut out of the
+// floor and walls. Puzzle props live in Puzzles.tsx.
+import { useEffect, useMemo } from 'react';
+import { BackSide, CanvasTexture, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, type Texture } from 'three';
+import { profile } from '../../content';
+import { qualityProfile } from '../../stores/settingsStore';
 import { makeTextTexture } from '../../utils/textTexture';
 import { rng } from '../../utils/random';
-import { profile } from '../../content';
+import { CHASM, DOORS, PIT, ROOM, SURFACES, type DoorWorld, type Surface } from './chamber';
+import { aimTarget } from './hubAim';
 
-export const ROOM = { half: 14, height: 9 };
-export const CORE_RADIUS = 3.4;
+const H = ROOM.half;
 
-/** Wall panel layout: centre, facing normal, width. Portal-compatible surfaces. */
-export const PANELS = [
-  { id: 'north', pos: [0, 3, -ROOM.half + 0.05] as const, rotY: 0, width: 12 },
-  { id: 'south', pos: [0, 3, ROOM.half - 0.05] as const, rotY: Math.PI, width: 12 },
-  { id: 'west', pos: [-ROOM.half + 0.05, 3, 0] as const, rotY: Math.PI / 2, width: 12 },
-  { id: 'east', pos: [ROOM.half - 0.05, 3, 0] as const, rotY: -Math.PI / 2, width: 12 },
-];
-
-function gridTexture(size: number, lines: number, bg: string, line: string, lineWidth = 2) {
+function canvasTexture(size: number, draw: (g: CanvasRenderingContext2D, s: number) => void) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
-  const ctx = c.getContext('2d')!;
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, size, size);
-  ctx.strokeStyle = line;
-  ctx.lineWidth = lineWidth;
-  const step = size / lines;
-  for (let i = 0; i <= lines; i++) {
-    ctx.beginPath();
-    ctx.moveTo(i * step, 0);
-    ctx.lineTo(i * step, size);
-    ctx.moveTo(0, i * step);
-    ctx.lineTo(size, i * step);
-    ctx.stroke();
-  }
+  draw(c.getContext('2d')!, size);
   const t = new CanvasTexture(c);
   t.wrapS = t.wrapT = RepeatWrapping;
   t.colorSpace = SRGBColorSpace;
+  t.anisotropy = 4;
   return t;
 }
 
-export interface HubEnvironmentHandle {
-  surfaces: Mesh[];
-  /** Things that block portal aim (the core column). */
-  occluders: Mesh[];
+/** Square tiles with grout and a faint per-tile shade, `n` tiles across the texture. */
+function tiles(base: [number, number, number], grout: string, n: number, seed: number, vary = 6) {
+  const r = rng(seed);
+  return canvasTexture(512, (g, s) => {
+    const step = s / n;
+    for (let i = 0; i < n; i++)
+      for (let j = 0; j < n; j++) {
+        const k = (r() - 0.5) * vary;
+        g.fillStyle = `rgb(${base[0] + k},${base[1] + k},${base[2] + k})`;
+        g.fillRect(i * step, j * step, step, step);
+      }
+    g.strokeStyle = grout;
+    g.lineWidth = 5;
+    for (let i = 0; i <= n; i++) {
+      g.beginPath();
+      g.moveTo(i * step, 0);
+      g.lineTo(i * step, s);
+      g.moveTo(0, i * step);
+      g.lineTo(s, i * step);
+      g.stroke();
+    }
+  });
 }
 
-export const HubEnvironment = forwardRef<HubEnvironmentHandle>(function HubEnvironment(_, ref) {
-  const panelRefs = useRef<Mesh[]>([]);
-  const occluder = useRef<Mesh>(null);
-  useImperativeHandle(ref, () => ({ surfaces: panelRefs.current, occluders: occluder.current ? [occluder.current] : [] }), []);
-  const shadows = qualityProfile().shadows;
+/** Concrete: speckled grey with large panel seams. */
+function concrete(seed: number) {
+  const r = rng(seed);
+  return canvasTexture(512, (g, s) => {
+    g.fillStyle = '#a3a8ac';
+    g.fillRect(0, 0, s, s);
+    for (let i = 0; i < 2600; i++) {
+      const v = 140 + r() * 50;
+      g.fillStyle = `rgba(${v},${v + 2},${v + 4},0.35)`;
+      g.fillRect(r() * s, r() * s, 1 + r() * 3, 1 + r() * 3);
+    }
+    g.strokeStyle = 'rgba(70,76,82,0.55)';
+    g.lineWidth = 4;
+    g.strokeRect(2, 2, s - 4, s - 4);
+    g.beginPath();
+    g.moveTo(s / 2, 0);
+    g.lineTo(s / 2, s);
+    g.stroke();
+  });
+}
 
-  const textures = useMemo(() => {
-    const floor = gridTexture(512, 4, '#14121c', '#2a2540', 3);
-    floor.repeat.set(7, 7);
-    const wall = gridTexture(256, 2, '#1b1926', '#262236', 4);
-    wall.repeat.set(10, 3);
-    const panel = gridTexture(256, 4, '#cfd3e6', '#b3b8d4', 3);
-    panel.repeat.set(6, 3);
-    const title = makeTextTexture(
-      [
-        { text: profile.name.toUpperCase(), size: 110, weight: '800', color: '#f1ecff' },
-        { text: 'DIMENSIONAL RESEARCH LAB', size: 52, weight: '600', color: '#b48cff' },
-      ],
-      { width: 1400, height: 400, glow: '#8a5cff' },
-    );
-    const surfaceLabel = makeTextTexture([{ text: '◌  PORTAL-COMPATIBLE SURFACE  ◌', size: 44, weight: '700', color: '#dfe3ff' }], {
-      width: 1200,
-      height: 120,
-      glow: '#7f9cff',
-    });
-    const signs = DESTINATIONS.map((d) =>
-      makeTextTexture(
-        [
-          { text: `${d.key}  ${d.symbol}`, size: 90, weight: '800', color: d.color2 },
-          { text: d.label.toUpperCase(), size: 54, weight: '800', color: '#ffffff' },
-          { text: d.status === 'playable' ? d.world : `${d.world} · coming soon`, size: 36, weight: '500', color: d.color2 },
-        ],
-        { width: 800, height: 400, background: 'rgba(8,6,20,0.85)', glow: d.color },
-      ),
-    );
-    return { floor, wall, panel, title, surfaceLabel, signs };
+/** A plane whose UVs are in tiles, so one shared texture tiles at the same scale everywhere. */
+function tiledPlane(w: number, h: number, tileMeters: number) {
+  const geo = new PlaneGeometry(w, h);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) * w) / tileMeters, (uv.getY(i) * h) / tileMeters);
+  return geo;
+}
+
+function useChamberMaterials() {
+  const m = useMemo(() => {
+    const white = tiles([238, 241, 243], '#c4cad0', 4, 3, 7);
+    const floorTex = tiles([92, 98, 104], '#474c52', 4, 5, 10);
+    const ceilingTex = tiles([120, 126, 132], '#596066', 2, 9, 6);
+    const wallTex = concrete(7);
+    return {
+      textures: [white, floorTex, ceilingTex, wallTex] as Texture[],
+      white: new MeshStandardMaterial({ map: white, roughness: 0.55, metalness: 0 }),
+      floor: new MeshStandardMaterial({ map: floorTex, roughness: 0.7, metalness: 0.15 }),
+      ceiling: new MeshStandardMaterial({ map: ceilingTex, roughness: 0.9 }),
+      wall: new MeshStandardMaterial({ map: wallTex, roughness: 0.92 }),
+      metal: new MeshStandardMaterial({ color: '#3a4046', roughness: 0.45, metalness: 0.6 }),
+      trim: new MeshStandardMaterial({ color: '#e9ecee', roughness: 0.5 }),
+      light: new MeshStandardMaterial({ color: '#ffffff', emissive: '#f4f8ff', emissiveIntensity: 1.6, toneMapped: false }),
+      cyan: new MeshStandardMaterial({ color: '#7fe9ff', emissive: '#3fd8ff', emissiveIntensity: 1.4, toneMapped: false }),
+      pit: new MeshStandardMaterial({ color: '#1d2a3a', roughness: 0.8, side: BackSide }),
+      chasm: new MeshStandardMaterial({ color: '#20262c', roughness: 1, side: BackSide }),
+      glass: new MeshStandardMaterial({ color: '#cfefff', transparent: true, opacity: 0.25, roughness: 0.05, metalness: 0.1, depthWrite: false }),
+    };
   }, []);
-
   useEffect(
     () => () => {
-      const { signs, ...rest } = textures;
-      [...signs, ...Object.values(rest)].forEach((t) => t.dispose());
+      m.textures.forEach((t) => t.dispose());
+      Object.values(m).forEach((x) => (x as { isMaterial?: boolean }).isMaterial && (x as MeshStandardMaterial).dispose());
     },
-    [textures],
+    [m],
   );
+  return m;
+}
+export type ChamberMaterials = ReturnType<typeof useChamberMaterials>;
+
+/** Wall pieces around a door opening (or the whole wall). Each wall is listed from its own left to right. */
+function wallPieces(door?: DoorWorld) {
+  const L = H * 2;
+  if (!door) return [{ cx: 0, cy: ROOM.height / 2, w: L, h: ROOM.height }];
+  const d = DOORS[door];
+  const side = (L / 2 - d.halfW) / 2 + d.halfW;
+  return [
+    { cx: -side, cy: ROOM.height / 2, w: L / 2 - d.halfW, h: ROOM.height },
+    { cx: side, cy: ROOM.height / 2, w: L / 2 - d.halfW, h: ROOM.height },
+    { cx: 0, cy: (d.height + ROOM.height) / 2, w: d.halfW * 2, h: ROOM.height - d.height },
+  ];
+}
+
+const WALLS: { id: string; pos: [number, number, number]; rotY: number; door?: DoorWorld }[] = [
+  { id: 'north', pos: [0, 0, -H], rotY: 0, door: 'games' },
+  { id: 'south', pos: [0, 0, H], rotY: Math.PI, door: 'journey' },
+  { id: 'west', pos: [-H, 0, 0], rotY: Math.PI / 2, door: 'software' },
+  { id: 'east', pos: [H, 0, 0], rotY: -Math.PI / 2 },
+];
+
+/** Floor pieces around the pit and the chasm: [minX, maxX, minZ, maxZ]. */
+const FLOOR: [number, number, number, number][] = [
+  [-H, H, -H, PIT.minZ],
+  [-H, PIT.minX, PIT.minZ, PIT.maxZ],
+  [PIT.maxX, H, PIT.minZ, PIT.maxZ],
+  [-H, H, PIT.maxZ, CHASM.minZ],
+  [-H, H, CHASM.maxZ, H],
+];
+
+export function HubEnvironment() {
+  const m = useChamberMaterials();
+  const shadows = qualityProfile().shadows;
+  const geos = useMemo(() => {
+    const walls = WALLS.map((w) => wallPieces(w.door).map((p) => ({ ...p, geo: tiledPlane(p.w, p.h, 4) })));
+    const floor = FLOOR.map(([x0, x1, z0, z1]) => ({ x: (x0 + x1) / 2, z: (z0 + z1) / 2, geo: tiledPlane(x1 - x0, z1 - z0, 4) }));
+    const panels = SURFACES.filter((s) => s.id !== 'platform').map((s) => ({ s, geo: tiledPlane(s.halfU * 2, s.halfV * 2, 4) }));
+    const ceiling = tiledPlane(H * 2, H * 2, 4);
+    return { walls, floor, panels, ceiling };
+  }, []);
+  useEffect(
+    () => () => {
+      geos.walls.flat().forEach((p) => p.geo.dispose());
+      geos.floor.forEach((p) => p.geo.dispose());
+      geos.panels.forEach((p) => p.geo.dispose());
+      geos.ceiling.dispose();
+    },
+    [geos],
+  );
+  const title = useMemo(
+    () =>
+      makeTextTexture(
+        [
+          { text: profile.name.toUpperCase(), size: 120, weight: '800', color: '#1f2a37' },
+          { text: 'PORTAL HUB · TEST CHAMBER 01', size: 50, weight: '700', color: '#55606c' },
+        ],
+        { width: 1400, height: 380, background: '#f4f6f7' },
+      ),
+    [],
+  );
+  useEffect(() => () => title.dispose(), [title]);
 
   return (
     <group>
-      {/* Floor, ceiling, walls */}
-      <mesh rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[ROOM.half * 2, ROOM.half * 2]} />
-        <meshStandardMaterial map={textures.floor} roughness={0.55} metalness={0.4} />
-      </mesh>
-      <mesh rotation-x={Math.PI / 2} position-y={ROOM.height}>
-        <planeGeometry args={[ROOM.half * 2, ROOM.half * 2]} />
-        <meshStandardMaterial color="#0d0b14" roughness={0.9} />
-      </mesh>
-      {PANELS.map((p) => (
-        <group key={p.id} position={[p.pos[0], 0, p.pos[2]]} rotation-y={p.rotY}>
-          <mesh position={[0, ROOM.height / 2, -0.06]} receiveShadow>
-            <planeGeometry args={[ROOM.half * 2, ROOM.height]} />
-            <meshStandardMaterial map={textures.wall} roughness={0.8} metalness={0.3} />
+      {/* Floor (with the pit and chasm cut out) and ceiling */}
+      {geos.floor.map((f, i) => (
+        <mesh key={i} ref={aimTarget} geometry={f.geo} material={m.floor} position={[f.x, 0, f.z]} rotation-x={-Math.PI / 2} receiveShadow />
+      ))}
+      <mesh ref={aimTarget} geometry={geos.ceiling} material={m.ceiling} position-y={ROOM.height} rotation-x={Math.PI / 2} />
+      <CeilingLights m={m} />
+
+      {/* Concrete walls, open where the doors are */}
+      {WALLS.map((w, i) => (
+        <group key={w.id} position={w.pos} rotation-y={w.rotY}>
+          {geos.walls[i].map((p, j) => (
+            <mesh key={j} ref={aimTarget} geometry={p.geo} material={m.wall} position={[p.cx, p.cy, 0]} receiveShadow />
+          ))}
+          {/* Skirting and a light strip near the top */}
+          <mesh position={[0, 0.08, 0.04]} material={m.metal}>
+            <boxGeometry args={[H * 2, 0.16, 0.08]} />
           </mesh>
-          {/* Portal-compatible panel */}
-          <mesh
-            ref={(m) => {
-              if (m && !panelRefs.current.includes(m)) panelRefs.current.push(m);
-            }}
-            position={[0, 3, 0]}
-            userData={{ portalSurface: true, halfWidth: p.width / 2 }}
-            receiveShadow
-          >
-            <planeGeometry args={[p.width, 6]} />
-            <meshStandardMaterial map={textures.panel} roughness={0.35} metalness={0.1} emissive="#5a6cff" emissiveIntensity={0.06} />
-          </mesh>
-          {/* Frame + label */}
-          <mesh position={[0, 6.12, 0.02]}>
-            <boxGeometry args={[p.width + 0.4, 0.24, 0.1]} />
-            <meshStandardMaterial color="#1c1a2a" emissive="#7f6cff" emissiveIntensity={0.9} />
-          </mesh>
-          <mesh position={[0, 6.6, 0.03]}>
-            <planeGeometry args={[6, 0.6]} />
-            <meshBasicMaterial map={textures.surfaceLabel} transparent depthWrite={false} />
-          </mesh>
-          <mesh position={[0, 0.06, 0.02]}>
-            <boxGeometry args={[p.width + 0.4, 0.12, 0.1]} />
-            <meshStandardMaterial color="#1c1a2a" emissive="#7f6cff" emissiveIntensity={0.5} />
+          <mesh position={[0, ROOM.height - 0.5, 0.05]} material={m.light}>
+            <boxGeometry args={[H * 2 - 2, 0.08, 0.06]} />
           </mesh>
         </group>
       ))}
 
-      {/* Title above the north panel */}
-      <mesh position={[0, 7.9, -ROOM.half + 0.1]}>
-        <planeGeometry args={[7, 2]} />
-        <meshBasicMaterial map={textures.title} transparent depthWrite={false} />
+      {/* Portal-compatible white panels, with a thin metal frame */}
+      {geos.panels.map(({ s, geo }) => (
+        <PanelMesh key={s.id} s={s} geo={geo} m={m} />
+      ))}
+
+      {/* Title above the games door */}
+      <mesh position={[0, 6.6, -H + 0.04]}>
+        <planeGeometry args={[6.2, 1.68]} />
+        <meshStandardMaterial map={title} roughness={0.6} />
       </mesh>
 
-      {/* Corner pillars with world-colour light strips */}
-      {DESTINATIONS.map((d, i) => {
-        const sx = i % 2 === 0 ? -1 : 1;
-        const sz = i < 2 ? -1 : 1;
-        const x = sx * (ROOM.half - 0.8);
-        const z = sz * (ROOM.half - 0.8);
-        return (
-          <group key={d.id} position={[x, 0, z]}>
-            <mesh position-y={ROOM.height / 2} castShadow={shadows}>
-              <boxGeometry args={[1.2, ROOM.height, 1.2]} />
-              <meshStandardMaterial color="#1a1826" metalness={0.6} roughness={0.4} />
-            </mesh>
-            <mesh position={[-sx * 0.61, ROOM.height / 2, -sz * 0.61]} rotation-y={Math.PI / 4}>
-              <boxGeometry args={[0.12, ROOM.height - 1, 0.12]} />
-              <meshBasicMaterial color={d.color} toneMapped={false} />
-            </mesh>
-            <pointLight color={d.color} intensity={5} distance={10} decay={1.5} position={[-sx * 1.5, 4, -sz * 1.5]} />
-          </group>
-        );
-      })}
+      {/* Corner light columns */}
+      {[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => (
+        <group key={`${sx}${sz}`} position={[sx * (H - 0.35), 0, sz * (H - 0.35)]}>
+          <mesh position-y={ROOM.height / 2} material={m.metal} castShadow={shadows}>
+            <boxGeometry args={[0.7, ROOM.height, 0.7]} />
+          </mesh>
+          <mesh position={[-sx * 0.36, ROOM.height / 2, -sz * 0.36]} rotation-y={Math.PI / 4} material={m.light}>
+            <boxGeometry args={[0.1, ROOM.height - 1.2, 0.1]} />
+          </mesh>
+        </group>
+      ))}
 
-      <DimensionalCore signs={textures.signs} />
-      {/* Invisible column so you cannot aim a portal through the core */}
-      <mesh ref={occluder} position-y={ROOM.height / 2} visible={false}>
-        <cylinderGeometry args={[1.4, 1.4, ROOM.height, 16]} />
-      </mesh>
-      <CeilingRing />
-      <Dust />
+      <Pit m={m} />
+      <Chasm m={m} />
     </group>
   );
-});
+}
 
-/** Floating core in the middle of the room: platform, rotating rings, world directory. */
-function DimensionalCore({ signs }: { signs: CanvasTexture[] }) {
-  const rings = useRef<Group>(null);
-  const core = useRef<Mesh>(null);
-  const directory = useRef<Group>(null);
-  const reducedMotion = useSettings((s) => s.reducedMotion);
-  const coreMat = useMemo(() => new MeshStandardMaterial({ color: '#2a1f55', emissive: '#9b7bff', emissiveIntensity: 1.6, roughness: 0.2 }), []);
-  useEffect(() => () => coreMat.dispose(), [coreMat]);
+function PanelMesh({ s, geo, m }: { s: Surface; geo: PlaneGeometry; m: ChamberMaterials }) {
+  // Orient the plane: +Z to the surface normal, +Y to its up.
+  const rot = useMemo(() => {
+    const [nx, ny, nz] = s.normal;
+    if (ny < -0.5) return [Math.PI / 2, 0, 0] as const; // ceiling, up = +z
+    if (ny > 0.5) return [-Math.PI / 2, 0, 0] as const; // floor, up = -z
+    return [0, Math.atan2(nx, nz), 0] as const;
+  }, [s]);
+  const w = s.halfU * 2;
+  const h = s.halfV * 2;
+  return (
+    <group position={s.center} rotation={rot}>
+      <mesh ref={aimTarget} geometry={geo} material={m.white} userData={{ surfaceId: s.id }} receiveShadow />
+      {[
+        [0, h / 2 + 0.04, w + 0.16, 0.08],
+        [0, -h / 2 - 0.04, w + 0.16, 0.08],
+        [w / 2 + 0.04, 0, 0.08, h],
+        [-w / 2 - 0.04, 0, 0.08, h],
+      ].map(([x, y, bw, bh], i) => (
+        <mesh key={i} position={[x, y, 0.01]} material={m.metal}>
+          <boxGeometry args={[bw, bh, 0.04]} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
 
-  useFrame((state, dt) => {
-    const t = state.clock.elapsedTime;
-    const k = reducedMotion ? 0.25 : 1;
-    if (rings.current) {
-      rings.current.children.forEach((r, i) => {
-        r.rotation.x += dt * 0.3 * k * (i % 2 ? 1 : -1);
-        r.rotation.y += dt * (0.2 + i * 0.12) * k;
-      });
-    }
-    if (core.current) {
-      core.current.rotation.y += dt * 0.5 * k;
-      core.current.position.y = 3.2 + Math.sin(t * 1.2) * 0.15 * k;
-      coreMat.emissiveIntensity = 1.4 + Math.sin(t * 2.4) * 0.3;
-    }
-    if (directory.current) directory.current.rotation.y += dt * 0.12 * k;
-  });
-
+function CeilingLights({ m }: { m: ChamberMaterials }) {
+  const spots: [number, number][] = [];
+  for (let x = -9; x <= 9; x += 6) for (let z = -9; z <= 9; z += 6) if (!(Math.abs(x - 6) < 2 && Math.abs(z + 12) < 3)) spots.push([x, z]);
   return (
     <group>
-      <mesh position-y={0.2} receiveShadow castShadow>
-        <cylinderGeometry args={[CORE_RADIUS - 0.2, CORE_RADIUS, 0.4, 48]} />
-        <meshStandardMaterial color="#201d30" metalness={0.7} roughness={0.35} />
-      </mesh>
-      <mesh position-y={0.41} rotation-x={-Math.PI / 2}>
-        <ringGeometry args={[CORE_RADIUS - 0.6, CORE_RADIUS - 0.45, 64]} />
-        <meshBasicMaterial color="#b48cff" toneMapped={false} />
-      </mesh>
-      <mesh ref={core} position-y={3.2} material={coreMat}>
-        <icosahedronGeometry args={[0.7, 1]} />
-      </mesh>
-      <group ref={rings} position-y={3.2}>
-        {DESTINATIONS.map((d, i) => (
-          <mesh key={d.id} rotation={[i * 0.7, i * 0.4, 0]}>
-            <torusGeometry args={[1.2 + i * 0.28, 0.035, 8, 96]} />
-            <meshBasicMaterial color={d.color} toneMapped={false} />
-          </mesh>
-        ))}
-      </group>
-      {/* Beam from floor to core */}
-      <mesh position-y={1.6}>
-        <cylinderGeometry args={[0.25, 0.5, 2.6, 24, 1, true]} />
-        <meshBasicMaterial color="#8f6bff" transparent opacity={0.18} blending={AdditiveBlending} depthWrite={false} />
-      </mesh>
-      {/* Rotating world directory: one sign per destination */}
-      <group ref={directory} position-y={5.6}>
-        {signs.map((tex, i) => (
-          <mesh key={i} rotation-y={(i * Math.PI) / 2} position={[Math.sin((i * Math.PI) / 2) * 2.2, 0, Math.cos((i * Math.PI) / 2) * 2.2]}>
-            <planeGeometry args={[2.4, 1.2]} />
-            <meshBasicMaterial map={tex} transparent depthWrite={false} toneMapped={false} />
-          </mesh>
-        ))}
-      </group>
+      {spots.map(([x, z]) => (
+        <mesh key={`${x}${z}`} position={[x, ROOM.height - 0.03, z]} rotation-x={Math.PI / 2} material={m.light}>
+          <planeGeometry args={[2.4, 0.6]} />
+        </mesh>
+      ))}
     </group>
   );
 }
 
-function CeilingRing() {
+/** The data science pit: inward-facing walls, glass rails and a blue glow at the bottom. */
+function Pit({ m }: { m: ChamberMaterials }) {
+  const w = PIT.maxX - PIT.minX;
+  const d = PIT.maxZ - PIT.minZ;
+  const cx = (PIT.minX + PIT.maxX) / 2;
+  const cz = (PIT.minZ + PIT.maxZ) / 2;
+  const rails: [number, number, number, number][] = [
+    [PIT.minX - 0.05, cz, 0.06, d + 0.1],
+    [cx + 0.1, PIT.minZ - 0.05, w + 0.2, 0.06],
+    [cx + 0.1, PIT.maxZ + 0.05, w + 0.2, 0.06],
+  ];
   return (
-    <group position-y={ROOM.height - 0.05}>
-      <mesh rotation-x={Math.PI / 2}>
-        <ringGeometry args={[6, 6.4, 96]} />
-        <meshBasicMaterial color="#cbb8ff" toneMapped={false} />
+    <group>
+      <mesh position={[cx, -PIT.depth / 2, cz]} material={m.pit}>
+        <boxGeometry args={[w, PIT.depth, d]} />
       </mesh>
-      <mesh rotation-x={Math.PI / 2}>
-        <ringGeometry args={[2.2, 2.35, 64]} />
-        <meshBasicMaterial color="#cbb8ff" toneMapped={false} />
+      {rails.map(([x, z, rw, rd], i) => (
+        <group key={i}>
+          <mesh position={[x, 0.55, z]} material={m.glass}>
+            <boxGeometry args={[rw, 1.1, rd]} />
+          </mesh>
+          <mesh position={[x, 1.12, z]} material={m.metal}>
+            <boxGeometry args={[Math.max(rw, 0.08), 0.06, Math.max(rd, 0.08)]} />
+          </mesh>
+        </group>
+      ))}
+      {/* Edge lights */}
+      <mesh position={[PIT.minX + 0.02, -0.15, cz]} material={m.cyan}>
+        <boxGeometry args={[0.04, 0.06, d]} />
       </mesh>
     </group>
   );
 }
 
-function Dust() {
-  const count = qualityProfile().particles * 2;
-  const ref = useRef<Group>(null);
-  const geo = useMemo(() => {
-    const r = rng(11);
-    const g = new BufferGeometry();
-    const p = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      p[i * 3] = (r() - 0.5) * ROOM.half * 2;
-      p[i * 3 + 1] = r() * ROOM.height;
-      p[i * 3 + 2] = (r() - 0.5) * ROOM.half * 2;
-    }
-    g.setAttribute('position', new BufferAttribute(p, 3));
-    return g;
-  }, [count]);
-  useEffect(() => () => geo.dispose(), [geo]);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.rotation.y += dt * 0.01;
-  });
+/** The journey chasm across the south end, in front of the ledge. */
+function Chasm({ m }: { m: ChamberMaterials }) {
+  const d = CHASM.maxZ - CHASM.minZ;
+  const cz = (CHASM.minZ + CHASM.maxZ) / 2;
   return (
-    <group ref={ref}>
-      <points geometry={geo}>
-        <pointsMaterial color="#c9b8ff" size={0.035} transparent opacity={0.6} blending={AdditiveBlending} depthWrite={false} />
-      </points>
+    <group>
+      <mesh position={[0, -3, cz]} material={m.chasm}>
+        <boxGeometry args={[H * 2, 6, d]} />
+      </mesh>
+      <mesh position={[0, -5.9, cz]} rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[H * 2, d]} />
+        <meshBasicMaterial color="#4fb6c9" transparent opacity={0.35} toneMapped={false} />
+      </mesh>
+      {[CHASM.minZ, CHASM.maxZ].map((z) => (
+        <mesh key={z} position={[0, 0.01, z]} material={m.trim}>
+          <boxGeometry args={[H * 2, 0.04, 0.12]} />
+        </mesh>
+      ))}
     </group>
   );
 }

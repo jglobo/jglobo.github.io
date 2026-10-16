@@ -17,6 +17,7 @@ let installed = false;
 
 type ClickHandler = () => void;
 const clickHandlers = new Set<ClickHandler>();
+const altHandlers = new Set<ClickHandler>();
 
 export function installInput() {
   if (installed) return;
@@ -43,8 +44,12 @@ function isTyping(e: KeyboardEvent) {
   return !!t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
 }
 
-/** Canvas mouse handlers: pointer-lock click fires; without lock, drag looks and a click fires. */
+/** Canvas mouse handlers: pointer-lock click fires; without lock, drag looks and a click fires. Right click is the alternate fire. */
 export function canvasPointerDown(e: PointerEvent | MouseEvent) {
+  if (e.button === 2) {
+    altHandlers.forEach((h) => h());
+    return;
+  }
   if (e.button !== 0) return;
   if (document.pointerLockElement) {
     clickHandlers.forEach((h) => h());
@@ -68,6 +73,14 @@ export function onFire(handler: ClickHandler) {
   clickHandlers.add(handler);
   return () => {
     clickHandlers.delete(handler);
+  };
+}
+
+/** Right click (the hub's orange portal). */
+export function onAltFire(handler: ClickHandler) {
+  altHandlers.add(handler);
+  return () => {
+    altHandlers.delete(handler);
   };
 }
 

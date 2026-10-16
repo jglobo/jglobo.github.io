@@ -1,27 +1,24 @@
 // The portal gun, held in first person: Jose's model (assets/portal_gun.glb) and portal
-// (assets/portal.glb), played through his controller. Firing plays the gun's Fire clip,
-// sends an orb from its Muzzle socket and opens the portal with its Open clip where the
-// shot lands. A holographic destination selector floats above the gun, and the gun's
-// energy, the orb and the portal take the selected destination's colours.
+// (assets/portal.glb), played through his controller. Left click fires the blue portal,
+// right click the orange one. Once both are open, each portal shows the view out of the
+// other one (rendered to a texture from a camera moved through the pair); on Low quality
+// they show a swirl instead.
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { Group, Vector3, type Material, type MeshBasicMaterial, type MeshStandardMaterial, type Object3D } from 'three';
+import {
+  Color, DoubleSide, Group, HalfFloatType, Matrix4, PerspectiveCamera, ShaderMaterial, Vector2, Vector3, WebGLRenderTarget, type Material, type Mesh,
+} from 'three';
 import { audio } from '../../engine/audio/AudioManager';
-import { DESTINATIONS, destination } from '../../engine/portals/destinations';
-import type { WorldId } from '../../content';
-import { useGame } from '../../stores/gameStore';
 import { useSettings } from '../../stores/settingsStore';
-import { makeTextTexture } from '../../utils/textTexture';
 import gunUrl from './assets/portal_gun.glb?url';
 import portalUrl from './assets/portal.glb?url';
-import { loadPortalGun, type PortalGun } from './portalGunController';
+import { PORTAL_COLORS, PORTAL_SCALE, type PortalColor, type PortalFrame } from './chamber';
+import { useHub, type PlacedPortal } from './hubStore';
+import { loadPortalGun, tintEnergy, type PortalGun } from './portalGunController';
 
 /** The gun model is about 1.85 m long; this makes it a ~30 cm hand-held launcher. */
 const GUN_SCALE = 0.16;
-/** The portal model is about 1.1 × 2.1 m; this makes it a walk-through doorway. */
-export const PORTAL_SCALE = 1.6;
-/** Half the width of the scaled portal, for snapping and the walk-in zone. */
-export const PORTAL_HALF_W = 0.554 * PORTAL_SCALE;
+const COLORS: PortalColor[] = ['blue', 'orange'];
 
 /** Shared between the controller and the launcher each frame. */
 export const launcherRuntime = {
@@ -30,29 +27,80 @@ export const launcherRuntime = {
   gun: null as PortalGun | null,
 };
 
+const viewVertex = /* glsl */ `
+  varying vec2 vUv;
+  void main() {
+    vUv = uv;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+const viewFragment = /* glsl */ `
+  uniform sampler2D uView;
+  uniform vec2 uRes;
+  uniform float uHasView;
+  uniform vec3 uColor;
+  uniform vec3 uColor2;
+  uniform float uTime;
+  varying vec2 vUv;
+  void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    float r = length(p);
+    float a = atan(p.y, p.x);
+    float s = sin(a * 3.0 + r * 9.0 - uTime * 3.0) * 0.5 + 0.5;
+    vec3 swirl = mix(uColor * 0.55, uColor2 * 1.2, s * 0.6 + 0.2);
+    vec3 view = texture2D(uView, gl_FragCoord.xy / uRes).rgb;
+    gl_FragColor = vec4(mix(swirl, view, uHasView), 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+function frameMatrix(f: PortalFrame, out = new Matrix4()) {
+  return out.makeBasis(f.right, f.up, f.normal).setPosition(f.pos);
+}
+
 export function PortalLauncher() {
   const root = useRef<Group>(null);
   const model = useRef<Group>(null);
   const effects = useRef<Group>(null);
-  const selectorRef = useRef<Group>(null);
-  const camera = useThree((s) => s.camera);
-  const dest = useGame((s) => s.portalDestination);
+  const { camera, gl, scene } = useThree();
   const reducedMotion = useSettings((s) => s.reducedMotion);
+  const quality = useSettings((s) => s.quality);
   const bob = useRef(0);
-  const opened = useRef(0);
+  const shownIds = useRef<Record<PortalColor, number>>({ blue: 0, orange: 0 });
+  const tinted = useRef<PortalColor | null>(null);
 
-  const icons = useMemo(
-    () =>
-      DESTINATIONS.map((d) =>
-        makeTextTexture([{ text: d.symbol, size: 180, weight: '800', color: '#fff' }, { text: d.key, size: 60, color: d.color2 }], {
-          width: 256,
-          height: 320,
-          glow: d.color,
-        }),
-      ),
-    [],
+  // See-through views: one material, render target and camera per portal.
+  const views = useMemo(() => {
+    const make = (c: PortalColor) => ({
+      material: new ShaderMaterial({
+        vertexShader: viewVertex,
+        fragmentShader: viewFragment,
+        side: DoubleSide,
+        uniforms: {
+          uView: { value: null },
+          uRes: { value: new Vector2(1, 1) },
+          uHasView: { value: 0 },
+          uColor: { value: new Color(PORTAL_COLORS[c].main) },
+          uColor2: { value: new Color(PORTAL_COLORS[c].light) },
+          uTime: { value: 0 },
+        },
+      }),
+      target: null as WebGLRenderTarget | null,
+      camera: new PerspectiveCamera(),
+    });
+    return { blue: make('blue'), orange: make('orange') };
+  }, []);
+  useEffect(
+    () => () => {
+      for (const v of Object.values(views)) {
+        v.material.dispose();
+        v.target?.dispose();
+      }
+    },
+    [views],
   );
-  useEffect(() => () => icons.forEach((t) => t.dispose()), [icons]);
+  const tmp = useMemo(() => ({ a: new Matrix4(), b: new Matrix4(), flip: new Matrix4().makeRotationY(Math.PI), size: new Vector2(), fwd: new Vector3(), to: new Vector3() }), []);
 
   useEffect(() => {
     let alive = true;
@@ -64,10 +112,17 @@ export function PortalLauncher() {
         gun.object.scale.setScalar(GUN_SCALE);
         gun.object.rotation.y = Math.PI; // its muzzle is +Z; the camera looks down -Z
         gun.object.traverse((o) => (o.frustumCulled = false));
-        gun.effect.scale.set(PORTAL_SCALE, PORTAL_SCALE, 1);
+        for (const c of COLORS) {
+          const p = gun.portals[c];
+          p.object.scale.set(PORTAL_SCALE, PORTAL_SCALE, 1);
+          tintEnergy(p.object, PORTAL_COLORS[c].main, PORTAL_COLORS[c].light);
+          if (p.inner) {
+            (p.inner.material as Material).dispose();
+            p.inner.material = views[c].material;
+            p.inner.renderOrder = 2;
+          }
+        }
         model.current?.add(gun.object);
-        opened.current = gun.stats.opened;
-        tint(gun, useGame.getState().portalDestination);
         launcherRuntime.gun = gun;
       })
       .catch((e) => console.error('Portal gun failed to load:', e));
@@ -76,11 +131,7 @@ export function PortalLauncher() {
       if (launcherRuntime.gun === loaded) launcherRuntime.gun = null;
       loaded?.dispose();
     };
-  }, []);
-
-  useEffect(() => {
-    if (launcherRuntime.gun) tint(launcherRuntime.gun, dest);
-  }, [dest]);
+  }, [views]);
 
   useFrame((state, rawDt) => {
     if (!root.current || !model.current) return;
@@ -97,16 +148,12 @@ export function PortalLauncher() {
       -0.4,
     );
     model.current.rotation.set(0, 0.06, 0);
-    if (selectorRef.current) {
-      const idx = DESTINATIONS.findIndex((d) => d.id === dest);
-      selectorRef.current.children.forEach((c, i) => {
-        const target = i === idx ? 1.25 : 0.8;
-        c.scale.setScalar(c.scale.x + (target - c.scale.x) * Math.min(1, dt * 10));
-        const m = (c as unknown as { material: MeshBasicMaterial }).material;
-        m.opacity = i === idx ? 1 : 0.45;
-      });
-    }
 
+    const hub = useHub.getState();
+    for (const c of COLORS) {
+      const p = hub[c];
+      if (p) p.age += dt;
+    }
     const gun = launcherRuntime.gun;
     if (!gun) {
       model.current.getWorldPosition(launcherRuntime.muzzle);
@@ -114,67 +161,101 @@ export function PortalLauncher() {
     }
     gun.update(dt);
     gun.muzzle.getWorldPosition(launcherRuntime.muzzle);
+    if (tinted.current !== hub.lastFired) {
+      tinted.current = hub.lastFired;
+      const col = PORTAL_COLORS[hub.lastFired];
+      tintEnergy(gun.object, col.main, col.light);
+      (gun.orb.material as unknown as { color: Color }).color.set(col.light);
+      ((gun.orb.children[0] as Mesh).material as unknown as { color: Color }).color.set(col.main);
+    }
 
-    // The orb reached the wall and the portal began to open.
-    const game = useGame.getState();
-    const s = gun.stats;
-    if (s.opened !== opened.current) {
-      opened.current = s.opened;
-      if (game.portal?.state === 'projectile') {
+    // Place, open and close the two portal models.
+    for (const c of COLORS) {
+      const p = hub[c];
+      const fx = gun.portals[c];
+      if (!p) {
+        if (fx.object.visible) fx.close();
+        shownIds.current[c] = 0;
+        continue;
+      }
+      if (shownIds.current[c] !== p.id) {
+        shownIds.current[c] = p.id;
+        frameMatrix(p, tmp.a).decompose(fx.object.position, fx.object.quaternion, tmp.to);
+        fx.object.position.addScaledVector(p.normal, 0.01);
+        fx.open();
         audio.play('portalOpen');
-        game.setPortal({ ...game.portal, state: 'opening' });
       }
     }
-    // The portal was closed elsewhere (travel, reset).
-    if (!game.portal && gun.effect.visible) gun.clearPortal();
+
+    // See-through views.
+    gl.getDrawingBufferSize(tmp.size);
+    const res = quality === 'low' ? 0 : quality === 'medium' ? 0.5 : quality === 'high' ? 0.75 : 1;
+    const both = hub.blue && hub.orange;
+    for (const c of COLORS) {
+      const v = views[c];
+      v.material.uniforms.uTime.value = t;
+      v.material.uniforms.uRes.value.copy(tmp.size);
+      const src = hub[c] as PlacedPortal | null;
+      const dst = hub[c === 'blue' ? 'orange' : 'blue'] as PlacedPortal | null;
+      const open = both && src && dst ? Math.min(1, Math.min(src.age, dst.age) / 0.6) : 0;
+      v.material.uniforms.uHasView.value = res ? open : 0;
+      launcherRuntime.gun?.portals[c].arcs.forEach((a) => (a.visible = !res || open < 1));
+      if (!res || !src || !dst || open <= 0) continue;
+      // Skip portals behind the camera or far away.
+      camera.getWorldDirection(tmp.fwd);
+      tmp.to.copy(src.pos).sub(camera.position);
+      if (tmp.to.length() > 40 || tmp.to.dot(tmp.fwd) < -2) continue;
+      const w = Math.max(1, Math.floor(tmp.size.x * res));
+      const h = Math.max(1, Math.floor(tmp.size.y * res));
+      if (!v.target || v.target.width !== w || v.target.height !== h) {
+        v.target?.dispose();
+        v.target = new WebGLRenderTarget(w, h, { type: HalfFloatType });
+        v.material.uniforms.uView.value = v.target.texture;
+      }
+      const cam = v.camera;
+      const main = camera as PerspectiveCamera;
+      main.updateMatrixWorld();
+      cam.fov = main.fov;
+      cam.aspect = main.aspect;
+      cam.near = main.near;
+      cam.far = main.far;
+      cam.updateProjectionMatrix();
+      // Looking into `src` is looking out of `dst`, turned around.
+      const m = frameMatrix(dst, tmp.b).multiply(tmp.flip).multiply(frameMatrix(src, tmp.a).invert()).multiply(main.matrixWorld);
+      cam.matrixAutoUpdate = false;
+      cam.matrixWorldAutoUpdate = false;
+      cam.matrixWorld.copy(m);
+      cam.matrixWorldInverse.copy(m).invert();
+      m.decompose(cam.position, cam.quaternion, cam.scale);
+      const hidden = [root.current, effects.current];
+      hidden.forEach((o) => o && (o.visible = false));
+      gl.setRenderTarget(v.target);
+      gl.render(scene, cam);
+      gl.setRenderTarget(null);
+      hidden.forEach((o) => o && (o.visible = true));
+    }
   });
 
   return (
     <>
       <group ref={effects} />
       <group ref={root}>
-        <group ref={model}>
-          {/* Holographic selector */}
-          <group ref={selectorRef} position={[0, 0.085, -0.05]}>
-            {icons.map((tex, i) => (
-              <mesh key={i} position={[(i - 1.5) * 0.034, 0, 0]} rotation-x={-0.25}>
-                <planeGeometry args={[0.027, 0.034]} />
-                <meshBasicMaterial map={tex} transparent depthWrite={false} toneMapped={false} />
-              </mesh>
-            ))}
-          </group>
-        </group>
+        <group ref={model} />
       </group>
     </>
   );
 }
 
-/** Fire the gun at an aimed surface point. Returns false while the Fire clip is still playing. */
-export function fireGun(target: Vector3, surface: Object3D): 'fired' | 'missed' | 'busy' | 'unloaded' {
+/** Fire a portal. Returns false while the Fire clip is still playing. */
+export function fireGun(color: PortalColor, frame: PortalFrame | null, missAt?: Vector3): boolean {
   const gun = launcherRuntime.gun;
-  if (!gun) return 'unloaded';
-  const hits = gun.stats.hits;
-  const dir = target.clone().sub(launcherRuntime.muzzle);
-  if (!gun.fire({ direction: dir, targets: [surface], maxDistance: 40 })) return 'busy';
-  return gun.stats.hits > hits ? 'fired' : 'missed';
-}
-
-/** Energy materials take the destination's colours; the dark portal surface keeps Jose's blue. */
-function tint(gun: PortalGun, id: WorldId) {
-  const d = destination(id);
-  if (!d) return;
-  const paint = (root: Object3D) =>
-    root.traverse((o) => {
-      const mat = (o as { material?: Material | Material[] }).material;
-      for (const m of (Array.isArray(mat) ? mat : mat ? [mat] : []) as MeshStandardMaterial[]) {
-        const c = m.name === 'Energy | ice white' ? d.color2 : m.name === 'Energy | electric blue' || m.name === 'Portal | saturated rim' ? d.color : null;
-        if (!c) continue;
-        m.color.set(c);
-        m.emissive?.set(c);
-      }
-    });
-  paint(gun.object);
-  paint(gun.effect);
-  (gun.orb.material as MeshBasicMaterial).color.set(d.color2);
-  (gun.orb.children[0] as unknown as { material: MeshBasicMaterial }).material.color.set(d.color);
+  const place = () => frame && useHub.getState().place(color, frame);
+  useHub.getState().set({ lastFired: color });
+  if (!gun) {
+    place();
+    return true;
+  }
+  const end = frame?.pos ?? missAt;
+  if (!end) return false;
+  return gun.fire(end, place);
 }

@@ -5,7 +5,8 @@ import { useGame } from '../stores/gameStore';
 import { track } from '../analytics/track';
 import { hubAim } from '../worlds/hub/hubAim';
 import { useHud } from '../stores/hudStore';
-import { DESTINATIONS, worldTheme } from '../engine/portals/destinations';
+import { worldTheme } from '../engine/portals/destinations';
+import { useHub } from '../worlds/hub/hubStore';
 import { audio } from '../engine/audio/AudioManager';
 import { releaseLock } from '../engine/input/pointerLock';
 import { worldName } from './worldNames';
@@ -50,51 +51,24 @@ export function HUD() {
 }
 
 function HubHud() {
-  const dest = useGame((s) => s.portalDestination);
-  const locked = useGame((s) => s.pointerLocked);
-  const d = DESTINATIONS.find((x) => x.id === dest)!;
+  const blue = useHub((s) => !!s.blue);
+  const orange = useHub((s) => !!s.orange);
   const cross = useRef<HTMLDivElement>(null);
-  // The crosshair brightens over portal-compatible surfaces (polled, not React state).
+  // The crosshair grows over a spot that takes a portal (polled, not React state).
   useEffect(() => {
     let id = 0;
     const tick = () => {
-      cross.current?.classList.toggle('valid', !!hubAim.hit);
+      cross.current?.classList.toggle('valid', !!hubAim.hit?.frame);
       id = requestAnimationFrame(tick);
     };
     tick();
     return () => cancelAnimationFrame(id);
   }, []);
   return (
-    <>
-      <div ref={cross} className="crosshair" style={{ ['--accent' as string]: d.color }} aria-hidden="true">
-        <span>{d.symbol}</span>
-      </div>
-      <div className="selector" role="radiogroup" aria-label="Portal destination">
-        {DESTINATIONS.map((x) => (
-          <button
-            key={x.id}
-            role="radio"
-            aria-checked={x.id === dest}
-            className={`selector-item ${x.id === dest ? 'active' : ''}`}
-            style={{ ['--accent' as string]: x.color }}
-            tabIndex={locked ? -1 : 0}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (x.id !== dest) {
-                useGame.getState().selectDestination(x.id);
-                useGame.getState().completeInteraction('destination-selected');
-                audio.play('select');
-              }
-            }}
-          >
-            <kbd>{x.key}</kbd>
-            <span className="selector-symbol" aria-hidden="true">{x.symbol}</span>
-            <span className="selector-label">{x.label}</span>
-            {x.status === 'coming-soon' && <span className="selector-soon">soon</span>}
-          </button>
-        ))}
-      </div>
-    </>
+    <div ref={cross} className="crosshair portal-cross" aria-hidden="true">
+      <span className={`pc-blue ${blue ? 'on' : ''}`} />
+      <span className={`pc-orange ${orange ? 'on' : ''}`} />
+    </div>
   );
 }
 

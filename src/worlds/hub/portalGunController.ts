@@ -1,30 +1,35 @@
-// Jose's portal gun loader (originally portal-gun.js), with TypeScript types added, the orb
-// returned so the Hub can tint it, and the skeleton disposed too. Loads the gun and portal
-// GLBs; fire() plays the gun's Fire clip, sends a cyan orb from the Muzzle socket and opens
-// the portal (its Open clip) on the surface the shot hits.
+// Jose's portal gun loader (originally portal-gun.js), with TypeScript types added and
+// reworked for a blue and an orange portal. Loads the gun and portal GLBs; fire() plays
+// the gun's Fire clip and sends an orb from the Muzzle socket to where the shot lands.
+// Each colour gets its own copy of the portal, which plays its Open clip when placed.
 import {
   AnimationClip,
   AnimationMixer,
   LoopOnce,
-  Matrix3,
   Mesh,
   MeshBasicMaterial,
-  Raycaster,
   SphereGeometry,
   Vector3,
   type AnimationAction,
   type BufferGeometry,
   type Material,
+  type MeshStandardMaterial,
   type Object3D,
   type SkinnedMesh,
 } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { loadGltf } from '../../utils/loadGltf';
+import type { PortalColor } from './chamber';
 
-export interface FireOptions {
-  direction?: Vector3;
-  targets?: Object3D[];
-  maxDistance?: number;
+export interface PortalEffect {
+  object: Object3D;
+  /** The portal's dark inner surface (its material is replaced by the see-through view). */
+  inner: Mesh | null;
+  /** The spiral arcs over the surface, hidden while it shows the view. */
+  arcs: Object3D[];
+  mixer: AnimationMixer;
+  open: () => void;
+  close: () => void;
 }
 
 export interface PortalGun {
@@ -32,25 +37,21 @@ export interface PortalGun {
   mixer: AnimationMixer;
   fireAction: AnimationAction;
   muzzle: Object3D;
-  effect: Object3D;
-  portalMixer: AnimationMixer;
   orb: Mesh;
-  fire: (options?: FireOptions) => boolean;
+  portals: Record<PortalColor, PortalEffect>;
+  fire: (end: Vector3, onArrive?: () => void) => boolean;
   update: (dt: number) => void;
-  clearPortal: () => void;
   dispose: () => void;
   readonly readyToFire: boolean;
-  readonly stats: { fired: number; hits: number; opened: number };
 }
 
 interface Shot {
   start: Vector3;
   end: Vector3;
-  normal: Vector3 | null;
   time: number;
   delay: number;
   duration: number;
-  hit: boolean;
+  onArrive?: () => void;
 }
 
 /** Load once per player. +Z muzzle axis, Y up, meters. Call update(dt) every frame. */
@@ -69,14 +70,40 @@ export async function loadPortalGun(gunURL: string, portalURL: string, effectSce
   fireAction.paused = true;
   const muzzle = object.getObjectByName('Muzzle');
   if (!muzzle) throw new Error('The gun GLB is missing its Muzzle socket.');
-  const effect = portal.scene;
-  effect.visible = false;
-  effectScene.add(effect);
-  const portalMixer = new AnimationMixer(effect);
   const openClip = AnimationClip.findByName(portal.animations, 'Open');
   if (!openClip) throw new Error('The portal GLB is missing its Open clip.');
-  const openAction = portalMixer.clipAction(openClip).setLoop(LoopOnce, 1);
-  openAction.clampWhenFinished = true;
+
+  // One copy of the portal per colour, with its own materials so each can be tinted.
+  const makePortal = (): PortalEffect => {
+    const root = portal.scene.clone(true);
+    root.traverse((o) => {
+      const m = o as Mesh;
+      if (m.isMesh) m.material = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : (m.material as Material).clone();
+    });
+    const arcs: Object3D[] = [];
+    root.traverse((o) => o.name.startsWith('Portal_spiral_arc') && arcs.push(o));
+    root.visible = false;
+    effectScene.add(root);
+    const pm = new AnimationMixer(root);
+    const action = pm.clipAction(openClip).setLoop(LoopOnce, 1);
+    action.clampWhenFinished = true;
+    return {
+      object: root,
+      // GLTFLoader turns spaces in node names into underscores.
+      inner: (root.getObjectByName('Portal_dark_surface') as Mesh | undefined) ?? null,
+      arcs,
+      mixer: pm,
+      open: () => {
+        root.visible = true;
+        action.reset().play();
+      },
+      close: () => {
+        root.visible = false;
+      },
+    };
+  };
+  const portals = { blue: makePortal(), orange: makePortal() };
+
   const orb = new Mesh(new SphereGeometry(0.045, 12, 8), new MeshBasicMaterial({ color: 0x67dfff, toneMapped: false }));
   const halo = new Mesh(
     new SphereGeometry(0.085, 12, 8),
@@ -85,33 +112,22 @@ export async function loadPortalGun(gunURL: string, portalURL: string, effectSce
   orb.add(halo);
   orb.visible = false;
   effectScene.add(orb);
-  const ray = new Raycaster();
   let shot: Shot | null = null;
   let cooldown = 0;
   let disposed = false;
-  const stats = { fired: 0, hits: 0, opened: 0 };
-  const worldZ = new Vector3(0, 0, 1);
 
-  function fire({ direction, targets = [], maxDistance = 50 }: FireOptions = {}) {
+  function fire(end: Vector3, onArrive?: () => void) {
     if (disposed || cooldown > 0) return false;
     object.updateWorldMatrix(true, true);
     const start = muzzle!.getWorldPosition(new Vector3());
-    const dir = direction ? direction.clone() : worldZ.clone().transformDirection(object.matrixWorld);
-    if (dir.lengthSq() < 1e-8) return false;
-    dir.normalize();
-    ray.set(start, dir);
-    ray.far = maxDistance;
-    const hit = ray.intersectObjects(targets, true)[0];
-    const end = hit ? hit.point.clone() : start.clone().addScaledVector(dir, maxDistance);
-    const normal = hit?.face ? hit.face.normal.clone().applyNormalMatrix(new Matrix3().getNormalMatrix(hit.object.matrixWorld)) : null;
-    if (normal && normal.dot(dir) > 0) normal.negate();
-    shot = { start, end, normal, time: 0, delay: 0.12, duration: Math.max(0.1, start.distanceTo(end) / 16), hit: !!normal };
+    // A shot already in flight lands at once.
+    shot?.onArrive?.();
+    shot = { start, end: end.clone(), time: 0, delay: 0.12, duration: Math.max(0.1, start.distanceTo(end) / 16), onArrive };
     orb.position.copy(start);
     orb.visible = false;
     fireAction.reset().setEffectiveWeight(1).play();
-    cooldown = fireClip!.duration;
-    stats.fired++;
-    if (shot.hit) stats.hits++;
+    // A little quicker than the full clip, so the two portals can be fired back to back.
+    cooldown = Math.min(fireClip!.duration, 0.45);
     return true;
   }
 
@@ -119,7 +135,8 @@ export async function loadPortalGun(gunURL: string, portalURL: string, effectSce
     if (disposed) return;
     dt = Math.max(0, dt);
     mixer.update(dt);
-    portalMixer.update(dt);
+    portals.blue.mixer.update(dt);
+    portals.orange.mixer.update(dt);
     cooldown = Math.max(0, cooldown - dt);
     if (!shot) return;
     shot.time += dt;
@@ -127,38 +144,36 @@ export async function loadPortalGun(gunURL: string, portalURL: string, effectSce
     orb.visible = t >= 0 && t < 1;
     if (t >= 0) orb.position.lerpVectors(shot.start, shot.end, Math.min(1, t));
     if (t >= 1) {
-      if (shot.hit && shot.normal) {
-        effect.position.copy(shot.end).addScaledVector(shot.normal, 0.026);
-        effect.quaternion.setFromUnitVectors(worldZ, shot.normal);
-        effect.visible = true;
-        openAction.reset().play();
-        stats.opened++;
-      }
+      const done = shot;
       shot = null;
       orb.visible = false;
+      done.onArrive?.();
     }
-  }
-
-  function clearPortal() {
-    effect.visible = false;
-    orb.visible = false;
-    shot = null;
   }
 
   function dispose() {
     if (disposed) return;
     disposed = true;
     mixer.stopAllAction();
-    portalMixer.stopAllAction();
     mixer.uncacheRoot(object);
-    portalMixer.uncacheRoot(effect);
     object.removeFromParent();
-    effect.removeFromParent();
     orb.removeFromParent();
-    for (const root of [object, effect, orb])
+    const roots: Object3D[] = [object, orb];
+    for (const p of Object.values(portals)) {
+      p.mixer.stopAllAction();
+      p.mixer.uncacheRoot(p.object);
+      p.object.removeFromParent();
+      roots.push(p.object);
+    }
+    const seen = new Set<unknown>();
+    for (const root of roots)
       root.traverse((o) => {
         const mesh = o as Mesh & Partial<SkinnedMesh>;
-        (mesh.geometry as BufferGeometry | undefined)?.dispose();
+        const g = mesh.geometry as BufferGeometry | undefined;
+        if (g && !seen.has(g)) {
+          seen.add(g);
+          g.dispose();
+        }
         const mats = mesh.material ? (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) : [];
         for (const m of mats as Material[]) m.dispose();
         mesh.skeleton?.dispose();
@@ -170,18 +185,26 @@ export async function loadPortalGun(gunURL: string, portalURL: string, effectSce
     mixer,
     fireAction,
     muzzle,
-    effect,
-    portalMixer,
     orb,
+    portals,
     fire,
     update,
-    clearPortal,
     dispose,
     get readyToFire() {
       return !disposed && cooldown <= 0;
     },
-    get stats() {
-      return { ...stats };
-    },
   };
+}
+
+/** Energy materials take a colour; the dark portal surface is left alone. */
+export function tintEnergy(root: Object3D, main: string, light: string) {
+  root.traverse((o) => {
+    const mat = (o as { material?: Material | Material[] }).material;
+    for (const m of (Array.isArray(mat) ? mat : mat ? [mat] : []) as MeshStandardMaterial[]) {
+      const c = m.name === 'Energy | ice white' ? light : m.name === 'Energy | electric blue' || m.name === 'Portal | saturated rim' ? main : null;
+      if (!c) continue;
+      m.color.set(c);
+      m.emissive?.set(c);
+    }
+  });
 }

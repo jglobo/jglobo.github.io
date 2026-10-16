@@ -114,6 +114,14 @@ kbd {
   border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px;
   opacity: 0.45; transition: opacity 0.12s, transform 0.12s; }
 .crosshair.valid { opacity: 1; box-shadow: 0 0 14px var(--accent); transform: translate(-50%, -50%) scale(1.25); background: color-mix(in srgb, var(--accent) 35%, transparent); }
+/* Hub: blue (upper left) and orange (lower right) halves; solid once that portal is placed. */
+.crosshair.portal-cross { border: 0; opacity: 1; width: 34px; height: 34px; background: none; box-shadow: none; }
+.portal-cross span { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; opacity: 0.45; transition: opacity 0.15s; }
+.portal-cross .pc-blue { border-left-color: #2f8cff; border-top-color: #2f8cff; transform: rotate(-10deg); }
+.portal-cross .pc-orange { border-right-color: #ff8a1f; border-bottom-color: #ff8a1f; transform: rotate(-10deg); }
+.portal-cross span.on { opacity: 1; filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.35)); }
+.crosshair.portal-cross.valid { transform: translate(-50%, -50%) scale(1.18); background: none; box-shadow: none; }
+.crosshair.portal-cross::after { content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4); }
 .selector { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
 .selector-item { position: relative; display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 12px; cursor: pointer;
   background: rgba(8, 6, 18, 0.6); border: 1px solid var(--line); font-weight: 600; font-size: 0.85rem; opacity: 0.75; transition: all 0.15s; }

@@ -118,10 +118,11 @@ export const useGame = create<GameState>((set) => ({
   setHint: (hint) => set((s) => (s.hint === hint ? s : { hint })),
   setPointerLocked: (pointerLocked) => set({ pointerLocked }),
   completeInteraction: (id) =>
-    set((s) => ({
-      completedInteractions: addUnique(s.completedInteractions, id),
-      tutorialSeen: s.tutorialSeen || id === 'tutorial',
-    })),
+    set((s) =>
+      s.completedInteractions.includes(id) && (s.tutorialSeen || id !== 'tutorial')
+        ? s
+        : { completedInteractions: addUnique(s.completedInteractions, id), tutorialSeen: s.tutorialSeen || id === 'tutorial' },
+    ),
   toggleDebug: () => set((s) => ({ debug: !s.debug })),
   resetProgress: () => set({ ...initialProgress, visitedWorlds: ['hub'] }),
 }));

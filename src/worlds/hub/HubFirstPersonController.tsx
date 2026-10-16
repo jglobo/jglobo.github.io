@@ -1,192 +1,275 @@
-// First-person movement, look, aiming and portal firing for the Hub.
+// First-person movement, look, aiming and portal firing for the Hub test chamber.
+// The player has gravity, so they can fall through a floor portal, drop out of a ceiling
+// portal, and keep their momentum through a pair ("fling"). Walking into one portal
+// brings them out of the other.
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useMemo, useRef, type RefObject } from 'react';
-import { Euler, Raycaster, Vector2, Vector3, type Mesh } from 'three';
-import { consumeLook, consumeWheel, isDown, onFire, wasPressed } from '../../engine/input/input';
+import { useEffect, useMemo, useRef } from 'react';
+import { Euler, Raycaster, Vector2, Vector3 } from 'three';
+import { consumeLook, consumeWheel, isDown, onAltFire, onFire, wasPressed } from '../../engine/input/input';
 import { updateInteractions } from '../../engine/interaction/interactions';
 import { audio } from '../../engine/audio/AudioManager';
-import { DESTINATIONS } from '../../engine/portals/destinations';
 import { travelTo } from '../../engine/loading/travel';
 import { debugInfo } from '../../engine/debug/debugInfo';
 import { gameplayBlocked, useGame } from '../../stores/gameStore';
 import { useSettings } from '../../stores/settingsStore';
-import { CORE_RADIUS, ROOM, type HubEnvironmentHandle } from './HubEnvironment';
-import { PORTAL_HALF_W, fireGun, launcherRuntime } from './PortalLauncher';
+import {
+  BODY, CHASM, DOORS, EYE, GRAVITY, LEDGE_Z, PIT, ROOM, SPAWN, collidePlayer, doorDepth, floorAt, inChasm, inPit, insideHole, linked,
+  mapDir, mapPoint, overlaps, snapPortal, surfaceById, type DoorWorld, type PortalColor,
+} from './chamber';
+import { fireGun, launcherRuntime } from './PortalLauncher';
 import { hubAim } from './hubAim';
+import { isSolved, puzzleKey, readyPortals, useHub } from './hubStore';
 
-const EYE = 1.7;
-const RADIUS = 0.45;
 const WALK = 4.2;
 const SPRINT = 7;
-const PORTAL_CENTER_Y = 1.72;
+const HEAD = 1.85;
 
-export function HubFirstPersonController({ env }: { env: RefObject<HubEnvironmentHandle | null> }) {
+/** Where you arrive back from each world, and which way you face (yaw). */
+const ARRIVALS: Record<string, { x: number; z: number; yaw: number }> = {
+  games: { x: 0, z: -10.5, yaw: Math.PI },
+  software: { x: -10.5, z: 0, yaw: -Math.PI / 2 },
+  'data-science': { x: 7.5, z: 0, yaw: Math.PI / 2 },
+};
+
+export function HubFirstPersonController() {
   const camera = useThree((s) => s.camera);
   const vel = useRef(new Vector3());
+  const feet = useRef(0);
+  const grounded = useRef(true);
   const yaw = useRef(0);
   const pitch = useRef(0);
   const intro = useRef(0);
+  const cooldown = useRef(0);
+  const leaving = useRef(false);
   const raycaster = useMemo(() => new Raycaster(), []);
   const center = useMemo(() => new Vector2(0, 0), []);
-  const tmp = useMemo(() => ({ fwd: new Vector3(), right: new Vector3(), move: new Vector3(), euler: new Euler(0, 0, 0, 'YXZ') }), []);
+  const tmp = useMemo(() => ({ fwd: new Vector3(), right: new Vector3(), move: new Vector3(), euler: new Euler(0, 0, 0, 'YXZ'), prev: new Vector3(), body: new Vector3() }), []);
   const reducedMotion = useSettings((s) => s.reducedMotion);
+  const fireRef = useRef<(c: PortalColor) => void>(() => {});
 
-  // Spawn: in front of the core, or in front of the wall we came back through.
+  // Spawn: in front of the console, or back where you left for a world.
   useEffect(() => {
-    const cameFromWorld = useGame.getState().previousWorld && useGame.getState().previousWorld !== 'hub';
-    camera.position.set(0, EYE, cameFromWorld ? 10.5 : 9);
-    yaw.current = 0;
+    const prev = useGame.getState().previousWorld;
+    const a = (prev && ARRIVALS[prev]) || { x: SPAWN.x, z: SPAWN.z, yaw: 0 };
+    camera.position.set(a.x, EYE, a.z);
+    feet.current = 0;
+    vel.current.set(0, 0, 0);
+    yaw.current = a.yaw;
     pitch.current = 0;
-    intro.current = reducedMotion || cameFromWorld ? 1 : 0;
+    intro.current = reducedMotion || (prev && prev !== 'hub') ? 1 : 0;
+    useHub.getState().clear();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [camera]);
 
-  // Firing a portal.
-  useEffect(
-    () =>
-      onFire(() => {
-        const game = useGame.getState();
-        if (gameplayBlocked() || game.currentWorld !== 'hub') return;
-        const hit = hubAim.hit;
-        if (!hit) {
-          audio.play('deny');
-          return;
-        }
-        // Jose's gun flies an orb to the wall and opens the portal when it lands; until the
-        // model has loaded, the portal opens straight away.
-        const shot = fireGun(hit.position, hit.surface);
-        if (shot === 'busy') return;
-        audio.play('fire');
-        if (shot === 'missed') return;
-        game.completeInteraction('portal-fired');
-        if (shot === 'unloaded') audio.play('portalOpen');
-        game.setPortal({
-          id: performance.now(),
-          from: launcherRuntime.muzzle.toArray() as [number, number, number],
-          position: hit.position.toArray() as [number, number, number],
-          normal: hit.normal.toArray() as [number, number, number],
-          destination: game.portalDestination,
-          state: shot === 'unloaded' ? 'opening' : 'projectile',
-        });
-      }),
-    [],
-  );
+  // Firing: left click (or 1) blue, right click (or 2) orange.
+  useEffect(() => {
+    const fire = (color: PortalColor) => {
+      const game = useGame.getState();
+      if (gameplayBlocked() || game.currentWorld !== 'hub' || intro.current < 1) return;
+      const hit = hubAim.hit;
+      const otherColor = color === 'blue' ? 'orange' : 'blue';
+      const frame = hit?.frame && !overlaps(hit.frame, useHub.getState()[otherColor]) ? hit.frame : null;
+      if (!fireGun(color, frame, hit?.point)) return;
+      audio.play('fire');
+      if (!frame) {
+        audio.play('deny');
+        return;
+      }
+      game.completeInteraction(`portal-${color}`);
+    };
+    const offA = onFire(() => fire('blue'));
+    const offB = onAltFire(() => fire('orange'));
+    fireRef.current = fire;
+    return () => {
+      offA();
+      offB();
+    };
+  }, []);
+
+  // ?debug: a small console API for scripted checks (place the player, aim, fire).
+  useEffect(() => {
+    if (!useGame.getState().debug) return;
+    const w = window as unknown as Record<string, unknown>;
+    w.__hub = {
+      view: (x: number, z: number, yawDeg: number, pitchDeg = 0) => {
+        camera.position.set(x, EYE, z);
+        feet.current = 0;
+        vel.current.set(0, 0, 0);
+        yaw.current = (yawDeg * Math.PI) / 180;
+        pitch.current = (pitchDeg * Math.PI) / 180;
+      },
+      fire: (c: PortalColor) => fireRef.current(c),
+      state: () => ({ pos: camera.position.toArray(), feet: feet.current, blue: useHub.getState().blue?.surface ?? null, orange: useHub.getState().orange?.surface ?? null, aim: hubAim.hit?.frame?.surface ?? null }),
+    };
+    return () => void delete w.__hub;
+  }, [camera]);
 
   useFrame((_, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
     const game = useGame.getState();
     const blocked = gameplayBlocked();
+    cooldown.current = Math.max(0, cooldown.current - dt);
 
     // Brief camera reveal on first entry.
     if (intro.current < 1) intro.current = Math.min(1, intro.current + Math.min(rawDt, 0.2) * 0.6);
     const reveal = 1 - Math.pow(1 - intro.current, 3);
+    const active = !blocked && intro.current >= 1;
 
-    if (!blocked && intro.current >= 1) {
+    if (active) {
       const look = consumeLook();
       yaw.current -= look.x;
-      pitch.current = Math.max(-1.4, Math.min(1.4, pitch.current - look.y));
-
-      // Destination selection: 1-4 or mouse wheel.
-      const keys = ['dest1', 'dest2', 'dest3', 'dest4'] as const;
-      keys.forEach((k, i) => {
-        if (wasPressed(k)) selectDestination(i);
-      });
-      const w = consumeWheel();
-      if (w) {
-        const idx = DESTINATIONS.findIndex((d) => d.id === game.portalDestination);
-        selectDestination((idx + w + DESTINATIONS.length) % DESTINATIONS.length);
+      pitch.current = Math.max(-1.45, Math.min(1.45, pitch.current - look.y));
+      if (wasPressed('dest1')) fireRef.current('blue');
+      if (wasPressed('dest2')) fireRef.current('orange');
+      if (wasPressed('returnPortal') && (useHub.getState().blue || useHub.getState().orange)) {
+        useHub.getState().clear();
+        audio.play('putdown');
       }
-    } else {
-      consumeLook();
-      consumeWheel();
-    }
+    } else consumeLook();
+    consumeWheel();
 
     tmp.euler.set(pitch.current * reveal + (1 - reveal) * 0.45, yaw.current, 0);
     camera.quaternion.setFromEuler(tmp.euler);
 
-    // Movement relative to yaw only.
+    // Movement relative to yaw; full control on the ground, a little in the air.
     tmp.fwd.set(-Math.sin(yaw.current), 0, -Math.cos(yaw.current));
     tmp.right.set(-tmp.fwd.z, 0, tmp.fwd.x);
     tmp.move.set(0, 0, 0);
-    if (!blocked && intro.current >= 1) {
+    if (active) {
       if (isDown('forward')) tmp.move.add(tmp.fwd);
       if (isDown('back')) tmp.move.sub(tmp.fwd);
       if (isDown('right')) tmp.move.add(tmp.right);
       if (isDown('left')) tmp.move.sub(tmp.right);
     }
     const speed = isDown('sprint') ? SPRINT : WALK;
-    if (tmp.move.lengthSq() > 0) tmp.move.normalize().multiplyScalar(speed);
-    const accel = tmp.move.lengthSq() > 0 ? 12 : 10;
-    vel.current.x += (tmp.move.x - vel.current.x) * Math.min(1, accel * dt);
-    vel.current.z += (tmp.move.z - vel.current.z) * Math.min(1, accel * dt);
+    const wish = tmp.move.lengthSq() > 0;
+    if (wish) tmp.move.normalize().multiplyScalar(speed);
+    const v = vel.current;
+    if (grounded.current) {
+      const accel = wish ? 12 : 10;
+      v.x += (tmp.move.x - v.x) * Math.min(1, accel * dt);
+      v.z += (tmp.move.z - v.z) * Math.min(1, accel * dt);
+    } else if (wish) {
+      v.x += (tmp.move.x - v.x) * Math.min(1, 1.2 * dt);
+      v.z += (tmp.move.z - v.z) * Math.min(1, 1.2 * dt);
+    }
+    v.y -= GRAVITY * dt;
 
     const p = camera.position;
-    p.x += vel.current.x * dt;
-    p.z += vel.current.z * dt;
+    tmp.prev.set(p.x, feet.current + BODY, p.z);
+    const prevFeet = feet.current;
+    p.x += v.x * dt;
+    p.z += v.z * dt;
+    feet.current += v.y * dt;
 
-    // Walking into an open portal starts the trip.
-    const portal = game.portal;
-    let insidePortalZone = false;
-    if (portal && portal.state === 'open') {
-      const n = new Vector3(...portal.normal);
-      const toPlayer = new Vector3(p.x - portal.position[0], 0, p.z - portal.position[2]);
-      const along = toPlayer.dot(n);
-      const lateral = toPlayer.sub(n.clone().multiplyScalar(along)).length();
-      insidePortalZone = lateral < PORTAL_HALF_W * 0.85;
-      if (insidePortalZone && along < 0.25 && !blocked) {
+    // Through a portal.
+    const portals = readyPortals();
+    tmp.body.set(p.x, feet.current + BODY, p.z);
+    if (cooldown.current <= 0) {
+      for (const [a, b] of linked(portals)) {
+        const d0 = tmp.prev.clone().sub(a.pos).dot(a.normal);
+        const d1 = tmp.body.clone().sub(a.pos).dot(a.normal);
+        if (d0 < 0 || d1 > 0) continue;
+        const at = tmp.prev.clone().lerp(tmp.body, d0 / (d0 - d1 || 1));
+        if (!insideHole(a, at)) continue;
+        const out = mapPoint(a, b, at);
+        const clearance = b.kind === 'wall' ? 0.55 : 1.05;
+        const along = out.clone().sub(b.pos).dot(b.normal);
+        if (along < clearance) out.addScaledVector(b.normal, clearance - along);
+        const nv = mapDir(a, b, v);
+        const minOut = b.kind === 'wall' ? 2.5 : b.kind === 'floor' ? 4 : 0.5;
+        const vo = nv.dot(b.normal);
+        if (vo < minOut) nv.addScaledVector(b.normal, minOut - vo);
+        v.copy(nv);
+        const f = mapDir(a, b, tmp.fwd);
+        if (Math.hypot(f.x, f.z) > 0.3) yaw.current = Math.atan2(-f.x, -f.z);
+        p.x = out.x;
+        p.z = out.z;
+        feet.current = out.y - BODY;
+        grounded.current = false;
+        cooldown.current = 0.25;
+        audio.play('pickup');
         game.completeInteraction('portal-entered');
-        void travelTo(portal.destination);
+        break;
       }
     }
 
-    // Collision: room bounds (softened where an open portal is) and the central core.
-    const lim = ROOM.half - RADIUS - (insidePortalZone ? -0.3 : 0);
-    p.x = Math.max(-lim, Math.min(lim, p.x));
-    p.z = Math.max(-lim, Math.min(lim, p.z));
-    const dCore = Math.hypot(p.x, p.z);
-    if (dCore < CORE_RADIUS + RADIUS) {
-      const k = (CORE_RADIUS + RADIUS) / (dCore || 1);
-      p.x *= k;
-      p.z *= k;
-    }
-    p.y = EYE + (1 - reveal) * 2.2;
-    launcherRuntime.speed = Math.hypot(vel.current.x, vel.current.z);
+    // Walls, props, open doorways.
+    const openDoors = (Object.keys(DOORS) as DoorWorld[]).filter((w) => game.completedInteractions.includes(puzzleKey(w)));
+    [p.x, p.z] = collidePlayer(p.x, p.z, { feet: feet.current, portals, openDoors, falling: !grounded.current && v.y < 0 });
 
-    // Aim at portal-compatible surfaces.
+    // Floor, falling and the ceiling.
+    const ground = floorAt(p.x, p.z, portals, hubAim.bridge);
+    if (feet.current <= ground && v.y <= 0 && prevFeet >= ground - 0.3) {
+      feet.current = ground;
+      v.y = 0;
+      grounded.current = true;
+    } else if (feet.current > ground + 0.05 || ground === -Infinity) grounded.current = false;
+    if (feet.current + HEAD > ROOM.height - 0.05) {
+      const top = tmp.body.set(p.x, ROOM.height - 0.02, p.z);
+      const intoPortal = linked(portals).some(([a]) => a.kind === 'ceiling' && insideHole(a, top));
+      if (!intoPortal) {
+        feet.current = ROOM.height - 0.05 - HEAD;
+        v.y = Math.min(v.y, 0);
+      }
+    }
+
+    if (!leaving.current) {
+      // Falling into the data science pit.
+      if (inPit(p.x, p.z) && feet.current < -1.2) {
+        leaving.current = true;
+        game.completeInteraction(puzzleKey('data-science'));
+        audio.play('travel');
+        void travelTo('data-science');
+      }
+      // Into the chasm: back to the near edge.
+      if (inChasm(p.z) && feet.current < -2.5) {
+        audio.play('thud');
+        p.z = CHASM.minZ - 1.2;
+        feet.current = 0;
+        v.set(0, 0, 0);
+      }
+      if (feet.current < -8 || Math.abs(p.x) > ROOM.half + 4 || Math.abs(p.z) > ROOM.half + 4) {
+        p.set(SPAWN.x, EYE, SPAWN.z);
+        feet.current = 0;
+        v.set(0, 0, 0);
+      }
+      // Across the chasm: the journey door opens.
+      if (p.z > LEDGE_Z + 0.3 && feet.current > -0.2 && !isSolved('journey')) {
+        game.completeInteraction(puzzleKey('journey'));
+        audio.play('door');
+      }
+      // Through an open door.
+      for (const w of openDoors) {
+        if (doorDepth(w, p.x, p.z) > 0.8) {
+          leaving.current = true;
+          audio.play('travel');
+          void travelTo(w);
+          break;
+        }
+      }
+    }
+    if (inPit(p.x, p.z) && feet.current < -PIT.depth + 0.2) feet.current = -PIT.depth + 0.2;
+
+    p.y = feet.current + EYE + (1 - reveal) * 2.2;
+    launcherRuntime.speed = grounded.current ? Math.hypot(v.x, v.z) : 0;
+
+    // Aim: the first surface the crosshair meets.
     hubAim.hit = null;
-    const targets = env.current ? [...env.current.surfaces, ...env.current.occluders] : [];
     if (!blocked) {
       raycaster.setFromCamera(center, camera);
-      raycaster.far = 30;
-      const hits = raycaster.intersectObjects(targets, false);
-      const h = hits[0];
-      if (h && h.face && h.object.userData.portalSurface) {
-        const normal = h.face.normal.clone().transformDirection((h.object as Mesh).matrixWorld);
-        // Snap the portal to floor level and keep it inside the panel.
-        const local = (h.object as Mesh).worldToLocal(h.point.clone());
-        const halfW = (h.object.userData.halfWidth as number) - PORTAL_HALF_W - 0.1;
-        local.x = Math.max(-halfW, Math.min(halfW, local.x));
-        const world = (h.object as Mesh).localToWorld(local);
-        world.y = PORTAL_CENTER_Y;
-        world.addScaledVector(normal, 0.03);
-        hubAim.hit = { position: world, normal, surface: h.object };
+      raycaster.far = 40;
+      const h = raycaster.intersectObjects([...hubAim.targets], false)[0];
+      if (h) {
+        const s = h.object.userData.surfaceId ? surfaceById(h.object.userData.surfaceId as string) : undefined;
+        hubAim.hit = { point: h.point.clone(), frame: s ? snapPortal(s, h.point) : null };
       }
     }
-    hubAim.surface = hubAim.hit ? 1 : 0;
 
-    updateInteractions(p, !blocked);
+    updateInteractions(p, active);
     debugInfo.player = [p.x, p.y, p.z];
     debugInfo.camera = [p.x, p.y, p.z];
   });
 
   return null;
-}
-
-function selectDestination(i: number) {
-  const d = DESTINATIONS[i];
-  const game = useGame.getState();
-  if (!d || d.id === game.portalDestination) return;
-  game.selectDestination(d.id);
-  game.completeInteraction('destination-selected');
-  audio.play('select');
 }

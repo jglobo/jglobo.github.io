@@ -6,33 +6,29 @@ import { useHud } from '../../stores/hudStore';
 
 const STEPS: { done: string; hint: string }[] = [
   { done: 'moved', hint: 'WASD to move · Mouse to look (click the view to capture the mouse, or drag)' },
-  { done: 'destination-selected', hint: 'Choose a destination: press 1–4 or scroll' },
-  { done: 'portal-fired', hint: 'Aim at a glowing wall panel and click to fire a portal' },
-  { done: 'portal-entered', hint: 'Walk through the portal' },
+  { done: 'portal-blue', hint: 'Left click a white panel to shoot a blue portal' },
+  { done: 'portal-orange', hint: 'Right click another white panel for the orange portal' },
+  { done: 'portal-entered', hint: 'Walk into one portal to come out of the other' },
 ];
+const RETURNING = 'Solve a wall puzzle to open its world, or use the console in the middle · Tab for Quick Portfolio';
 
 export function useHubTutorial() {
   useEffect(() => {
-    useHud.setState({ controls: ['WASD: move', 'Mouse: look', 'Click: fire portal', '1–4 / scroll: destination', 'E: interact', 'Shift: sprint'] });
+    useHud.setState({
+      controls: ['WASD: move', 'Mouse: look', 'Left click / 1: blue portal', 'Right click / 2: orange portal', 'R: clear portals', 'E: press buttons, use the console', 'Shift: sprint'],
+    });
     let moveTimer: number | undefined;
     const update = () => {
       const s = useGame.getState();
       if (s.currentWorld !== 'hub') return;
-      if (s.tutorialSeen) {
-        s.setHint(s.portal ? 'Walk through the portal' : 'Pick a world with 1–4 · Click a wall panel to open a portal · Tab for Quick Portfolio');
-        return;
-      }
-      const step = STEPS.find((st) => !s.completedInteractions.includes(st.done));
+      // Visitors from before the two-colour gun still get its steps (but not "move" again).
+      const step = STEPS.find((st) => !s.completedInteractions.includes(st.done) && !(st.done === 'moved' && s.tutorialSeen));
       if (!step) {
-        s.completeInteraction('tutorial');
+        if (!s.tutorialSeen || !s.completedInteractions.includes('tutorial')) s.completeInteraction('tutorial');
+        if (s.hint !== RETURNING) s.setHint(RETURNING);
         return;
       }
-      // "Choose a destination" also counts as done once a portal is fired.
-      if (step.done === 'destination-selected' && s.completedInteractions.includes('portal-fired')) {
-        s.completeInteraction('destination-selected');
-        return;
-      }
-      s.setHint(step.hint);
+      if (s.hint !== step.hint) s.setHint(step.hint);
     };
     // Movement is detected from key presses rather than from the controller.
     const onKey = (e: KeyboardEvent) => {
