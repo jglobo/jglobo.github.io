@@ -74,7 +74,13 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
       if (look.hairStyle === 'long') rect(g, 4, 5, 3, 7, look.hair);
     }
     px(g, 10, 7, eye);
-    if (look.beard) rect(g, 8, 9, 4, 2, look.hair);
+    if (look.beard) {
+      // Trimmed beard: sideburn, jawline, chin and a short mustache.
+      rect(g, 7, 8, 1, 2, look.hair);
+      rect(g, 8, 10, 3, 1, look.hair);
+      px(g, 11, 9, look.hair);
+      px(g, 10, 11, look.hair);
+    }
     return g;
   }
 
@@ -136,8 +142,15 @@ export function humanGrid(look: HumanLook, frame: HumanFrame): Grid {
   px(g, 6, 8, eye);
   px(g, 9, 8, eye);
   if (look.beard) {
-    rect(g, 5, 9, 6, 2, look.hair);
-    rect(g, 7, 9, 2, 1, look.skin);
+    // Clean-cut beard and mustache: a narrow jawline that meets at the chin, a mustache
+    // over the mouth and bare cheeks.
+    px(g, 5, 9, look.hair);
+    px(g, 10, 9, look.hair);
+    rect(g, 7, 9, 2, 1, look.hair);
+    px(g, 6, 10, look.hair);
+    px(g, 9, 10, look.hair);
+    rect(g, 7, 10, 2, 1, darken(look.skin, 0.25));
+    rect(g, 7, 11, 2, 1, look.hair);
   } else {
     px(g, 5, 9, blush(look.skin));
     px(g, 10, 9, blush(look.skin));
@@ -335,9 +348,9 @@ export const robotAtlas = () => rasterize(HUMAN_FRAMES.map((f) => stylize(robotG
 export const dogAtlas = (look: DogLook) => rasterize(DOG_FRAMES.map((f) => stylize(dogGrid(look, f))));
 
 // The family, as Jose described them: black hair and light brown skin for him and
-// his wife, brown hair for their son, generic clothes, and a white dog.
+// his wife (a clean-cut beard and mustache for him), brown hair for their son, generic clothes, and a white dog.
 export const LOOKS = {
-  jose: { skin: '#cf9e76', hair: '#141011', hairStyle: 'short', shirt: '#2f7fb8', pants: '#383d52', shoes: '#4a3426' },
+  jose: { skin: '#cf9e76', hair: '#141011', hairStyle: 'short', beard: true, shirt: '#2f7fb8', pants: '#383d52', shoes: '#4a3426' },
   wife: { skin: '#cf9e76', hair: '#141011', hairStyle: 'long', shirt: '#b8577a', pants: '#3d3a4f', shoes: '#4a3426' },
   son: { skin: '#d4a57e', hair: '#6a4126', hairStyle: 'short', shirt: '#e8a628', pants: '#3f6a8a', shoes: '#f2f2f2' },
 } satisfies Record<string, HumanLook>;

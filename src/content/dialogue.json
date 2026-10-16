@@ -15,11 +15,6 @@
     "category": "career"
   },
   {
-    "question": "Do you volunteer?",
-    "answer": "I have since college: building and fundraising for accessible spaces with Push America, the Rivalry Run 5K, serving at the RIFA soup kitchen and packing meals with Stop Hunger Now. The Giving Back hall up the path has the full story.",
-    "category": "about"
-  },
-  {
     "question": "What are you doing with AI?",
     "answer": "A lot! I code with AI agents every day, this portfolio included. I run cloud and local models like Claude, OpenAI, DeepSeek, MiniMax and MiMo, build RAG apps with LangChain, train and fine-tune models on my own machines, and use classification models like Laya and Jev in my projects.",
     "category": "skills"
