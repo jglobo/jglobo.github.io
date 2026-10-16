@@ -7,17 +7,17 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
-const r = JSON.parse(readFileSync(here + 'resume.json', 'utf8'));
+const r = JSON.parse(readFileSync(here + '../../src/content/resume.json', 'utf8'));
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const list = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>`;
 
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-  @page { size: Letter; margin: 0.55in 0.6in; }
-  body { font: 10.2pt/1.38 "Helvetica Neue", Arial, sans-serif; color: #1c1c24; margin: 0; }
+  @page { size: Letter; margin: 0.5in 0.6in; }
+  body { font: 10pt/1.34 "Helvetica Neue", Arial, sans-serif; color: #1c1c24; margin: 0; }
   h1 { font-size: 22pt; margin: 0; letter-spacing: 0.02em; }
   .contact { color: #444; margin: 2px 0 10px; }
   .contact a { color: #2b5bd7; text-decoration: none; }
-  h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: #2b5bd7; border-bottom: 1.2px solid #c9d4f2; padding-bottom: 2px; margin: 14px 0 6px; }
+  h2 { font-size: 10.5pt; text-transform: uppercase; letter-spacing: 0.08em; color: #2b5bd7; border-bottom: 1.2px solid #c9d4f2; padding-bottom: 2px; margin: 12px 0 5px; }
   .job { break-inside: avoid; margin-bottom: 8px; }
   .job-head { display: flex; justify-content: space-between; font-weight: 700; }
   .dates { font-weight: 400; color: #555; white-space: nowrap; margin-left: 12px; }

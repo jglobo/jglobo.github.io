@@ -7,8 +7,9 @@ import educationJson from './education.json';
 import achievementsJson from './achievements.json';
 import dialogueJson from './dialogue.json';
 import journeyJson from './journey.json';
+import resumeJson from './resume.json';
 import type {
-  Achievement, DialogueLine, Education, Experience, JourneyContent, PortfolioProject, Profile, ProjectCategory, SkillGroup,
+  Achievement, DialogueLine, Education, Experience, JourneyContent, PortfolioProject, Profile, ProjectCategory, Resume, SkillGroup,
 } from './schema';
 
 export * from './schema';
@@ -20,6 +21,8 @@ export const education = educationJson as Education[];
 export const achievements = achievementsJson as Achievement[];
 export const dialogue = dialogueJson as DialogueLine[];
 export const journey = journeyJson as JourneyContent;
+/** The downloadable résumé's content (also rendered by scripts/resume into the PDF and DOCX). */
+export const resume = resumeJson as Resume;
 
 const modules = import.meta.glob<PortfolioProject>('./{data-science,games,software,journey}/*.json', {
   eager: true,
@@ -27,7 +30,7 @@ const modules = import.meta.glob<PortfolioProject>('./{data-science,games,softwa
 });
 
 export const projects: PortfolioProject[] = Object.values(modules).sort(
-  (a, b) => Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title),
+  (a, b) => (a.order ?? 99) - (b.order ?? 99) || Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title),
 );
 
 export const projectsByCategory = (category: ProjectCategory) => projects.filter((p) => p.category === category);

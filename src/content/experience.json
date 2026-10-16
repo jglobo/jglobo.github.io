@@ -1,5 +1,29 @@
 [
   {
+    "id": "independent-ai",
+    "role": "AI Engineering (independent projects)",
+    "org": "Personal lab",
+    "when": "Ongoing",
+    "summary": "Build and run self-hosted AI systems on my own hardware: agentic coding with agent harnesses, cloud and local language models, RAG, and data pipelines that feed models I train myself.",
+    "highlights": [
+      "Develop software with agentic coding workflows and agent harnesses, directing AI agents to plan, write, test and refactor code, including this interactive portfolio.",
+      "Work fluently across cloud and local large language models, including Claude, OpenAI, DeepSeek, MiniMax and MiMo, choosing the right model for cost, privacy and quality.",
+      "Build retrieval-augmented generation (RAG) applications with LangChain that ground model answers in curated document collections.",
+      "Design data pipelines that collect and clean public datasets, then train, evaluate and fine-tune models on personal workstations.",
+      "Assemble and maintain personal AI ecosystems from open-source tools, managing multiple systems across my own computers.",
+      "Apply Laya classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
+    ],
+    "technologies": [
+      "Python",
+      "LangChain",
+      "Claude",
+      "OpenAI",
+      "DeepSeek",
+      "Local LLMs",
+      "RAG"
+    ]
+  },
+  {
     "id": "envision-ds",
     "role": "Data Scientist",
     "org": "Envision Healthcare",
@@ -8,6 +32,8 @@
     "highlights": [
       "Lead data ingestion, cleaning, EDA, feature engineering, model development and evaluation.",
       "Develop and evaluate classification and regression models in Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
+      "Partner with the team to turn denied-claim classification models into products that identify reversible denials and recover revenue from health insurance providers.",
+      "Build forecasting models that predict emergency department patient volumes, so operations teams can plan staffing and allocate resources ahead of demand.",
       "Design and maintain executive-ready dashboards and recurring reports in Tableau, Power BI, R Shiny and Streamlit.",
       "Translate complex findings into actionable insights for technical and non-technical stakeholders.",
       "Document data definitions, modeling assumptions and methods for reproducibility and audit readiness."

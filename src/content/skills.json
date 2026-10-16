@@ -15,6 +15,25 @@
     ]
   },
   {
+    "group": "AI & Agentic Engineering",
+    "items": [
+      "Agentic coding",
+      "Agent harnesses",
+      "Claude",
+      "OpenAI",
+      "DeepSeek",
+      "MiniMax",
+      "MiMo",
+      "Local LLMs",
+      "RAG",
+      "LangChain",
+      "Fine-tuning",
+      "Laya",
+      "Data pipelines",
+      "Self-hosted AI"
+    ]
+  },
+  {
     "group": "Data Platforms",
     "items": [
       "Amazon Redshift (AWS)",

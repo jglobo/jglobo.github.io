@@ -90,7 +90,10 @@
         "selftaught"
       ],
       "certificationsFrom": "freeCodeCamp",
-      "story": "I taught myself programming with freeCodeCamp and Udemy, from responsive web design all the way to machine learning with Python."
+      "story": "I taught myself programming with freeCodeCamp and Udemy, from responsive web design all the way to machine learning with Python. That habit never stopped: today I build my own AI tools, from agentic coding workflows and RAG pipelines to classification models I train locally.",
+      "experience": [
+        "independent-ai"
+      ]
     },
     {
       "id": "hca",

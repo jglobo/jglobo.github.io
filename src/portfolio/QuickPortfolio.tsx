@@ -1,12 +1,14 @@
 // Quick Portfolio: the whole portfolio as plain, fast, accessible HTML. Available
 // from the landing page, the HUD button and Tab, with or without WebGL.
 import { useEffect, useRef, useState } from 'react';
-import { achievements, education, experience, profile, projectsByCategory, skills, type ProjectCategory } from '../content';
+import { achievements, education, experience, profile, projectsByCategory, resume, skills, type ProjectCategory } from '../content';
 import { useGame, type QuickSection } from '../stores/gameStore';
 import { assets } from '../assets/manifest';
 import { track } from '../analytics/track';
 import { ExtLink, ProjectDetails } from './ProjectDetails';
 import { ThemeToggle, usePaperClass } from '../ui/ThemeToggle';
+import { worldName } from '../ui/worldNames';
+import { visitWorld } from './visitWorld';
 
 const SECTIONS: { id: QuickSection; label: string }[] = [
   { id: 'about', label: 'About' },
@@ -66,7 +68,7 @@ export function QuickPortfolio() {
       <main className="quick-main">
         {notice && <p className="quick-hint">{notice}</p>}
         {section === 'about' && <About />}
-        {(section === 'data-science' || section === 'games' || section === 'software') && <ProjectList category={section as ProjectCategory} />}
+        {(section === 'data-science' || section === 'games' || section === 'software') && <ProjectList key={section} category={section as ProjectCategory} />}
         {section === 'experience' && <ExperienceSection />}
         {section === 'resume' && <ResumeSection />}
         {section === 'contact' && <ContactSection />}
@@ -85,7 +87,7 @@ function About() {
           <p className="lede">{profile.tagline}</p>
           <p>{profile.summary}</p>
           <div className="project-links">
-            <ExtLink href={assets.resumePdf} event="resume_opened" className="btn primary">Resume (PDF)</ExtLink>
+            <ExtLink href={assets.resumePdf} event="resume_opened" className="btn primary" newTab>Resume (PDF)</ExtLink>
             <ExtLink href={profile.links.github} event="github_clicked">GitHub ↗</ExtLink>
             <ExtLink href={profile.links.linkedin} event="contact_clicked">LinkedIn ↗</ExtLink>
           </div>
@@ -106,7 +108,6 @@ function About() {
 
 function ProjectList({ category }: { category: ProjectCategory }) {
   const list = projectsByCategory(category);
-  const discovered = useGame((s) => s.discoveredProjects);
   const [openId, setOpenId] = useState<string | null>(list[0]?.id ?? null);
   const title = { 'data-science': 'Data Science', games: 'Games', software: 'Software', journey: 'Journey' }[category];
   return (
@@ -120,11 +121,19 @@ function ProjectList({ category }: { category: ProjectCategory }) {
                 <strong>{p.title}</strong>
                 <span className="muted"> · {p.technologies.slice(0, 3).join(', ')}</span>
               </span>
-              <span className={`badge ${discovered.includes(p.id) ? 'found' : ''}`}>
-                {discovered.includes(p.id) ? 'Found in game' : 'Not yet found in game'}
-              </span>
             </button>
-            {openId === p.id && <ProjectDetails project={p} />}
+            {openId === p.id && (
+              <>
+                <ProjectDetails project={p} />
+                {p.world !== 'hub' && (
+                  <div className="project-world">
+                    <button className="btn small" onClick={() => visitWorld(p.world)}>
+                      See it in the {worldName(p.world)} ↗
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </article>
         ))}
       </div>
@@ -177,12 +186,41 @@ function ResumeSection() {
     <section>
       <h3>Resume</h3>
       <div className="project-links">
-        <ExtLink href={assets.resumePdf} event="resume_opened" className="btn primary">Open PDF ↗</ExtLink>
+        <ExtLink href={assets.resumePdf} event="resume_opened" className="btn primary" newTab>Open PDF ↗</ExtLink>
         <ExtLink href={assets.resumeDocx} event="resume_opened" download>Download DOCX</ExtLink>
       </div>
-      <object className="resume-frame" data={assets.resumePdf} type="application/pdf" aria-label="Resume PDF">
-        <p>Your browser can't show the PDF inline. Use the button above to open it.</p>
-      </object>
+      {/* The same résumé as the PDF, as a page: it shows everywhere, even where PDFs can't be embedded. */}
+      <article className="resume-sheet" aria-label="Resume">
+        <header>
+          <h4>{resume.name}</h4>
+          <p className="muted">{resume.contact.join(' · ')}</p>
+        </header>
+        <h5>Professional Summary</h5>
+        <p>{resume.summary}</p>
+        <h5>Professional Experience</h5>
+        {resume.experience.map((j) => (
+          <div className="resume-job" key={j.org + j.role}>
+            <div className="resume-job-head">
+              <strong>{j.org} · {j.role}</strong>
+              <span className="muted">{j.dates}</span>
+            </div>
+            {j.note && <p className="muted small">{j.note}</p>}
+            <ul>{j.bullets.map((b) => <li key={b}>{b}</li>)}</ul>
+          </div>
+        ))}
+        <h5>Technical Skills</h5>
+        <ul className="resume-plain">{resume.skills.map(([k, v]) => <li key={k}><strong>{k}:</strong> {v}</li>)}</ul>
+        <h5>Education</h5>
+        <ul className="resume-plain">{resume.education.map(([k, v]) => <li key={k}><strong>{k}</strong> · {v}</li>)}</ul>
+        <h5>Certifications</h5>
+        <ul className="certs">{resume.certifications.map((c) => <li key={c}>{c}</li>)}</ul>
+        <h5>Clinical Experience</h5>
+        <ul>{resume.clinical.map((c) => <li key={c}>{c}</li>)}</ul>
+        <h5>Volunteer Experience</h5>
+        <ul>{resume.volunteer.map((c) => <li key={c}>{c}</li>)}</ul>
+        <h5>Presentations and Lectures</h5>
+        <ul>{resume.presentations.map((c) => <li key={c}>{c}</li>)}</ul>
+      </article>
     </section>
   );
 }
@@ -206,7 +244,7 @@ function ContactSection() {
           <span className="contact-kind">LinkedIn</span>
           <span>Jose Lobo</span>
         </ExtLink>
-        <ExtLink href={assets.resumePdf} event="resume_opened" className="contact-card">
+        <ExtLink href={assets.resumePdf} event="resume_opened" className="contact-card" newTab>
           <span className="contact-kind">Resume</span>
           <span>PDF</span>
         </ExtLink>

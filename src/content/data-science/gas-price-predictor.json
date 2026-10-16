@@ -16,6 +16,7 @@
   ],
   "demoUrl": "https://gas-price-predictor.onrender.com/",
   "featured": true,
+  "order": 1,
   "world": "data-science",
   "location": "fuel-depot",
   "technicalDetails": {

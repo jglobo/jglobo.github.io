@@ -31,6 +31,8 @@ export interface PortfolioProject {
   downloadUrl?: string;
   featured: boolean;
   world: WorldId;
+  /** Lists sort by this first (lower comes first); projects without it follow, featured first. */
+  order?: number;
   /** Id of the site inside the world that hosts this project. */
   location?: string;
   technicalDetails?: {
@@ -92,3 +94,18 @@ export interface JourneyNpc {
 }
 
 export interface JourneyContent { npcs: JourneyNpc[]; stops: JourneyStop[] }
+
+export interface Resume {
+  name: string;
+  contact: string[];
+  summary: string;
+  experience: { org: string; role: string; dates: string; note?: string; bullets: string[] }[];
+  /** [group, comma-separated items] */
+  skills: [string, string][];
+  /** [credential, institution and details] */
+  education: [string, string][];
+  certifications: string[];
+  clinical: string[];
+  volunteer: string[];
+  presentations: string[];
+}

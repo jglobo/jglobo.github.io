@@ -94,7 +94,7 @@ sources and licences: [`docs/ASSETS.md`](docs/ASSETS.md).
 
 ## Updating the resume
 
-The downloadable resume files are generated from `scripts/resume/resume.json`. Edit that file, then run:
+The downloadable resume files are generated from `src/content/resume.json`, which the Quick Portfolio also shows as its Resume page. Edit that file, then run:
 
 ```sh
 npm install --no-save playwright-core && node scripts/resume/build-pdf.mjs   # Jose_Lobo_pdf_Resume.pdf

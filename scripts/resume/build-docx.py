@@ -9,7 +9,7 @@ from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 
 here = Path(__file__).parent
-r = json.loads((here / "resume.json").read_text())
+r = json.loads((here / ".." / ".." / "src" / "content" / "resume.json").read_text())
 BLUE = RGBColor(0x2B, 0x5B, 0xD7)
 
 doc = Document()
