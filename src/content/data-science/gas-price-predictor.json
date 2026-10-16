@@ -1,0 +1,33 @@
+{
+  "id": "gas-price-predictor",
+  "title": "Gas Price Predictor",
+  "category": "data-science",
+  "shortDescription": "An end-to-end forecasting app: an automated data pipeline, a PostgreSQL store and an XGBoost model that predicts gas prices days ahead.",
+  "description": "An end-to-end machine learning application for forecasting retail gas prices. An automated pipeline collects weekly public government data and loads it into a PostgreSQL database, building a clean historical record. An XGBoost model trained on that history produces a multi-day forecast with a median estimate and 25–75% and 10–90% uncertainty ranges. The interactive Streamlit dashboard charts actual prices against the forecast, reports model accuracy against a naive baseline, flags periods of likely volatility and turns a visitor's local pump price into a local prediction. The app is hosted on Render, so the first visit can take a moment while it starts.",
+  "technologies": [
+    "Python",
+    "XGBoost",
+    "PostgreSQL",
+    "Streamlit",
+    "Render"
+  ],
+  "screenshots": [
+    "images/gaspredictor.png"
+  ],
+  "demoUrl": "https://gas-price-predictor.onrender.com/",
+  "featured": true,
+  "order": 1,
+  "world": "data-science",
+  "location": "fuel-depot",
+  "technicalDetails": {
+    "problem": "Forecast near-term retail gas prices, with an honest picture of how uncertain each forecast is.",
+    "dataset": "Weekly public government gas price data, collected by an automated pipeline and stored in PostgreSQL.",
+    "approach": "Train an XGBoost model on the historical series, forecast several days ahead with median and interval estimates, and measure accuracy against a naive baseline.",
+    "architecture": "Data pipeline → PostgreSQL → XGBoost model → Streamlit dashboard on Render.",
+    "results": [
+      "Mean absolute error of $0.073, versus $0.155 for the naive baseline.",
+      "78.56% model win rate.",
+      "Forecasts shown with 25–75% and 10–90% ranges, plus a local price prediction from the visitor's own pump price."
+    ]
+  }
+}

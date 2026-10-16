@@ -1,0 +1,33 @@
+{
+  "id": "movie-correlation",
+  "title": "Movie Data Correlation",
+  "category": "data-science",
+  "shortDescription": "Which factors track a film's box-office gross? An exploratory correlation study in Python and Jupyter.",
+  "description": "An exploratory analysis of a movie dataset in a Jupyter notebook: cleaning the data, then comparing features against gross revenue with correlation matrices, scatter plots and heatmaps. The full notebook is on GitHub.",
+  "technologies": [
+    "Python",
+    "Jupyter",
+    "pandas"
+  ],
+  "screenshots": [
+    "images/moviedata.png"
+  ],
+  "githubUrl": "https://github.com/jglobo/movie_correlation_project/blob/main/jupytercode/Movie%20Correlation%20Project.ipynb",
+  "featured": true,
+  "world": "data-science",
+  "location": "station",
+  "technicalDetails": {
+    "problem": "What predicts a movie's revenue?",
+    "approach": "Clean the data, then measure and visualize correlations between each feature and gross revenue."
+  },
+  "visualization": {
+    "kind": "scatter",
+    "label": "Feature vs. gross (illustrative shape)",
+    "illustrative": true,
+    "xLabel": "Feature",
+    "yLabel": "Gross",
+    "seed": 7,
+    "count": 90,
+    "correlation": 0.74
+  }
+}

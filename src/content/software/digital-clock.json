@@ -1,0 +1,18 @@
+{
+  "id": "digital-clock",
+  "title": "Digital Clock",
+  "category": "software",
+  "shortDescription": "A live clock showing the time, weekday, month and year.",
+  "description": "A digital clock web page that updates every second and shows the time with AM or PM, the day of the week, the month, the date and the year, styled with a glowing frame and reflection.",
+  "technologies": [
+    "HTML",
+    "CSS",
+    "JavaScript"
+  ],
+  "screenshots": [
+    "images/digitalclock.jpg"
+  ],
+  "githubUrl": "https://github.com/jglobo/DigitalClock",
+  "featured": false,
+  "world": "software"
+}

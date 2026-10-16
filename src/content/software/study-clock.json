@@ -1,0 +1,12 @@
+{
+  "id": "study-clock",
+  "title": "Study Clock",
+  "category": "software",
+  "shortDescription": "A Pomodoro-style study timer.",
+  "description": "A 25/5 study timer with adjustable session and break lengths and an alarm, built in JavaScript.",
+  "technologies": ["JavaScript", "HTML", "CSS"],
+  "screenshots": ["images/studyclock.png"],
+  "demoUrl": "https://codepen.io/Jglobo/full/eYRgKQJ",
+  "featured": true,
+  "world": "software"
+}

@@ -1,0 +1,20 @@
+{
+  "id": "ant-farm",
+  "title": "Ant Farm",
+  "category": "games",
+  "shortDescription": "A pixel-art ant colony simulation you start with a single queen.",
+  "description": "A pixel-art colony simulation in the browser. You place the Queen and choose what she lays (gatherers, builders, nurses or soldiers), and the colony does the rest: digging tunnels, foraging, damming rain and fighting off raids. Ants path-find through a 288 by 144 tile world with water and sand physics and a day and night cycle.",
+  "technologies": [
+    "JavaScript",
+    "HTML Canvas"
+  ],
+  "screenshots": [
+    "images/antfarm.png"
+  ],
+  "githubUrl": "https://github.com/jglobo/Ant-Farm",
+  "playUrl": "play/ant-farm/index.html",
+  "playOn": "pc",
+  "featured": false,
+  "world": "games",
+  "boxColor": "#6b4426"
+}

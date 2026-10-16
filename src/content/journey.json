@@ -1,0 +1,131 @@
+{
+  "npcs": [
+    {
+      "id": "jose",
+      "name": "Jose",
+      "kind": "person",
+      "greeting": "Welcome to my world that I've created, ask me any question you wish to learn about me."
+    },
+    {
+      "id": "wife",
+      "name": "Jose's wife",
+      "kind": "person",
+      "greeting": "Hi there, welcome! Make yourself at home. Jose is happy to answer any of your questions."
+    },
+    {
+      "id": "son",
+      "name": "Jose's son",
+      "kind": "person",
+      "lines": [
+        "He is too busy chasing his ball to stop and talk!",
+        "He waves, then runs off after the ball again.",
+        "\"Watch me kick it!\" Off goes the ball."
+      ]
+    },
+    {
+      "id": "dog",
+      "name": "The family dog",
+      "kind": "dog",
+      "lines": [
+        "Woof! The dog wags its whole body.",
+        "The dog rolls over for a belly rub.",
+        "The dog brings you a very slobbery ball.",
+        "The dog sniffs your shoes, then decides you are a friend."
+      ]
+    }
+  ],
+  "stops": [
+    {
+      "id": "mtsu",
+      "label": "College",
+      "year": "2011",
+      "district": "old-town",
+      "building": "campus",
+      "education": [
+        "mtsu"
+      ],
+      "story": "This is where it started: a biology degree with a physiology concentration and a chemistry minor. Before tech I trained in biology and medicine, which is where my love of data started."
+    },
+    {
+      "id": "volunteer",
+      "label": "Giving Back",
+      "year": "2008 – 2015",
+      "district": "old-town",
+      "building": "hall",
+      "volunteer": true,
+      "story": "Alongside school I spent time volunteering: building and fundraising for accessible spaces with Push America, running the Rivalry Run 5K, serving meals at the RIFA soup kitchen in Jackson, and packing food with Stop Hunger Now. It taught me that the work matters most when it reaches people."
+    },
+    {
+      "id": "umhs",
+      "label": "Medical School",
+      "year": "2013 – 2017",
+      "district": "island",
+      "building": "clinic",
+      "education": [
+        "umhs"
+      ],
+      "story": "Four years of medical school on the island of St. Kitts, with coursework and clinical clerkships across many specialties. It is the reason I understand the clinical side of the healthcare data I work with today."
+    },
+    {
+      "id": "early-career",
+      "label": "Early Career",
+      "year": "2017 – 2018",
+      "district": "market",
+      "building": "market",
+      "experience": [
+        "kroger",
+        "amazon"
+      ],
+      "story": "Overnight shifts and fulfillment work after medical school: stocking, inventory and quality control. Not engineering, but still part of the journey."
+    },
+    {
+      "id": "dcids",
+      "label": "Tissue Bank",
+      "year": "2019 – 2021",
+      "district": "healthcare",
+      "building": "lab",
+      "experience": [
+        "dcids"
+      ],
+      "story": "Back in healthcare: processing human tissue in a sterile surgical setting, along with reporting, data entry and training new hires."
+    },
+    {
+      "id": "selftaught",
+      "label": "Learning to Code",
+      "year": "2021 – present",
+      "district": "healthcare",
+      "building": "library",
+      "education": [
+        "selftaught"
+      ],
+      "certificationsFrom": "freeCodeCamp",
+      "story": "I taught myself programming with freeCodeCamp and Udemy, from responsive web design all the way to machine learning with Python. That habit never stopped: today I build my own AI tools, from agentic coding workflows and RAG pipelines to classification models I train locally.",
+      "experience": [
+        "independent-ai"
+      ]
+    },
+    {
+      "id": "hca",
+      "label": "Data Analyst",
+      "year": "2022",
+      "district": "data",
+      "building": "office",
+      "experience": [
+        "hca"
+      ],
+      "story": "My first data role: clinical and operational dashboards, and supporting the clinicians who used them."
+    },
+    {
+      "id": "envision",
+      "label": "Data Scientist",
+      "year": "2022 – present",
+      "district": "tech",
+      "building": "tower",
+      "experience": [
+        "envision-ba",
+        "envision-ds"
+      ],
+      "story": "I joined as a Business Analyst II and did the data science work before the title existed, then became the Data Scientist. Today I lead machine learning models and dashboards for revenue recovery."
+    }
+  ]
+}

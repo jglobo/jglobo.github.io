@@ -1112,13 +1112,13 @@ header .circle {
 .contact:before{
     top: 0;
     height: 50%;
-    background: url("../images/map4.jpeg") center center / cover;
+    background: url("../../images/map4.jpeg") center center / cover;
 }
 
 .contact:after {
     top: 50%;
     height: 50%;
-    background: url("../images/city.jfif") center bottom / cover;
+    background: url("../../images/city.jfif") center bottom / cover;
 }
 
 .contact-box{

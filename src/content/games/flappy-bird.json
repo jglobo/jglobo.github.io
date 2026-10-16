@@ -1,0 +1,19 @@
+{
+  "id": "flappy-bird",
+  "title": "Flappy Bird Clone",
+  "category": "games",
+  "shortDescription": "My take on Flappy Bird.",
+  "description": "A Flappy Bird remake in Python and Pygame with scrolling pipes, scoring and sound.",
+  "technologies": [
+    "Python",
+    "Pygame"
+  ],
+  "screenshots": [
+    "images/flappygif.gif"
+  ],
+  "downloadUrl": "Games/flappybird.zip",
+  "featured": false,
+  "world": "games",
+  "crtGame": "flappy",
+  "boxColor": "#2aa4d8"
+}

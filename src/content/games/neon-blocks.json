@@ -1,0 +1,22 @@
+{
+  "id": "neon-blocks",
+  "title": "Neon Blocks",
+  "category": "games",
+  "shortDescription": "A guideline-accurate 3D Tetris with glossy glass blocks.",
+  "description": "A complete Tetris rendered in WebGL with three.js: glass blocks, bloom, particle bursts on line clears and a neon arcade HUD. It follows the modern rules: a 7-bag randomizer, SRS rotation with wall kicks, hold, a ghost piece, lock delay and T-spin scoring. Every sound is synthesized with the Web Audio API, so it runs fully offline.",
+  "technologies": [
+    "JavaScript",
+    "three.js",
+    "WebGL",
+    "Web Audio API"
+  ],
+  "screenshots": [
+    "images/neonblocks.jpg"
+  ],
+  "githubUrl": "https://github.com/jglobo/Tetris-Clone",
+  "playUrl": "play/neon-blocks/index.html",
+  "playOn": "tv",
+  "featured": true,
+  "world": "games",
+  "boxColor": "#141a3c"
+}

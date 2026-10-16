@@ -1,0 +1,21 @@
+{
+  "id": "hoops",
+  "title": "Hoops",
+  "category": "games",
+  "shortDescription": "A 2D basketball game: drag to shoot, grab the ball mid-air.",
+  "description": "A small 2D basketball game. Click and drag the ball toward the hoop to set direction and power, then watch it bounce realistically off the rim and backboard. You can catch the ball at any point in its flight to fix a bad shot. Swishes and streaks score extra, and the best score is saved.",
+  "technologies": [
+    "JavaScript",
+    "HTML Canvas",
+    "Node.js"
+  ],
+  "screenshots": [
+    "images/hoops.jpg"
+  ],
+  "githubUrl": "https://github.com/jglobo/Hoops",
+  "playUrl": "play/hoops/index.html",
+  "playOn": "pc",
+  "featured": false,
+  "world": "games",
+  "boxColor": "#e8701f"
+}

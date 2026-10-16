@@ -1,0 +1,62 @@
+[
+  {
+    "question": "Who are you?",
+    "answer": "I'm Jose, a data scientist in healthcare who builds games and apps for fun.",
+    "category": "about"
+  },
+  {
+    "question": "What do you do?",
+    "answer": "I'm a Data Scientist at Envision Healthcare. I build machine learning models and dashboards for revenue recovery, like models that predict and help reverse denied medical claims.",
+    "category": "work"
+  },
+  {
+    "question": "How did you get into tech?",
+    "answer": "It was a winding road. I earned a biology degree at MTSU with a chemistry minor, then spent four years in medical school in St. Kitts. After that I worked overnight at Kroger and in Amazon's warehouse, then as a process technician at DCIDS while I taught myself to code. That led to a Data Analyst role at HCA Healthcare, then Envision Healthcare, where I went from Business Analyst to Data Scientist.",
+    "category": "career"
+  },
+  {
+    "question": "What are you doing with AI?",
+    "answer": "A lot! I code with AI agents every day, this portfolio included. I run cloud and local models like Claude, OpenAI, DeepSeek, MiniMax and MiMo, build RAG apps with LangChain, train and fine-tune models on my own machines, and use classification models like Laya and Jev in my projects.",
+    "category": "skills"
+  },
+  {
+    "question": "Why Data Science?",
+    "answer": "Biology and medicine taught me to love evidence. Data science lets me use that curiosity every day.",
+    "category": "career"
+  },
+  {
+    "question": "Why Game Development?",
+    "answer": "Games are where I learned to program. They make every system you build visible and fun to test.",
+    "category": "career"
+  },
+  {
+    "question": "Why Software Engineering?",
+    "answer": "I like building things people can actually use: dashboards at work, and small web apps like my calculator and study clock at home. This portfolio is the biggest one so far.",
+    "category": "career"
+  },
+  {
+    "question": "What technologies do you use?",
+    "answer": "Python, SQL and R for data work. Tableau, Power BI, R Shiny and Streamlit for dashboards. TypeScript, React and Three.js for this portfolio, and Pygame for my games.",
+    "category": "skills"
+  },
+  {
+    "question": "What kind of projects do you build?",
+    "answer": "Healthcare models and dashboards at work, and games and web apps at home. The other portals in the Hub lead to all of them.",
+    "category": "projects"
+  },
+  {
+    "question": "What are you currently learning?",
+    "answer": "Agentic AI and fine-tuning models locally, plus Three.js and React Three Fiber. This portfolio is the practice project.",
+    "category": "learning"
+  },
+  {
+    "question": "What are your career goals?",
+    "answer": "My career goal is to continue to learn and grow along with this continuously evolving field of computer and data science. As technology quickly changes with the help of AI, I want to be a leader and be part of this rapidly changing world in order to help others achieve their goals.",
+    "category": "career"
+  },
+  {
+    "question": "What do you enjoy outside work?",
+    "answer": "I love spending time with my family, making and playing video games and other fun applications. I love watching shows and movies. I love to watch and play sports. When I'm able, I love to travel and see the world.",
+    "category": "personal"
+  }
+]

@@ -1,0 +1,127 @@
+[
+  {
+    "id": "independent-ai",
+    "role": "AI Engineering (independent projects)",
+    "org": "Personal lab",
+    "when": "Ongoing",
+    "summary": "Build and run self-hosted AI systems on my own hardware: agentic coding with agent harnesses, cloud and local language models, RAG, and data pipelines that feed models I train myself.",
+    "highlights": [
+      "Develop software with agentic coding workflows and agent harnesses, directing AI agents to plan, write, test and refactor code, including this interactive portfolio.",
+      "Work fluently across cloud and local large language models, including Claude, OpenAI, DeepSeek, MiniMax and MiMo, choosing the right model for cost, privacy and quality.",
+      "Build retrieval-augmented generation (RAG) applications with LangChain that ground model answers in curated document collections.",
+      "Design data pipelines that collect and clean public datasets, then train, evaluate and fine-tune models on personal workstations.",
+      "Assemble and maintain personal AI ecosystems from open-source tools, managing multiple systems across my own computers.",
+      "Apply the Laya and Jev classification models in projects, and understand how agents and models are built, trained and fine-tuned end to end."
+    ],
+    "technologies": [
+      "Python",
+      "LangChain",
+      "Claude",
+      "OpenAI",
+      "DeepSeek",
+      "Local LLMs",
+      "RAG"
+    ]
+  },
+  {
+    "id": "envision-ds",
+    "role": "Data Scientist",
+    "org": "Envision Healthcare",
+    "when": "November 2025 – Present",
+    "summary": "Lead end-to-end data science workflows and machine learning models that support revenue recovery.",
+    "highlights": [
+      "Lead data ingestion, cleaning, EDA, feature engineering, model development and evaluation.",
+      "Develop and evaluate classification and regression models in Python and R (scikit-learn, XGBoost) to support revenue recovery initiatives.",
+      "Partner with the team to turn denied-claim classification models into products that identify reversible denials, supporting revenue recovery in the tens of millions of dollars from health insurance providers.",
+      "Build forecasting models that predict emergency department patient volumes, so operations teams can plan staffing and allocate resources ahead of demand.",
+      "Design and maintain executive-ready dashboards and recurring reports in Tableau, Power BI, R Shiny and Streamlit.",
+      "Translate complex findings into actionable insights for technical and non-technical stakeholders.",
+      "Document data definitions, modeling assumptions and methods for reproducibility and audit readiness."
+    ],
+    "technologies": [
+      "Python",
+      "R",
+      "SQL",
+      "scikit-learn",
+      "XGBoost",
+      "Tableau",
+      "Power BI",
+      "R Shiny",
+      "Streamlit"
+    ]
+  },
+  {
+    "id": "envision-ba",
+    "role": "Business Analyst II (data scientist responsibilities)",
+    "org": "Envision Healthcare",
+    "when": "December 2022 – November 2025",
+    "summary": "Performed core data science work before the formal Data Scientist title existed, including models that predict and reverse denied medical claims.",
+    "highlights": [
+      "Collected, cleaned and prepared large structured and semi-structured healthcare data from Amazon Redshift (AWS) and Oracle.",
+      "Performed EDA to find trends, anomalies and data quality issues affecting financial and clinical outcomes.",
+      "Designed, trained and evaluated machine learning models to predict and reverse denied medical claims.",
+      "Built ETL pipelines, analytical datasets and feature tables for modeling and downstream analytics.",
+      "Delivered dashboards and analytical applications in Tableau, Power BI, R Shiny and Streamlit; served as a Tableau Server administrator.",
+      "Optimized complex SQL queries and refactored data sources to improve performance and reliability."
+    ],
+    "technologies": [
+      "SQL",
+      "Python",
+      "R",
+      "Amazon Redshift",
+      "Oracle",
+      "Tableau",
+      "Power BI",
+      "R Shiny",
+      "Streamlit",
+      "JIRA"
+    ]
+  },
+  {
+    "id": "hca",
+    "role": "Data Analyst",
+    "org": "HCA Healthcare",
+    "when": "April 2022 – December 2022",
+    "summary": "Built clinical and operational dashboards and supported clinicians using enterprise analytics products.",
+    "highlights": [
+      "Developed clinical and operational dashboards in Power BI and Tableau on Teradata.",
+      "Served as subject matter expert and first-line support for clinicians using enterprise analytics products.",
+      "Resolved production data issues through debugging, root-cause analysis and QA testing.",
+      "Trained facility-level users and led tool demonstrations."
+    ],
+    "technologies": [
+      "Power BI",
+      "Tableau",
+      "Teradata",
+      "SQL",
+      "SharePoint"
+    ]
+  },
+  {
+    "id": "dcids",
+    "role": "Process Technician IV",
+    "org": "DCIDS",
+    "when": "July 2019 – June 2021",
+    "summary": "Processed and packaged human tissue for a tissue bank in a sterile surgical setting, with reporting, data entry and training of new hires.",
+    "highlights": [],
+    "technologies": []
+  },
+  {
+    "id": "amazon",
+    "role": "Picker, Packer, Inventory Control Quality Assurance",
+    "org": "Amazon",
+    "when": "October 2017 – September 2018",
+    "summary": "Order fulfillment with inventory and quality control.",
+    "highlights": [],
+    "technologies": []
+  },
+  {
+    "id": "kroger",
+    "role": "Produce Overnight Associate",
+    "org": "Kroger",
+    "when": "October 2017 – February 2018",
+    "summary": "Stocked and rotated produce, managed markdowns and waste, and helped customers.",
+    "highlights": [],
+    "technologies": []
+  }
+]

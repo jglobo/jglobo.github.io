@@ -1,0 +1,18 @@
+{
+  "id": "breathing-app",
+  "title": "Breathing App",
+  "category": "software",
+  "shortDescription": "A guided breathing exercise made for my mom's yoga website.",
+  "description": "A guided breathing timer: pick how many breaths, press Begin, and follow the circle as it grows and shrinks with breathe in, hold and exhale prompts. I built it for my mom's yoga website and helped her build the site too.",
+  "technologies": [
+    "JavaScript",
+    "HTML",
+    "CSS"
+  ],
+  "screenshots": [
+    "images/breathingapp.jpg"
+  ],
+  "githubUrl": "https://github.com/jglobo/BreathingApp",
+  "featured": false,
+  "world": "software"
+}
